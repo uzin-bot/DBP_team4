@@ -1,0 +1,66 @@
+# Build results
+bin/
+obj/
+Debug/
+Release/
+x64/
+x86/
+[Aa]ppPackages/
+[Bb]uild/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio specific
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.history/
+*.code-workspace
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+*.nuget.cache
+
+# Windows specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ReSharper / Rider
+_ReSharper*/
+.idea/
+*.DotSettings.user
+
+# Test results
+TestResult*/
+*.VisualState.xml
+*.nunit.xml
+*.trx
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+*.log
+
+# Publish artifacts
+publish/
+*.Publish.xml
+
+# Config files containing secrets or API keys
+appsettings.Development.json
+appsettings.Local.json
+.env
+*.key
+*.secret
