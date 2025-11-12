@@ -56,6 +56,8 @@ public class DBHelper
         }
     }
 
+    /*
+
     // 5-A 검정: 채팅 메시지 저장 및 6-A 대화목록 업데이트
     public int InsertChatMessage(string senderId, string receiverId, string content)
     {
@@ -79,6 +81,8 @@ public class DBHelper
 
         return result;
     }
+
+
 
     // RecentChat 테이블 업데이트/삽입 로직
     private void UpdateRecentChat(string userId, string partnerId)
@@ -120,4 +124,6 @@ public class DBHelper
 
 
     }
+
+    */
 }

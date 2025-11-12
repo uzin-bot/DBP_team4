@@ -4,13 +4,12 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Net;
 using System;
-using MySql.Data.MySqlClient; // MySqlException을 사용하기 위해 필요
+using MySql.Data.MySqlClient; // DB Exception 처리를 위해 필요
 
 public class ChatServer
 {
     private static TcpListener listener;
     // [UserID, TcpClient 객체] 맵: 로그인한 사용자 ID와 해당 클라이언트 연결 매핑
-    // (멀티스레드 환경이므로 ConcurrentDictionary가 더 적합하지만, Dictionary에 lock 사용)
     private static Dictionary<string, TcpClient> clients = new Dictionary<string, TcpClient>();
     private const int PORT = 8888;
     private static DBHelper dbHelper = new DBHelper();
@@ -25,7 +24,6 @@ public class ChatServer
 
             while (true)
             {
-                // 동기 메서드이지만, 별도 스레드가 HandleClient를 처리함
                 TcpClient client = listener.AcceptTcpClient();
                 Console.WriteLine($"[Server] New client connected: {client.Client.RemoteEndPoint}");
 
@@ -91,10 +89,26 @@ public class ChatServer
                         receiverStream.Write(data, 0, data.Length);
                     }
 
-                    // DB 저장 로직 (5-A 검정: ChatMessage INSERT 및 RecentChat UPDATE)
+                    // DB 저장 로직 (ChatServer가 직접 SQL 실행)
                     try
                     {
-                        dbHelper.InsertChatMessage(senderId, receiverId, content);
+                        // 1. ChatMessage INSERT (메시지 저장)
+                        string chatQuery = @"
+                            INSERT INTO ChatMessage (SenderID, ReceiverID, Content, SendTime)
+                            VALUES (@SenderID, @ReceiverID, @Content, NOW())";
+
+                        MySqlParameter[] chatParams = new MySqlParameter[]
+                        {
+                            new MySqlParameter("@SenderID", senderId),
+                            new MySqlParameter("@ReceiverID", receiverId),
+                            new MySqlParameter("@Content", content)
+                        };
+                        dbHelper.ExecuteNonQuery(chatQuery, chatParams);
+
+                        // 2. RecentChat UPDATE/INSERT (대화 목록 시간 갱신)
+                        UpdateRecentChat(senderId, receiverId); // 송신자 목록 갱신
+                        UpdateRecentChat(receiverId, senderId); // 수신자 목록 갱신
+
                         Console.WriteLine($"[DB Success] Message saved from {senderId} to {receiverId}");
                     }
                     catch (MySql.Data.MySqlClient.MySqlException sqlEx)
@@ -127,5 +141,22 @@ public class ChatServer
             }
             tcpClient?.Close();
         }
+    }
+
+    // RecentChat 테이블 업데이트/삽입 로직 (ChatServer에 구현)
+    private static void UpdateRecentChat(string userId, string partnerId)
+    {
+        string query = @"
+            INSERT INTO RecentChat (UserID, PartnerID, LastMessageTime)
+            VALUES (@UserID, @PartnerID, NOW())
+            ON DUPLICATE KEY UPDATE LastMessageTime = NOW()";
+
+        MySqlParameter[] parameters = new MySqlParameter[]
+        {
+            new MySqlParameter("@UserID", userId),
+            new MySqlParameter("@PartnerID", partnerId)
+        };
+
+        dbHelper.ExecuteNonQuery(query, parameters);
     }
 }

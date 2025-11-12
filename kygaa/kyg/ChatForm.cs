@@ -1,7 +1,8 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
+using System.Data;
 using System.Net.Sockets;
 using System.Text;
-using System.Data;
 using System.Threading; // Thread 사용을 위해 추가
 using System.Windows.Forms;
 
@@ -17,6 +18,7 @@ namespace DBP_finalproject_chatting
         private string myId;
         private string partnerId;
         private DBHelper dbHelper = new DBHelper(); // DB 작업을 위해 추가
+        private bool isSending = false; // 중복 전송 방지 플래그
 
         // 이 부분은 Main Form에서 로그인된 사용자 ID와 선택된 상대 ID를 넘겨받아야 합니다.
         public ChatForm(string myId, string partnerId, string partnerName)
@@ -39,30 +41,40 @@ namespace DBP_finalproject_chatting
         {
             try
             {
-                // DBHelper를 사용하여 두 사용자 간의 메시지 기록을 가져옴
-                DataTable history = dbHelper.GetChatHistory(myId, partnerId);
+                // ChatForm이 직접 SQL을 구현하여 DBHelper를 호출
+                string query = @"
+                SELECT 
+                    SenderID, Content, SendTime
+                FROM ChatMessage
+                WHERE (SenderID = @user1Id AND ReceiverID = @user2Id) 
+                   OR (SenderID = @user2Id AND ReceiverID = @user1Id)
+                ORDER BY SendTime ASC";
+
+                MySqlParameter[] parameters = new MySqlParameter[]
+                {
+                new MySqlParameter("@user1Id", myId),
+                new MySqlParameter("@user2Id", partnerId)
+                };
+
+                DataTable history = dbHelper.ExecuteSelect(query, parameters);
 
                 foreach (DataRow row in history.Rows)
                 {
                     string senderId = row["SenderID"].ToString();
                     string content = row["Content"].ToString();
 
-                    // 메시지 출력
                     if (senderId == myId)
                     {
-                        // 내가 보낸 메시지
                         DisplayMessage($"[나]: {content}\n", true);
                     }
                     else
                     {
-                        // 상대방이 보낸 메시지
                         DisplayMessage($"[{senderId}]: {content}\n", false);
                     }
                 }
             }
             catch (Exception ex)
             {
-                // DB 연결 또는 쿼리 오류 시 경고
                 MessageBox.Show("대화 기록을 불러오는 중 오류 발생: " + ex.Message, "DB 오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -102,33 +114,30 @@ namespace DBP_finalproject_chatting
                 MessageBox.Show("서버에 연결되지 않았습니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-
-            // 1. 서버로 메시지 전송 (5-A 검정)
-            // 포맷: [TYPE]:[SENDER_ID]:[RECEIVER_ID]:[MESSAGE_CONTENT]
-            string chatMsg = $"CHAT:{myId}:{partnerId}:{content}";
-            byte[] data = Encoding.UTF8.GetBytes(chatMsg);
-            stream.Write(data, 0, data.Length);
-
-            //스트림 버퍼를 강제로 비워 즉시 전송 보장 (추가) 
-            //stream.Flush();
-
-            // 2. 내 채팅창에 메시지 표시
-            DisplayMessage($"[나]: {content}\n", true);
-
-            // 3. ChatMessage 테이블에 INSERT (DB 저장 로직)
-            /*
             try
             {
-                dbHelper.InsertChatMessage(myId, partnerId, content);
-            }
-            catch (Exception dbEx)
-            {
-                // DB 저장 실패는 통신과 별개로 처리 (로깅 필요)
-                Console.WriteLine("채팅 메시지 DB 저장 오류: " + dbEx.Message);
-            }
-            */
+                // 1. 서버로 메시지 전송 (5-A 검정)
+                // 포맷: [TYPE]:[SENDER_ID]:[RECEIVER_ID]:[MESSAGE_CONTENT]
+                string chatMsg = $"CHAT:{myId}:{partnerId}:{content}";
+                byte[] data = Encoding.UTF8.GetBytes(chatMsg);
+                stream.Write(data, 0, data.Length);
 
-            txtInput.Clear();
+                //스트림 버퍼를 강제로 비워 즉시 전송 보장 (추가) 
+                //stream.Flush();
+
+                // 2. 내 채팅창에 메시지 표시
+                DisplayMessage($"[나]: {content}\n", true);
+                txtInput.Clear();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("메시지 전송 중 오류 발생: " + ex.Message, "전송 오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                isSending = false; // 전송 완료 후 플래그 해제
+            }
+
         }
 
         private void ReceiveMessages()
