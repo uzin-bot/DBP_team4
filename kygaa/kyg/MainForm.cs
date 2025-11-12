@@ -1,13 +1,14 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using MySql.Data.MySqlClient;
-using System.Data;
 
 
 namespace DBP_finalproject_chatting
@@ -19,14 +20,17 @@ namespace DBP_finalproject_chatting
         // 로그인에 성공한 사용자 ID는 전역적으로 접근 가능하다고 가정합니다.
         // 실제로는 로그인 폼에서 전달받아 클래스 멤버 변수에 저장해야 합니다.
         private string loggedInUserId; // 예시 ID 사용
+        private TcpClient alertClient;
+        private NetworkStream alertStream;
 
         public MainForm()
         {
             InitializeComponent();
 
             // 폼 로드 시 대화상대 및 대화목록을 로드
-            LoadDepartmentEmployees(); // 1주차 기능
-            LoadRecentChats();         // 2주차 기능 (6-A 검정)
+            //LoadDepartmentEmployees(); // 1주차 기능
+            //LoadRecentChats();         // 2주차 기능 (6-A 검정)
+            //ConnectAlertClient();  //3주차 기능 (알람)
 
             // TreeView 더블클릭 이벤트 연결 (Designer에서 설정 가능)
             this.tvDepartmentEmployees.NodeMouseDoubleClick += new TreeNodeMouseClickEventHandler(tvDepartmentEmployees_NodeMouseDoubleClick);
@@ -34,10 +38,117 @@ namespace DBP_finalproject_chatting
             this.lvRecentChats.DoubleClick += new EventHandler(lvRecentChats_DoubleClick);
         }
 
+        //로그인 버튼(임시)
         private void button1_Click(object sender, EventArgs e)
         {
             loggedInUserId = textBox1.Text;
+            if (!string.IsNullOrEmpty(loggedInUserId))
+            {
+                // ID 설정 완료 후 기능 로드 및 서버 연결 시도
+                LoadDepartmentEmployees();
+                LoadRecentChats();
+
+                // MainForm이 로그인 ID를 가지고 서버에 연결하는 코드
+                ConnectAlertClient();
+            }
+            else
+            {
+                MessageBox.Show("사용자 ID를 입력해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
+
+        private void ConnectAlertClient()
+        {
+            try
+            {
+                // 서버 연결 (ChatForm과는 별개로 MainForm의 알림 기능을 위해 연결)
+                alertClient = new TcpClient("127.0.0.1", 8888);
+                alertStream = alertClient.GetStream();
+
+                // 서버에 로그인 ID 등록 (ChatForm과 동일하게 로그인 시도)
+                string loginMsg = $"LOGIN:{loggedInUserId}:::";
+                byte[] loginData = Encoding.UTF8.GetBytes(loginMsg);
+                alertStream.Write(loginData, 0, loginData.Length);
+
+                // 메시지 수신용 스레드 시작
+                Thread receiveThread = new Thread(ReceiveAlertMessages);
+                receiveThread.IsBackground = true;
+                receiveThread.Start();
+                Console.WriteLine("MainForm 알림 클라이언트 연결 성공.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"MainForm 알림 클라이언트 연결 오류: {ex.Message}");
+                MessageBox.Show($"서버 알림 연결 오류: {ex.Message}", "연결 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ReceiveAlertMessages()
+        {
+            byte[] buffer = new byte[1024];
+            while (alertClient.Connected)
+            {
+                try
+                {
+                    int bytesRead = alertStream.Read(buffer, 0, buffer.Length);
+                    if (bytesRead == 0) break;
+
+                    string received = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    string[] parts = received.Split(new char[] { ':' }, 4);
+
+                    if (parts.Length == 4 && parts[0] == "CHAT")
+                    {
+                        string senderId = parts[1];
+                        string content = parts[3];
+
+                        // UI 스레드로 전환하여 알림 및 ListView 갱신
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            ShowAlertOnMainForm(senderId, content);
+                        });
+                    }
+                }
+                catch (System.IO.IOException) { break; }
+                catch (Exception) { break; }
+            }
+        }
+
+        private void ShowAlertOnMainForm(string senderId, string content)
+        {
+            // 1. 대화목록을 갱신하여 최신 메시지가 위로 오게 함
+            LoadRecentChats();
+
+            // 2. 작업 표시줄 깜빡임
+             FlashWindow.Flash(this); // FlashWindow 헬퍼 클래스가 필요함
+
+            // 3. NotifyIcon 풍선 알림 (niChatAlert 컨트롤이 필요함)
+            if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
+            {
+                niChatAlert.BalloonTipTitle = $"새 메시지: {senderId}";
+                niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
+                niChatAlert.ShowBalloonTip(5000); // 5초 유지
+            }
+
+            // 4. ListView 항목 강조 (Optional)
+            /*
+            foreach (ListViewItem item in lvRecentChats.Items)
+            {
+                // senderId가 이 항목의 PartnerID라면 
+                if (item.Tag != null && item.Tag.ToString() == senderId)
+                {
+                    item.BackColor = System.Drawing.Color.LightYellow;
+                    break;
+                }
+            }
+            */
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // 폼이 닫힐 때 알림 클라이언트 연결도 해제
+            alertClient?.Close();
+        }
+
 
         // 1. 대화상대 목록 로드 (1주차 기능)
         public void LoadDepartmentEmployees()

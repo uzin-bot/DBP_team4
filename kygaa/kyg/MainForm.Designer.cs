@@ -28,10 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             tvDepartmentEmployees = new TreeView();
             lvRecentChats = new ListView();
             textBox1 = new TextBox();
             button1 = new Button();
+            niChatAlert = new NotifyIcon(components);
             SuspendLayout();
             // 
             // tvDepartmentEmployees
@@ -66,6 +69,12 @@
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
             // 
+            // niChatAlert
+            // 
+            niChatAlert.Icon = (Icon)resources.GetObject("niChatAlert.Icon");
+            niChatAlert.Text = "notifyIcon1";
+            niChatAlert.Visible = true;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(9F, 20F);
@@ -87,5 +96,6 @@
         private ListView lvRecentChats;
         private TextBox textBox1;
         private Button button1;
+        private NotifyIcon niChatAlert;
     }
 }
