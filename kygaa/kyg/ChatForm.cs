@@ -171,7 +171,8 @@ namespace DBP_finalproject_chatting
             // 2주차 5-A: 서버 연결 및 ID 등록
             try
             {
-                client = new TcpClient("127.0.0.1", 8888);
+                //client = new TcpClient("127.0.0.1", 8888);
+                client = new TcpClient("10.201.21.210", 8888);
                 stream = client.GetStream();
                 string loginMsg = $"LOGIN:{myId}:::";
                 byte[] loginData = Encoding.UTF8.GetBytes(loginMsg);

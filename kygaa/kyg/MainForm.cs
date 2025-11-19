@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using MySqlX.XDevAPI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -102,7 +103,8 @@ namespace DBP_finalproject_chatting
                 alertClient = new TcpClient();
 
                 // 2. 새로운 연결 시도
-                alertClient.Connect("127.0.0.1", 8888);
+                //alertClient.Connect("127.0.0.1", 8888);
+                alertClient.Connect("10.201.21.210", 8888);
 
                 alertStream = alertClient.GetStream();
 
