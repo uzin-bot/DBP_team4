@@ -57,10 +57,17 @@ namespace DBP_finalproject_chatting
             }
         }
 
+        /*
         private void ConnectAlertClient()
         {
+            // 이미 연결되어 있으면 재시도하지 않습니다.
+            if (alertClient != null && alertClient.Connected) return;
             try
             {
+
+                // 1. 기존 연결 정리 (혹시 모를 잔여 핸들 제거)
+                alertClient?.Close();
+                alertClient = new TcpClient();
                 // 서버 연결 (ChatForm과는 별개로 MainForm의 알림 기능을 위해 연결)
                 alertClient = new TcpClient("127.0.0.1", 8888);
                 alertStream = alertClient.GetStream();
@@ -82,9 +89,52 @@ namespace DBP_finalproject_chatting
                 MessageBox.Show($"서버 알림 연결 오류: {ex.Message}", "연결 실패", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        */
 
+        private void ConnectAlertClient()
+        {
+            if (alertClient != null && alertClient.Connected) return;
+
+            try
+            {
+                // 1. 기존 연결 정리
+                alertClient?.Close();
+                alertClient = new TcpClient();
+
+                // 2. 새로운 연결 시도
+                alertClient.Connect("127.0.0.1", 8888);
+
+                alertStream = alertClient.GetStream();
+
+                // 3. 서버에 로그인 ID 등록
+                string loginMsg = $"LOGIN:{loggedInUserId}:::";
+                byte[] loginData = Encoding.UTF8.GetBytes(loginMsg);
+                alertStream.Write(loginData, 0, loginData.Length);
+
+                // 4. 메시지 수신용 스레드 시작
+                Thread receiveThread = new Thread(ReceiveAlertMessages);
+                receiveThread.IsBackground = true;
+                receiveThread.Start();
+                Console.WriteLine("MainForm 알림 클라이언트 연결 성공.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"MainForm 알림 클라이언트 연결 오류: {ex.Message}");
+                // 연결 실패 시 재연결 루프가 필요하므로, 이 시점에 바로 Task.Run을 호출합니다.
+
+                Task.Run(() =>
+                {
+                    Thread.Sleep(3000); // 3초 대기
+                    ConnectAlertClient(); // 재귀적으로 재연결 시도
+                });
+            }
+        }
+
+
+        /*
         private void ReceiveAlertMessages()
         {
+            if (alertClient == null || !alertClient.Connected) return;
             byte[] buffer = new byte[1024];
             while (alertClient.Connected)
             {
@@ -111,7 +161,83 @@ namespace DBP_finalproject_chatting
                 catch (System.IO.IOException) { break; }
                 catch (Exception) { break; }
             }
+
+            // 연결 종료 후 재연결 시도
+
+            // UI 스레드에서 재연결 함수 호출
+            this.Invoke((MethodInvoker)delegate
+            {
+                if (this.IsDisposed || !this.IsHandleCreated) return;
+
+                // 1. 기존 연결 정리
+                alertClient?.Close();
+                alertClient = null;
+
+                // 연결이 끊어졌으므로 잠시 후 재연결을 시도합니다.
+                // 재연결 로직을 새 스레드에 맡겨 MainForm UI가 멈추지 않도록 합니다.
+                new Thread(() =>
+                {
+                    Thread.Sleep(3000); // 3초 대기 후 재연결 시도
+                    ConnectAlertClient();
+                }).Start();
+            });
         }
+        */
+
+        private void ReceiveAlertMessages()
+        {
+            if (alertClient == null || !alertClient.Connected) return;
+
+            byte[] buffer = new byte[1024];
+
+            while (alertClient.Connected)
+            {
+                try
+                {
+                    int bytesRead = alertStream.Read(buffer, 0, buffer.Length);
+                    if (bytesRead == 0) break; // 서버가 연결을 끊었음을 감지 (연결 종료)
+
+                    string received = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    string[] parts = received.Split(new char[] { ':' }, 5);
+
+                    if (parts.Length >= 4 && parts[0] == "CHAT")
+                    {
+                        string senderId = parts[1];
+                        string content = parts[3];
+
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            if (this.IsDisposed || !this.IsHandleCreated) return;
+                            ShowAlertOnMainForm(senderId, content);
+                        });
+                    }
+                }
+                catch (Exception)
+                {
+                    break; // 오류 발생 시 루프 종료
+                }
+            }
+
+            // 🚨 연결 종료 후 복구 로직 (UI 스레드에서 Task 시작) 🚨
+            this.Invoke((MethodInvoker)delegate
+            {
+                if (this.IsDisposed || !this.IsHandleCreated) return;
+
+                alertClient?.Close();
+                alertClient = null;
+
+                // Task를 시작하여 메인 스레드를 블로킹하지 않고 재연결 시도
+                Task.Run(() =>
+                {
+                    Thread.Sleep(3000); // 3초 대기 후 재연결 시도
+                    ConnectAlertClient();
+                });
+
+                Console.WriteLine("MainForm 알림 클라이언트 재연결을 비동기로 예약했습니다.");
+            });
+        }
+
+
 
         private void ShowAlertOnMainForm(string senderId, string content)
         {
@@ -145,8 +271,13 @@ namespace DBP_finalproject_chatting
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // 폼이 닫힐 때 알림 클라이언트 연결도 해제
-            alertClient?.Close();
+            try
+            {
+                // 폼이 닫힐 때 알림 클라이언트 연결도 해제
+                alertClient?.Close();
+            }
+            catch { }
+            
         }
 
 

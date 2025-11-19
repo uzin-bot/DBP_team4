@@ -34,29 +34,38 @@
             txtInput = new TextBox();
             btnSend = new Button();
             niChatAlert = new NotifyIcon(components);
+            txtSearch = new TextBox();
+            btnSearch = new Button();
+            btnSendFile = new Button();
+            btnEmojiSmiley = new Button();
+            btnEmojiCrying = new Button();
+            btnEmojiHeart = new Button();
             SuspendLayout();
             // 
             // rtbChatLog
             // 
-            rtbChatLog.Location = new Point(29, 26);
+            rtbChatLog.Location = new Point(23, 54);
+            rtbChatLog.Margin = new Padding(2);
             rtbChatLog.Name = "rtbChatLog";
-            rtbChatLog.Size = new Size(464, 515);
+            rtbChatLog.Size = new Size(362, 537);
             rtbChatLog.TabIndex = 0;
             rtbChatLog.Text = "";
             // 
             // txtInput
             // 
-            txtInput.Location = new Point(29, 565);
+            txtInput.Location = new Point(23, 601);
+            txtInput.Margin = new Padding(2);
             txtInput.Multiline = true;
             txtInput.Name = "txtInput";
-            txtInput.Size = new Size(350, 44);
+            txtInput.Size = new Size(273, 34);
             txtInput.TabIndex = 1;
             // 
             // btnSend
             // 
-            btnSend.Location = new Point(399, 565);
+            btnSend.Location = new Point(312, 601);
+            btnSend.Margin = new Padding(2);
             btnSend.Name = "btnSend";
-            btnSend.Size = new Size(94, 44);
+            btnSend.Size = new Size(73, 33);
             btnSend.TabIndex = 2;
             btnSend.Text = "전송";
             btnSend.UseVisualStyleBackColor = true;
@@ -68,14 +77,75 @@
             niChatAlert.Text = "notifyIcon1";
             niChatAlert.Visible = true;
             // 
+            // txtSearch
+            // 
+            txtSearch.Location = new Point(23, 12);
+            txtSearch.Multiline = true;
+            txtSearch.Name = "txtSearch";
+            txtSearch.Size = new Size(273, 34);
+            txtSearch.TabIndex = 3;
+            // 
+            // btnSearch
+            // 
+            btnSearch.Location = new Point(310, 12);
+            btnSearch.Name = "btnSearch";
+            btnSearch.Size = new Size(75, 34);
+            btnSearch.TabIndex = 4;
+            btnSearch.Text = "검색";
+            btnSearch.UseVisualStyleBackColor = true;
+            btnSearch.Click += btnSearch_Click;
+            // 
+            // btnSendFile
+            // 
+            btnSendFile.Location = new Point(312, 649);
+            btnSendFile.Name = "btnSendFile";
+            btnSendFile.Size = new Size(73, 24);
+            btnSendFile.TabIndex = 5;
+            btnSendFile.Text = "파일전송";
+            btnSendFile.UseVisualStyleBackColor = true;
+            // 
+            // btnEmojiSmiley
+            // 
+            btnEmojiSmiley.Location = new Point(23, 649);
+            btnEmojiSmiley.Name = "btnEmojiSmiley";
+            btnEmojiSmiley.Size = new Size(75, 23);
+            btnEmojiSmiley.TabIndex = 6;
+            btnEmojiSmiley.Text = "웃음";
+            btnEmojiSmiley.UseVisualStyleBackColor = true;
+            // 
+            // btnEmojiCrying
+            // 
+            btnEmojiCrying.Location = new Point(123, 650);
+            btnEmojiCrying.Name = "btnEmojiCrying";
+            btnEmojiCrying.Size = new Size(75, 23);
+            btnEmojiCrying.TabIndex = 7;
+            btnEmojiCrying.Text = "슬픔";
+            btnEmojiCrying.UseVisualStyleBackColor = true;
+            // 
+            // btnEmojiHeart
+            // 
+            btnEmojiHeart.Location = new Point(221, 650);
+            btnEmojiHeart.Name = "btnEmojiHeart";
+            btnEmojiHeart.Size = new Size(75, 23);
+            btnEmojiHeart.TabIndex = 8;
+            btnEmojiHeart.Text = "하트";
+            btnEmojiHeart.UseVisualStyleBackColor = true;
+            // 
             // ChatForm
             // 
-            AutoScaleDimensions = new SizeF(9F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(525, 638);
+            ClientSize = new Size(408, 685);
+            Controls.Add(btnEmojiHeart);
+            Controls.Add(btnEmojiCrying);
+            Controls.Add(btnEmojiSmiley);
+            Controls.Add(btnSendFile);
+            Controls.Add(btnSearch);
+            Controls.Add(txtSearch);
             Controls.Add(btnSend);
             Controls.Add(txtInput);
             Controls.Add(rtbChatLog);
+            Margin = new Padding(2);
             Name = "ChatForm";
             Text = "ChatForm";
             ResumeLayout(false);
@@ -88,5 +158,11 @@
         private TextBox txtInput;
         private Button btnSend;
         private NotifyIcon niChatAlert;
+        private TextBox txtSearch;
+        private Button btnSearch;
+        private Button btnSendFile;
+        private Button btnEmojiSmiley;
+        private Button btnEmojiCrying;
+        private Button btnEmojiHeart;
     }
 }
