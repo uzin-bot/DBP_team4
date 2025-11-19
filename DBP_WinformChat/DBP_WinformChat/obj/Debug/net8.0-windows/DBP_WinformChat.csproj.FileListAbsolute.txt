@@ -37,3 +37,4 @@ C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debu
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.pdb
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.genruntimeconfig.cache
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\ref\DBP_WinformChat.dll
+C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\kyg.TempForm.resources
