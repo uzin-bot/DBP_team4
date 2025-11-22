@@ -103,8 +103,8 @@ namespace DBP_finalproject_chatting
                 alertClient = new TcpClient();
 
                 // 2. 새로운 연결 시도
-                //alertClient.Connect("127.0.0.1", 8888);
-                alertClient.Connect("10.201.21.210", 8888);
+                alertClient.Connect("127.0.0.1", 8888);
+                //alertClient.Connect("10.201.21.210", 8888);
 
                 alertStream = alertClient.GetStream();
 
@@ -397,11 +397,54 @@ namespace DBP_finalproject_chatting
             }
         }
 
+        /*
         // 5. 채팅창 열기 공통 메서드
         private void OpenChatForm(string partnerId, string partnerName)
         {
             // 새 ChatForm 인스턴스를 생성하고 ID 정보 전달
             ChatForm chatForm = new ChatForm(this.loggedInUserId, partnerId, partnerName);
+
+
+
+            chatForm.Show();
+        }
+        */
+
+        // MainForm.cs -> OpenChatForm 메서드 수정
+
+        private void OpenChatForm(string partnerId, string partnerName)
+        {
+            ChatForm chatForm = new ChatForm(this.loggedInUserId, partnerId, partnerName);
+
+            // [추가] 채팅창이 닫힐 때 MainForm의 알림 세션을 서버에 다시 등록하는 로직
+            chatForm.FormClosed += (s, args) =>
+            {
+                try
+                {
+                    if (alertClient != null && alertClient.Connected && alertStream != null)
+                    {
+                        // 서버 딕셔너리에 MainForm 소켓을 다시 등록(갱신) 요청
+                        string loginMsg = $"LOGIN:{loggedInUserId}:::";
+                        byte[] loginData = Encoding.UTF8.GetBytes(loginMsg);
+
+                        // 동기화 문제 방지를 위해 lock을 사용하거나 UI 스레드에서 전송 고려 가능하나
+                        // 간단히 스트림에 재전송합니다.
+                        alertStream.Write(loginData, 0, loginData.Length);
+                        alertStream.Flush();
+                        Console.WriteLine("MainForm 알림 세션 복구 완료");
+                    }
+                    else
+                    {
+                        // 만약 연결이 끊겨있다면 재연결 시도
+                        ConnectAlertClient();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"세션 복구 실패: {ex.Message}");
+                }
+            };
+
             chatForm.Show();
         }
 
