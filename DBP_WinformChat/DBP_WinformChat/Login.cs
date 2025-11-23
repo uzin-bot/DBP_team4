@@ -18,28 +18,11 @@ namespace leehaeun
         public Login()
         {
             InitializeComponent();
-            InitServerInfo();
         }
 
-        private void InitServerInfo()
-        {
-            try
-            {
-                DBManager.Instance.InitServer();
-                bool connectionResult = false;
-                connectionResult = DBManager.Instance.Connection();
+        // 디비 연결 확인하는 부분 뺐습니다
 
-                if (!connectionResult)
-                {
-                    throw new Exception();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("DB 연결 실패");
-            }
-        }
-
+        // 로그인 버튼
         private void LoginButton_Click(object sender, EventArgs e)
         {
             string id = IdBox.Text;
@@ -48,13 +31,17 @@ namespace leehaeun
             string pwHash = Sha256.Instance.HashSHA256(pw);
 
             string query = $"SELECT EXISTS(SELECT 1 FROM DbTest WHERE LoginId = '{id}' AND PasswordHash = '{pwHash}');";
-            var result = DBManager.Instance.Query(query);
-            if (result == true)
+            // DBconnector의 Query는 DataTable을 반환 (수정)
+            DataTable dt = DBconnector.GetInstance().Query(query);
+
+            if (dt != null && dt.Rows.Count > 0)
             {
+                // 로그인 성공
+                MessageBox.Show("로그인 성공");
                 this.Hide();
-                var Dept = new namyesol.Dept();
-                Dept.ShowDialog();
-                this.Show();
+                var mainForm = new Form1();
+                mainForm.ShowDialog();
+                this.Close();
             }
             else
             {
@@ -62,6 +49,7 @@ namespace leehaeun
             }
         }
 
+        // 회원가입버튼
         private void SignUpLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             this.Hide();
@@ -70,6 +58,8 @@ namespace leehaeun
             this.Show();
         }
 
+
+        // 로그인폼 로드
         private void Login_Load(object sender, EventArgs e)
         {
             CheckBox[] checkBoxes = { RememberMe, SaveInfo };
@@ -79,6 +69,8 @@ namespace leehaeun
             if (login) LoginButton_Click(sender, e);
         }
 
+
+        // 로그인폼 닫힐 때
         private void Login_FormClosing(object sender, FormClosingEventArgs e)
         {
             CheckBox[] checkBoxes = { RememberMe, SaveInfo };
