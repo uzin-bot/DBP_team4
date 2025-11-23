@@ -39,6 +39,7 @@ namespace leehaeun
                 // 로그인 성공
                 MessageBox.Show("로그인 성공");
                 this.Hide();
+                // 이거 리스트로 바로 가도록 수정 예정
                 var mainForm = new Form1();
                 mainForm.ShowDialog();
                 this.Close();
