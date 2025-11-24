@@ -1,4 +1,4 @@
-namespace DBP_WinformChat
+namespace DBP_winformChat
 {
     internal static class Program
     {
@@ -11,8 +11,7 @@ namespace DBP_WinformChat
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
-            //Application.Run(new leehaeun.Login());
+            Application.Run(new ChageProfile());
         }
     }
 }

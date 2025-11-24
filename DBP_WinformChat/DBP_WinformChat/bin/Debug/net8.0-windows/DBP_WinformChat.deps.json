@@ -6,12 +6,12 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "DBP_WinformChat/1.0.0": {
+      "DBP_winformChat/1.0.0": {
         "dependencies": {
           "MySql.Data": "9.5.0"
         },
         "runtime": {
-          "DBP_WinformChat.dll": {}
+          "DBP_winformChat.dll": {}
         }
       },
       "BouncyCastle.Cryptography/2.6.2": {
@@ -135,7 +135,7 @@
     }
   },
   "libraries": {
-    "DBP_WinformChat/1.0.0": {
+    "DBP_winformChat/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
