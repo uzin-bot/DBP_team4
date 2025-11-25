@@ -1,37 +1,26 @@
 ﻿namespace DBP_Chat
 {
-    partial class Dept
-    {
-        /// <summary>
-        ///  Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+	partial class Dept
+	{
+		private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        ///  Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && (components != null))
+			{
+				components.Dispose();
+			}
+			base.Dispose(disposing);
+		}
 
 		#region Windows Form Designer generated code
 
-		/// <summary>
-		///  Required method for Designer support - do not modify
-		///  the contents of this method with the code editor.
-		/// </summary>
 		private void InitializeComponent()
 		{
 			tvdept = new TreeView();
 			gpinfo = new GroupBox();
 			btnsearch = new Button();
-			cbdept = new ComboBox();
+			txtdept = new TextBox();
 			txtname = new TextBox();
 			txtID = new TextBox();
 			label2 = new Label();
@@ -50,18 +39,16 @@
 			// tvdept
 			// 
 			tvdept.BackColor = SystemColors.GradientInactiveCaption;
-			tvdept.LineColor = Color.LightGray;
 			tvdept.Location = new Point(29, 41);
 			tvdept.Name = "tvdept";
 			tvdept.Size = new Size(490, 816);
 			tvdept.TabIndex = 0;
-			tvdept.NodeMouseDoubleClick += tvdept_NodeMouseDoubleClick;
 			// 
 			// gpinfo
 			// 
 			gpinfo.BackColor = SystemColors.Info;
 			gpinfo.Controls.Add(btnsearch);
-			gpinfo.Controls.Add(cbdept);
+			gpinfo.Controls.Add(txtdept);
 			gpinfo.Controls.Add(txtname);
 			gpinfo.Controls.Add(txtID);
 			gpinfo.Controls.Add(label2);
@@ -86,13 +73,12 @@
 			btnsearch.Text = "검색";
 			btnsearch.UseVisualStyleBackColor = false;
 			// 
-			// cbdept
+			// txtdept
 			// 
-			cbdept.FormattingEnabled = true;
-			cbdept.Location = new Point(101, 200);
-			cbdept.Name = "cbdept";
-			cbdept.Size = new Size(176, 33);
-			cbdept.TabIndex = 7;
+			txtdept.Location = new Point(101, 200);
+			txtdept.Name = "txtdept";
+			txtdept.Size = new Size(176, 31);
+			txtdept.TabIndex = 7;
 			// 
 			// txtname
 			// 
@@ -207,34 +193,33 @@
 			Controls.Add(panel1);
 			Controls.Add(gpinfo);
 			Controls.Add(tvdept);
-			FormBorderStyle = FormBorderStyle.None;
-			MaximizeBox = false;
 			Name = "Dept";
 			StartPosition = FormStartPosition.CenterScreen;
-			Text = "Form1";
+			Text = "Dept";
 			gpinfo.ResumeLayout(false);
 			gpinfo.PerformLayout();
 			panel1.ResumeLayout(false);
 			panel1.PerformLayout();
 			ResumeLayout(false);
+
 		}
 
 		#endregion
 
-		private TreeView tvdept;
-		private GroupBox gpinfo;
-		private Label label2;
-		private Label label3;
-		private Label label1;
-		private ComboBox cbdept;
-		private TextBox txtname;
-		private TextBox txtID;
-		private Button btnsearch;
-		private Panel panel1;
-		private ListBox lBlist;
-		private Label label4;
-		private Button btndelete;
-		private Button btnadd;
-		private Button btnChat;
+		private System.Windows.Forms.TreeView tvdept;
+		private System.Windows.Forms.GroupBox gpinfo;
+		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.Label label3;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.TextBox txtdept;
+		private System.Windows.Forms.TextBox txtname;
+		private System.Windows.Forms.TextBox txtID;
+		private System.Windows.Forms.Button btnsearch;
+		private System.Windows.Forms.Panel panel1;
+		private System.Windows.Forms.ListBox lBlist;
+		private System.Windows.Forms.Label label4;
+		private System.Windows.Forms.Button btndelete;
+		private System.Windows.Forms.Button btnadd;
+		private System.Windows.Forms.Button btnChat;
 	}
 }

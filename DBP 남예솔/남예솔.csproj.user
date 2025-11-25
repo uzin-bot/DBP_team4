@@ -7,10 +7,10 @@
     <Compile Update="Dept.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Form1.cs">
+    <Compile Update="chatlist.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="chatlist.cs">
+    <Compile Update="SearchResultForm.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
