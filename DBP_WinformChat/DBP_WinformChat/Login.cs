@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using 남예솔;
 using static System.ComponentModel.Design.ObjectSelectorEditor;
 
 namespace leehaeun
@@ -27,21 +28,28 @@ namespace leehaeun
         {
             string id = IdBox.Text;
             string pw = PwBox.Text;
-
             string pwHash = Sha256.Instance.HashSHA256(pw);
 
-            string query = $"SELECT EXISTS(SELECT 1 FROM DbTest WHERE LoginId = '{id}' AND PasswordHash = '{pwHash}');";
+            // UserId와 사용자 정보 가져오기
+            string query = $"SELECT UserId, Name, Nickname FROM User WHERE LoginId = '{id}' AND PasswordHash = '{pwHash}';";
+
             // DBconnector의 Query는 DataTable을 반환 (수정)
             DataTable dt = DBconnector.GetInstance().Query(query);
 
             if (dt != null && dt.Rows.Count > 0)
             {
                 // 로그인 성공
+                int userId = Convert.ToInt32(dt.Rows[0]["UserId"]);
+                string name = dt.Rows[0]["Name"].ToString();
+                string nickname = dt.Rows[0]["Nickname"].ToString();
+
                 MessageBox.Show("로그인 성공");
                 this.Hide();
-                // 이거 리스트로 바로 가도록 수정 예정
-                var mainForm = new Form1();
-                mainForm.ShowDialog();
+
+                // 채팅 리스트 폼으로 바로가기
+                // 생성자로 UserId, Name, Nickname 전달
+                var chatListForm = new chatlist(userId, name, nickname);
+                chatListForm.ShowDialog();
                 this.Close();
             }
             else

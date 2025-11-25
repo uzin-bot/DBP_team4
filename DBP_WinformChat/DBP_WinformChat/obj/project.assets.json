@@ -239,22 +239,6 @@
         "runtime": {
           "lib/net8.0/ZstdSharp.dll": {}
         }
-      },
-      "kyg_chat/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v8.0",
-        "dependencies": {
-          "MySql.Data": "9.5.0"
-        },
-        "compile": {
-          "bin/placeholder/kyg_chat.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/kyg_chat.dll": {}
-        },
-        "frameworkReferences": [
-          "Microsoft.WindowsDesktop.App.WindowsForms"
-        ]
       }
     }
   },
@@ -602,17 +586,11 @@
         "zstdsharp.port.0.8.6.nupkg.sha512",
         "zstdsharp.port.nuspec"
       ]
-    },
-    "kyg_chat/1.0.0": {
-      "type": "project",
-      "path": "../kyg_chat/kyg_chat.csproj",
-      "msbuildProject": "../kyg_chat/kyg_chat.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net8.0-windows7.0": [
-      "MySql.Data >= 9.5.0",
-      "kyg_chat >= 1.0.0"
+      "MySql.Data >= 9.5.0"
     ]
   },
   "packageFolders": {
@@ -622,11 +600,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\user\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
+      "projectUniqueName": "C:\\Users\\user\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
       "projectName": "DBP_WinformChat",
-      "projectPath": "C:\\Users\\user\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
+      "projectPath": "C:\\Users\\user\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
       "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\user\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\obj\\",
+      "outputPath": "C:\\Users\\user\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -646,11 +624,7 @@
       "frameworks": {
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
-          "projectReferences": {
-            "C:\\Users\\user\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\kyg_chat\\kyg_chat.csproj": {
-              "projectPath": "C:\\Users\\user\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\kyg_chat\\kyg_chat.csproj"
-            }
-          }
+          "projectReferences": {}
         }
       },
       "warningProperties": {

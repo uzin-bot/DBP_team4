@@ -21,27 +21,46 @@ namespace leehaeun
         public SignUp()
         {
             InitializeComponent();
+            LoadDepartments();
         }
+
+        // 부서아이디 로드 해오기
+        private void LoadDepartments()
+        {
+            string query = "SELECT DeptId, DeptName FROM Department";
+            DataTable dt = DBconnector.GetInstance().Query(query);
+
+            TeamBox.DataSource = dt;
+            TeamBox.DisplayMember = "DeptName";  // 화면에 보이는 것
+            TeamBox.ValueMember = "DeptId";      // 실제 값
+        }
+
 
         private void CheckIDButton_Click(object sender, EventArgs e)
         {
             string id = IdBox.Text;
 
-            string query = $"SELECT EXISTS(SELECT 1 FROM DbTest WHERE LoginId = '{id}');";
+            // User 테이블에서 LoginId 중복 체크
+            string query = $"SELECT COUNT(*) FROM User WHERE LoginId = '{id}';";
 
             // 디비커넥터로 수정
             DataTable dt = DBconnector.GetInstance().Query(query);
             bool exists = dt != null && dt.Rows.Count > 0;
 
-            if (exists)
+            if (dt != null && dt.Rows.Count > 0)
             {
-                IsDuplicate.Text = "이미 사용 중인 아이디입니다.";
-                IsDuplicate.ForeColor = Color.Red;
-            }
-            else
-            {
-                IsDuplicate.Text = "사용 가능한 아이디입니다.";
-                IsDuplicate.ForeColor = Color.Blue;
+                int count = Convert.ToInt32(dt.Rows[0][0]);
+
+                if (count > 0)
+                {
+                    IsDuplicate.Text = "이미 사용 중인 아이디입니다.";
+                    IsDuplicate.ForeColor = Color.Red;
+                }
+                else
+                {
+                    IsDuplicate.Text = "사용 가능한 아이디입니다.";
+                    IsDuplicate.ForeColor = Color.Blue;
+                }
             }
         }
 
@@ -54,21 +73,23 @@ namespace leehaeun
             string nickname = NickNameBox.Text;
             string address = AddressBox.Text;
             string zipCode = ZipCodeBox.Text;
-            int team = TeamBox.SelectedIndex;
-            string filePath = null;
+            int deptId = Convert.ToInt32(TeamBox.SelectedValue); // 실제 DeptId 가져오기!
+            string filePath = null; // 수정필요
             if (!string.IsNullOrEmpty(filePath))
             {
                 filePath = FilePath.Text;
             }
 
+            // 필수 항목 체크
             if (string.IsNullOrWhiteSpace(id) ||
                 string.IsNullOrWhiteSpace(pw) ||
                 string.IsNullOrWhiteSpace(name) ||
                 string.IsNullOrWhiteSpace(nickname) ||
                 string.IsNullOrWhiteSpace(address) ||
-                team < 0)
+                TeamBox.SelectedIndex < 0)
             {
                 MessageBox.Show("모든 항목을 입력해주세요.");
+                return; // 이거 실행하고 확인해보기
             }
             else if (IsDuplicate.Text == "이미 사용 중인 아이디입니다.")
             {
@@ -78,8 +99,8 @@ namespace leehaeun
             {
                 string pwHash = Sha256.Instance.HashSHA256(pw);
                 string query = $@"INSERT INTO
-                    DbTest(LoginId, PasswordHash, Name, Nickname, Address, ZipCode, DeptId, ProfileImage, Role)
-                    VALUES('{id}', '{pwHash}', '{name}', '{nickname}', '{address}', {zipCode}, {team}, '{filePath}', null);";
+                    User(LoginId, PasswordHash, Name, Nickname, Address, ZipCode, DeptId, ProfileImage, Role)
+                    VALUES('{id}', '{pwHash}', '{name}', '{nickname}', '{address}', '{zipCode}', {deptId}, '{filePath}', 'user');";
                 
                 // 디비커넥터로 수정
                 int affected = DBconnector.GetInstance().NonQuery(query);

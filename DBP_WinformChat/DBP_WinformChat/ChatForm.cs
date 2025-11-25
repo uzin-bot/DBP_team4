@@ -19,20 +19,24 @@ namespace kyg
 {
     public partial class ChatForm : Form
     {
+        // 수정
         private TcpClient client;
         private NetworkStream stream;
-        private string myId;
-        private string partnerId;
+        private int myId;           // string → int 변경
+        private int partnerId;      // string → int 변경
         private bool isSending = false; // 중복 전송 방지 플래그
 
         private ResourceManager formResourceManager; // 폼 리소스 접근용
         private Dictionary<string, Image> emojiMap = new Dictionary<string, Image>(); // 5-E: 이모티콘 맵
 
-        public ChatForm(string myId, string partnerId, string partnerName)
+        public ChatForm(int myId, int partnerId) // 생성자 수정
         {
             InitializeComponent();
             this.myId = myId;
             this.partnerId = partnerId;
+
+            // 상대방 이름 가져오기 (수정)
+            string partnerName = GetUserName(partnerId);
             this.Text = $"{partnerName} 님과의 채팅 ({myId})";
 
             // 5-E: 이모티콘 맵 초기화 (ChatForm.resx 리소스 사용)
@@ -68,6 +72,27 @@ namespace kyg
             this.btnEmojiHeart.Click += btnEmojiHeart_Click;
 
             this.FormClosing += ChatForm_FormClosing;
+        }
+
+        // 추가 메서드
+        // User 테이블에서 이름 가져오기
+        private string GetUserName(int userId)
+        {
+            try
+            {
+                string query = $"SELECT Name FROM User WHERE UserId = {userId}";
+                DataTable dt = DBconnector.GetInstance().Query(query);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    return dt.Rows[0]["Name"].ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("사용자 이름 조회 중 오류: " + ex.Message);
+            }
+            return "Unknown";
         }
 
         // 5-E: 개별 이모지 버튼 클릭 이벤트
@@ -125,14 +150,15 @@ namespace kyg
         }
 
         // 디비커넥터 수정
+        // ChatMessage 테이블에서 대화 기록 로드
         private void LoadChatHistory()
         {
             // 3주차 5-C: DB에서 과거 대화 기록을 조회하여 화면에 출력
             try
             {
-                string query = $" SELECT SenderID, Content, SendTime FROM ChatMessage" +
-                    $" WHERE (SenderID = '{myId}' AND ReceiverID = '{partnerId}') " +
-                    $"OR (SenderID = '{partnerId}' AND ReceiverID = '{myId}') ORDER BY SendTime ASC";
+                string query = $" SELECT  FromUserId, Content, SentAt FROM ChatMessage" +
+                    $" WHERE (FromUserId = '{myId}' AND ToUserId = '{partnerId}') " +
+                    $"OR (FromUserId = '{partnerId}' AND ToUserId = '{myId}') ORDER BY SentAt ASC";
 
                 DataTable history = DBconnector.GetInstance().Query(query);
 
@@ -140,7 +166,7 @@ namespace kyg
 
                 foreach (DataRow row in history.Rows)
                 {
-                    string senderId = row["SenderID"].ToString();
+                    int senderId = Convert.ToInt32(row["FromUserId"]); // string -> int 로 수정
                     string content = row["Content"].ToString();
 
                     if (content.StartsWith("EMOJI:"))
@@ -164,8 +190,8 @@ namespace kyg
             // 2주차 5-A: 서버 연결 및 ID 등록
             try
             {
-                //client = new TcpClient("127.0.0.1", 8888);
-                client = new TcpClient("10.201.21.210", 8888);
+                client = new TcpClient("127.0.0.1", 8888);
+                //client = new TcpClient("10.201.21.210", 8888);
                 stream = client.GetStream();
                 string loginMsg = $"LOGIN:{myId}:::";
                 byte[] loginData = Encoding.UTF8.GetBytes(loginMsg);
@@ -233,7 +259,7 @@ namespace kyg
 
                     if (parts[0] == "CHAT" && parts.Length >= 4)
                     {
-                        string senderId = parts[1];
+                        int senderId = Convert.ToInt32(parts[1]); // string -> int 
                         string content = parts[3];
 
                         if (this.IsDisposed || !this.IsHandleCreated) continue; // 폼이 닫혔다면 다음 루프로 넘어감
@@ -353,7 +379,7 @@ namespace kyg
         }
 
         // 4주차 5-E 구현: RichTextBox에 이미지를 삽입하는 메서드
-        private void DisplayEmoji(string senderId, string emojiCode)
+        private void DisplayEmoji(int senderId, string emojiCode)
         {
             // 1. 커서를 RichTextBox의 끝으로 이동
             rtbChatLog.SelectionStart = rtbChatLog.TextLength;
