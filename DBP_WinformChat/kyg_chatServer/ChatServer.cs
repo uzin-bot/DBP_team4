@@ -187,6 +187,7 @@ public class kyg
         }
     }
 
+    /*
     private static void SendMessageToClient(string receiverId, string message)
     {
         // 1:1 메시지 중계 로직
@@ -198,7 +199,47 @@ public class kyg
             receiverStream.Write(data, 0, data.Length);
         }
     }
-    
+    */
+
+    private static void SendMessageToClient(string receiverId, string message)
+    {
+        // 1:1 메시지 중계 로직
+        if (clients.ContainsKey(receiverId))
+        {
+            TcpClient receiverClient = clients[receiverId];
+
+            try
+            {
+                // 🔥 연결이 실제로 살아있는지 확인 (중요)
+                if (!receiverClient.Connected)
+                {
+                    // 연결이 끊겨있으면 딕셔너리에서 제거
+                    lock (clients)
+                    {
+                        clients.Remove(receiverId);
+                    }
+                    Console.WriteLine($"[Server] Dead connection removed: {receiverId}");
+                    return;
+                }
+
+                NetworkStream receiverStream = receiverClient.GetStream();
+                byte[] data = Encoding.UTF8.GetBytes(message);
+
+                receiverStream.Write(data, 0, data.Length);
+            }
+            catch (Exception ex)
+            {
+                // 🔥 예외 발생 시 연결 제거
+                lock (clients)
+                {
+                    clients.Remove(receiverId);
+                }
+                Console.WriteLine($"[Server] Failed to send message to {receiverId} => removed from list. Error: {ex.Message}");
+            }
+        }
+    }
+
+
     private static void SaveChatMessageAndRecentChat(string senderId, string receiverId, string content)
     {
         // 2주차 5-A: 메시지 DB 저장 로직 (비즈니스 로직)
