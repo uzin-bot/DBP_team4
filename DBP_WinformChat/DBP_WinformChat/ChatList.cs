@@ -12,16 +12,27 @@ namespace 남예솔
     public partial class chatlist : Form
     {
         // 현재 로그인한 사용자 정보
+        // UserInfo의 DataTable User 정보 불러오는걸로 수정
+        // UserInfo.User에서 바로 받아오셔도 됩니다!
+
+        private int currentUserId = Convert.ToInt32(UserInfo.User.Rows[0]["UserId"]);
+        private string currentUserName = UserInfo.User.Rows[0]["Name"].ToString();
+        private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+
+        /*
         private int currentUserId;
         private string currentUserName;
         private string currentUserNickname;
+        */
 
-        public chatlist(int userId, string name, string nickname)
+        public chatlist()
         {
             InitializeComponent();
+            /*
             this.currentUserId = userId;
             this.currentUserName = name;
             this.currentUserNickname = nickname;
+            */
         }
 
         private void chatlist_Load(object sender, EventArgs e)
@@ -149,14 +160,13 @@ namespace 남예솔
         // 로그아웃 
         private void button2_Click(object sender, EventArgs e)
         {
-
             // 로그인 폼 다시 열기
-            Login loginForm = new Login();
+            // 다시 안열림!! 오류 수정 필요
+            LoginForm loginForm = new LoginForm();
             loginForm.Show();
 
             // 현재 폼 닫기
             this.Close();
-
         }
     }
 }
