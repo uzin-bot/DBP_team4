@@ -163,7 +163,11 @@ public class kyg
                         string content = parts[3];
 
                         // 중계 및 DB 저장
-                        SendMessageToClient(receiverId, receivedMessage);
+                        / 🚨 [수정됨] SenderID와 ReceiverID가 다를 때만 전송 (나와의 채팅 시 중복 방지)
+                        if (senderId != receiverId)
+                        {
+                            SendMessageToClient(receiverId, receivedMessage);
+                        }
                         SaveChatMessageAndRecentChat(senderId, receiverId, content);
                         Console.WriteLine($"[Chat] {senderId} -> {receiverId}: {content}");
                     }
