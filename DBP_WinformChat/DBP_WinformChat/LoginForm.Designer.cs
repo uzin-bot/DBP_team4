@@ -115,7 +115,7 @@ namespace leehaeun
             SignUpLabel.Text = "회원가입";
             SignUpLabel.LinkClicked += SignUpLabel_LinkClicked;
             // 
-            // Login
+            // LoginForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -128,10 +128,8 @@ namespace leehaeun
             Controls.Add(PwBox);
             Controls.Add(label2);
             Controls.Add(label1);
-            Name = "Login";
+            Name = "LoginForm";
             Text = "Login";
-            FormClosing += Login_FormClosing;
-            Load += Login_Load;
             ResumeLayout(false);
             PerformLayout();
         }

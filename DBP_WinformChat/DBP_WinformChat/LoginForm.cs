@@ -8,6 +8,7 @@ namespace leehaeun
         public LoginForm()
         {
             InitializeComponent();
+            if (LoadConfig()) Login();
         }
 
         // UserId 저장
@@ -28,20 +29,21 @@ namespace leehaeun
 
             string query = $"SELECT UserId FROM User WHERE LoginId = '{id}' AND PasswordHash = '{pwHash}';";
             DataTable dt = DBconnector.GetInstance().Query(query);
+            bool result = dt != null && dt.Rows.Count > 0;
 
-            if (dt != null && dt.Rows.Count > 0)
+            if (result)
             {
                 // 로그인 성공
                 UserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
                 UserInfo.GetUserInfo();
                 UserInfo.GetProfileInfo();
                 UserInfo.GetMulProfileInfo();
-                this.Hide();
 
                 // 채팅 목록 폼
+                FormHide();
                 var chatListForm = new 남예솔.chatlist();
                 chatListForm.ShowDialog();
-                this.Close();
+                FormShow();
             }
             else
             {
@@ -52,23 +54,28 @@ namespace leehaeun
         // 회원가입버튼
         private void SignUpLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            this.Hide();
+            FormHide();
             var signUp = new SignUpForm();
             signUp.ShowDialog();
+            FormShow();
+        }
+
+        // 폼 열릴 때
+        private void FormShow()
+        {
+            UserId = 0;
+            UserInfo.ResetDataTable();
+            LoadConfig();
             this.Show();
         }
 
-        // 로그인폼 로드
-        private void Login_Load(object sender, EventArgs e)
-        {
-            UserInfo.ResetDataTable();
-            LoadConfig();
-        }
-
-        // 로그인폼 닫힐 때
-        private void Login_FormClosing(object sender, FormClosingEventArgs e)
+        // 폼 닫힐 때
+        private void FormHide()
         {
             SaveConfig();
+            IdBox.Text = "";
+            PwBox.Text = "";
+            this.Hide();
         }
 
         // 로그인 설정 저장
