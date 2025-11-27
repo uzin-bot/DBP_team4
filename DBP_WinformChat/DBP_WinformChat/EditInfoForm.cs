@@ -1,6 +1,11 @@
-﻿using DBP_WinformChat;
-using Microsoft.VisualBasic.Logging;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace leehaeun
@@ -10,9 +15,68 @@ namespace leehaeun
         public EditInfoForm()
         {
             InitializeComponent();
+            LoadDefaultProfileInfo();
         }
 
-        private DataTable? ProfileMember { get; set; }
+        private void LoadDefaultProfileInfo()
+        {
+            NicknameBox.Text = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+            NicknameBox.Tag = UserInfo.Profile.Rows[0]["ProfileId"].ToString();
+            DeptLabel.Text = UserInfo.User.Rows[0]["DeptName"].ToString();
+            StatusBox.Text = UserInfo.Profile.Rows[0]["StatusMessage"].ToString();
+            NicknameLabel.Text = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+
+            string? base64String = UserInfo.Profile.Rows[0]["ProfileImage"].ToString();
+            if (!string.IsNullOrEmpty(base64String))
+            {
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+                using var ms = new MemoryStream(imageBytes);
+                ProfileImageBox0.Image = Image.FromStream(ms);
+                ProfileImageBox1.Image = Image.FromStream(ms);
+                ProfileImageBox0.Tag = base64String;
+            }
+
+            EditMemberLabel.Text = "기본 프로필";
+        }
+
+        private void LoadMulProfileList()
+        {
+            // 멀티 프로필 리스트
+        }
+
+        private void LoadMulProfileInfo()
+        {
+            // 멀티 프로필 상세 정보 로딩(탭1)
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+
+
+            UserInfo.GetInfo();
+        }
+
+        private void CancelButton0_Click(object sender, EventArgs e)
+        {
+            CancelCheck();
+        }
+
+        private void EditButton_Click(object sender, EventArgs e)
+        {
+            LoadDefaultProfileInfo();
+        }
+
+        private void CancelCheck()
+        {
+            // 저장 안된 정보 있는지 확인
+        }
+
+        private void AddMulProfileButton_Click(object sender, EventArgs e)
+        {
+            // 버튼 추가
+            // 버튼 이벤트 추가
+            // DB에 기본 정보로 프로필 생성 쿼리 보내기
+        }
 
         /* 
         private void LoadUserInfo()

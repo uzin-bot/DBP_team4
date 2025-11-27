@@ -1,19 +1,14 @@
-﻿using Org.BouncyCastle.Asn1.Crmf;
-using System.Drawing.Printing;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
-
-namespace leehaeun
+﻿namespace leehaeun
 {
     partial class EditInfoForm
     {
         /// <summary>
-        ///  Required designer variable.
+        /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        ///  Clean up any resources being used.
+        /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
@@ -28,36 +23,37 @@ namespace leehaeun
         #region Windows Form Designer generated code
 
         /// <summary>
-        ///  Required method for Designer support - do not modify
-        ///  the contents of this method with the code editor.
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
+            tabControl = new TabControl();
+            DefaultProfilePage = new TabPage();
+            EditMemberLabel = new Label();
+            label1 = new Label();
+            MemberFLP = new FlowLayoutPanel();
+            StatusBox = new TextBox();
+            panel2 = new Panel();
+            CancelButton0 = new Button();
+            SaveButton = new Button();
+            NicknameBox = new TextBox();
+            ChangeProfileImageButton = new Button();
+            ProfileImageBox0 = new PictureBox();
+            DeptLabel = new Label();
             MulProfilePage = new TabPage();
             panel = new Panel();
-            ProfileImage = new PictureBox();
+            ProfileImageBox1 = new PictureBox();
             EditButton = new Button();
             NicknameLabel = new Label();
-            flowProfiles = new FlowLayoutPanel();
+            ProfileFLP = new FlowLayoutPanel();
             panel3 = new Panel();
             AddMulProfileButton = new Button();
             label7 = new Label();
-            DefaultProfilePage = new TabPage();
-            panelBasic = new Panel();
-            label9 = new Label();
-            label1 = new Label();
-            flowLayoutPanel1 = new FlowLayoutPanel();
-            textBox1 = new TextBox();
-            panel2 = new Panel();
-            CancelButton = new Button();
-            SaveButton = new Button();
-            textBox2 = new TextBox();
-            button3 = new Button();
-            pictureBox1 = new PictureBox();
-            label2 = new Label();
-            tabControl1 = new TabControl();
             UserInfoPage = new TabPage();
-            button1 = new Button();
+            CheckPwBox = new TextBox();
+            label10 = new Label();
+            CancleButton2 = new Button();
             SaveInfoButton = new Button();
             SearchAddressButton = new Button();
             DeptBox = new TextBox();
@@ -71,37 +67,179 @@ namespace leehaeun
             label3 = new Label();
             label6 = new Label();
             label8 = new Label();
-            textBox3 = new TextBox();
-            label10 = new Label();
+            tabControl.SuspendLayout();
+            DefaultProfilePage.SuspendLayout();
+            panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)ProfileImageBox0).BeginInit();
             MulProfilePage.SuspendLayout();
             panel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)ProfileImage).BeginInit();
-            flowProfiles.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)ProfileImageBox1).BeginInit();
+            ProfileFLP.SuspendLayout();
             panel3.SuspendLayout();
-            DefaultProfilePage.SuspendLayout();
-            panelBasic.SuspendLayout();
-            panel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
-            tabControl1.SuspendLayout();
             UserInfoPage.SuspendLayout();
             SuspendLayout();
+            // 
+            // tabControl
+            // 
+            tabControl.Controls.Add(DefaultProfilePage);
+            tabControl.Controls.Add(MulProfilePage);
+            tabControl.Controls.Add(UserInfoPage);
+            tabControl.Dock = DockStyle.Fill;
+            tabControl.Location = new Point(0, 0);
+            tabControl.Margin = new Padding(2);
+            tabControl.Name = "tabControl";
+            tabControl.SelectedIndex = 0;
+            tabControl.Size = new Size(260, 393);
+            tabControl.TabIndex = 1;
+            // 
+            // DefaultProfilePage
+            // 
+            DefaultProfilePage.Controls.Add(EditMemberLabel);
+            DefaultProfilePage.Controls.Add(label1);
+            DefaultProfilePage.Controls.Add(MemberFLP);
+            DefaultProfilePage.Controls.Add(StatusBox);
+            DefaultProfilePage.Controls.Add(panel2);
+            DefaultProfilePage.Controls.Add(NicknameBox);
+            DefaultProfilePage.Controls.Add(ChangeProfileImageButton);
+            DefaultProfilePage.Controls.Add(ProfileImageBox0);
+            DefaultProfilePage.Controls.Add(DeptLabel);
+            DefaultProfilePage.Location = new Point(4, 24);
+            DefaultProfilePage.Margin = new Padding(2);
+            DefaultProfilePage.Name = "DefaultProfilePage";
+            DefaultProfilePage.Padding = new Padding(2);
+            DefaultProfilePage.Size = new Size(252, 365);
+            DefaultProfilePage.TabIndex = 0;
+            DefaultProfilePage.Text = "프로필";
+            DefaultProfilePage.UseVisualStyleBackColor = true;
+            // 
+            // EditMemberLabel
+            // 
+            EditMemberLabel.AutoSize = true;
+            EditMemberLabel.Location = new Point(18, 154);
+            EditMemberLabel.Name = "EditMemberLabel";
+            EditMemberLabel.Size = new Size(59, 15);
+            EditMemberLabel.TabIndex = 15;
+            EditMemberLabel.Text = "멤버 관리";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(18, 79);
+            label1.Margin = new Padding(2, 0, 2, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(67, 15);
+            label1.TabIndex = 21;
+            label1.Text = "상태메시지";
+            // 
+            // MemberFLP
+            // 
+            MemberFLP.Location = new Point(16, 170);
+            MemberFLP.Name = "MemberFLP";
+            MemberFLP.Size = new Size(219, 147);
+            MemberFLP.TabIndex = 19;
+            // 
+            // StatusBox
+            // 
+            StatusBox.Location = new Point(16, 94);
+            StatusBox.Margin = new Padding(2);
+            StatusBox.Multiline = true;
+            StatusBox.Name = "StatusBox";
+            StatusBox.Size = new Size(219, 51);
+            StatusBox.TabIndex = 23;
+            // 
+            // panel2
+            // 
+            panel2.Controls.Add(CancelButton0);
+            panel2.Controls.Add(SaveButton);
+            panel2.Dock = DockStyle.Bottom;
+            panel2.Location = new Point(2, 333);
+            panel2.Margin = new Padding(2);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(248, 30);
+            panel2.TabIndex = 17;
+            // 
+            // CancelButton0
+            // 
+            CancelButton0.Location = new Point(182, 4);
+            CancelButton0.Margin = new Padding(2);
+            CancelButton0.Name = "CancelButton0";
+            CancelButton0.Size = new Size(51, 22);
+            CancelButton0.TabIndex = 1;
+            CancelButton0.Text = "취소";
+            CancelButton0.UseVisualStyleBackColor = true;
+            CancelButton0.Click += CancelButton0_Click;
+            // 
+            // SaveButton
+            // 
+            SaveButton.Location = new Point(14, 4);
+            SaveButton.Margin = new Padding(2);
+            SaveButton.Name = "SaveButton";
+            SaveButton.Size = new Size(160, 22);
+            SaveButton.TabIndex = 0;
+            SaveButton.Text = "저장하기";
+            SaveButton.UseVisualStyleBackColor = true;
+            SaveButton.Click += SaveButton_Click;
+            // 
+            // NicknameBox
+            // 
+            NicknameBox.Location = new Point(70, 16);
+            NicknameBox.Margin = new Padding(2);
+            NicknameBox.Name = "NicknameBox";
+            NicknameBox.Size = new Size(165, 23);
+            NicknameBox.TabIndex = 22;
+            // 
+            // ChangeProfileImageButton
+            // 
+            ChangeProfileImageButton.BackgroundImage = DBP_WinformChat.Properties.Resources.kamera;
+            ChangeProfileImageButton.BackgroundImageLayout = ImageLayout.Zoom;
+            ChangeProfileImageButton.FlatAppearance.BorderSize = 0;
+            ChangeProfileImageButton.FlatStyle = FlatStyle.Flat;
+            ChangeProfileImageButton.Location = new Point(46, 44);
+            ChangeProfileImageButton.Margin = new Padding(2);
+            ChangeProfileImageButton.Name = "ChangeProfileImageButton";
+            ChangeProfileImageButton.Size = new Size(20, 20);
+            ChangeProfileImageButton.TabIndex = 20;
+            ChangeProfileImageButton.UseVisualStyleBackColor = true;
+            // 
+            // ProfileImageBox0
+            // 
+            ProfileImageBox0.Image = DBP_WinformChat.Properties.Resources._default;
+            ProfileImageBox0.Location = new Point(16, 16);
+            ProfileImageBox0.Margin = new Padding(2);
+            ProfileImageBox0.Name = "ProfileImageBox0";
+            ProfileImageBox0.Size = new Size(50, 48);
+            ProfileImageBox0.SizeMode = PictureBoxSizeMode.Zoom;
+            ProfileImageBox0.TabIndex = 16;
+            ProfileImageBox0.TabStop = false;
+            ProfileImageBox0.Tag = "default.jpg";
+            // 
+            // DeptLabel
+            // 
+            DeptLabel.AutoSize = true;
+            DeptLabel.ForeColor = SystemColors.AppWorkspace;
+            DeptLabel.Location = new Point(72, 46);
+            DeptLabel.Margin = new Padding(2, 0, 2, 0);
+            DeptLabel.Name = "DeptLabel";
+            DeptLabel.Size = new Size(31, 15);
+            DeptLabel.TabIndex = 18;
+            DeptLabel.Text = "부서";
             // 
             // MulProfilePage
             // 
             MulProfilePage.Controls.Add(panel);
-            MulProfilePage.Controls.Add(flowProfiles);
+            MulProfilePage.Controls.Add(ProfileFLP);
             MulProfilePage.Location = new Point(4, 24);
             MulProfilePage.Margin = new Padding(2);
             MulProfilePage.Name = "MulProfilePage";
             MulProfilePage.Padding = new Padding(2);
-            MulProfilePage.Size = new Size(255, 368);
+            MulProfilePage.Size = new Size(252, 365);
             MulProfilePage.TabIndex = 1;
             MulProfilePage.Text = "멀티프로필";
             MulProfilePage.UseVisualStyleBackColor = true;
             // 
             // panel
             // 
-            panel.Controls.Add(ProfileImage);
+            panel.Controls.Add(ProfileImageBox1);
             panel.Controls.Add(EditButton);
             panel.Controls.Add(NicknameLabel);
             panel.Location = new Point(19, 19);
@@ -110,15 +248,15 @@ namespace leehaeun
             panel.Size = new Size(218, 35);
             panel.TabIndex = 7;
             // 
-            // ProfileImage
+            // ProfileImageBox1
             // 
-            ProfileImage.Image = DBP_WinformChat.Properties.Resources._default;
-            ProfileImage.Location = new Point(3, 3);
-            ProfileImage.Name = "ProfileImage";
-            ProfileImage.Size = new Size(30, 29);
-            ProfileImage.SizeMode = PictureBoxSizeMode.StretchImage;
-            ProfileImage.TabIndex = 4;
-            ProfileImage.TabStop = false;
+            ProfileImageBox1.Image = DBP_WinformChat.Properties.Resources._default;
+            ProfileImageBox1.Location = new Point(3, 3);
+            ProfileImageBox1.Name = "ProfileImageBox1";
+            ProfileImageBox1.Size = new Size(30, 29);
+            ProfileImageBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+            ProfileImageBox1.TabIndex = 4;
+            ProfileImageBox1.TabStop = false;
             // 
             // EditButton
             // 
@@ -129,6 +267,7 @@ namespace leehaeun
             EditButton.TabIndex = 2;
             EditButton.Text = "관리";
             EditButton.UseVisualStyleBackColor = true;
+            EditButton.Click += EditButton_Click;
             // 
             // NicknameLabel
             // 
@@ -140,13 +279,13 @@ namespace leehaeun
             NicknameLabel.TabIndex = 0;
             NicknameLabel.Text = "별명";
             // 
-            // flowProfiles
+            // ProfileFLP
             // 
-            flowProfiles.Controls.Add(panel3);
-            flowProfiles.Location = new Point(19, 56);
-            flowProfiles.Name = "flowProfiles";
-            flowProfiles.Size = new Size(218, 292);
-            flowProfiles.TabIndex = 0;
+            ProfileFLP.Controls.Add(panel3);
+            ProfileFLP.Location = new Point(19, 56);
+            ProfileFLP.Name = "ProfileFLP";
+            ProfileFLP.Size = new Size(218, 292);
+            ProfileFLP.TabIndex = 0;
             // 
             // panel3
             // 
@@ -165,8 +304,9 @@ namespace leehaeun
             AddMulProfileButton.Name = "AddMulProfileButton";
             AddMulProfileButton.Size = new Size(52, 22);
             AddMulProfileButton.TabIndex = 2;
-            AddMulProfileButton.Text = "+ 추가";
+            AddMulProfileButton.Text = "추가";
             AddMulProfileButton.UseVisualStyleBackColor = true;
+            AddMulProfileButton.Click += AddMulProfileButton_Click;
             // 
             // label7
             // 
@@ -178,165 +318,11 @@ namespace leehaeun
             label7.TabIndex = 0;
             label7.Text = "멀티프로필 관리";
             // 
-            // DefaultProfilePage
-            // 
-            DefaultProfilePage.Controls.Add(panelBasic);
-            DefaultProfilePage.Location = new Point(4, 24);
-            DefaultProfilePage.Margin = new Padding(2);
-            DefaultProfilePage.Name = "DefaultProfilePage";
-            DefaultProfilePage.Padding = new Padding(2);
-            DefaultProfilePage.Size = new Size(255, 368);
-            DefaultProfilePage.TabIndex = 0;
-            DefaultProfilePage.Text = "기본프로필";
-            DefaultProfilePage.UseVisualStyleBackColor = true;
-            // 
-            // panelBasic
-            // 
-            panelBasic.Controls.Add(label9);
-            panelBasic.Controls.Add(label1);
-            panelBasic.Controls.Add(flowLayoutPanel1);
-            panelBasic.Controls.Add(textBox1);
-            panelBasic.Controls.Add(panel2);
-            panelBasic.Controls.Add(textBox2);
-            panelBasic.Controls.Add(button3);
-            panelBasic.Controls.Add(pictureBox1);
-            panelBasic.Controls.Add(label2);
-            panelBasic.Dock = DockStyle.Fill;
-            panelBasic.Location = new Point(2, 2);
-            panelBasic.Margin = new Padding(2);
-            panelBasic.Name = "panelBasic";
-            panelBasic.Padding = new Padding(16, 15, 16, 15);
-            panelBasic.Size = new Size(251, 364);
-            panelBasic.TabIndex = 0;
-            // 
-            // label9
-            // 
-            label9.AutoSize = true;
-            label9.Location = new Point(16, 153);
-            label9.Name = "label9";
-            label9.Size = new Size(59, 15);
-            label9.TabIndex = 0;
-            label9.Text = "멤버 관리";
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(16, 78);
-            label1.Margin = new Padding(2, 0, 2, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(67, 15);
-            label1.TabIndex = 12;
-            label1.Text = "상태메시지";
-            // 
-            // flowLayoutPanel1
-            // 
-            flowLayoutPanel1.Location = new Point(16, 171);
-            flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(219, 147);
-            flowLayoutPanel1.TabIndex = 3;
-            // 
-            // textBox1
-            // 
-            textBox1.Location = new Point(16, 95);
-            textBox1.Margin = new Padding(2);
-            textBox1.Multiline = true;
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(219, 51);
-            textBox1.TabIndex = 14;
-            // 
-            // panel2
-            // 
-            panel2.Controls.Add(CancelButton);
-            panel2.Controls.Add(SaveButton);
-            panel2.Dock = DockStyle.Bottom;
-            panel2.Location = new Point(16, 319);
-            panel2.Margin = new Padding(2);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(219, 30);
-            panel2.TabIndex = 2;
-            // 
-            // CancelButton
-            // 
-            CancelButton.Location = new Point(166, 4);
-            CancelButton.Margin = new Padding(2);
-            CancelButton.Name = "CancelButton";
-            CancelButton.Size = new Size(51, 22);
-            CancelButton.TabIndex = 1;
-            CancelButton.Text = "취소";
-            CancelButton.UseVisualStyleBackColor = true;
-            // 
-            // SaveButton
-            // 
-            SaveButton.Location = new Point(2, 4);
-            SaveButton.Margin = new Padding(2);
-            SaveButton.Name = "SaveButton";
-            SaveButton.Size = new Size(160, 22);
-            SaveButton.TabIndex = 0;
-            SaveButton.Text = "저장하기";
-            SaveButton.UseVisualStyleBackColor = true;
-            // 
-            // textBox2
-            // 
-            textBox2.Location = new Point(70, 17);
-            textBox2.Margin = new Padding(2);
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(165, 23);
-            textBox2.TabIndex = 13;
-            // 
-            // button3
-            // 
-            button3.BackgroundImage = DBP_WinformChat.Properties.Resources.kamera;
-            button3.BackgroundImageLayout = ImageLayout.Zoom;
-            button3.FlatAppearance.BorderSize = 0;
-            button3.FlatStyle = FlatStyle.Flat;
-            button3.Location = new Point(46, 45);
-            button3.Margin = new Padding(2);
-            button3.Name = "button3";
-            button3.Size = new Size(20, 20);
-            button3.TabIndex = 4;
-            button3.UseVisualStyleBackColor = true;
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.Image = DBP_WinformChat.Properties.Resources._default;
-            pictureBox1.Location = new Point(16, 17);
-            pictureBox1.Margin = new Padding(2);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(50, 48);
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox1.TabIndex = 0;
-            pictureBox1.TabStop = false;
-            pictureBox1.Tag = "default.jpg";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.ForeColor = SystemColors.AppWorkspace;
-            label2.Location = new Point(70, 45);
-            label2.Margin = new Padding(2, 0, 2, 0);
-            label2.Name = "label2";
-            label2.Size = new Size(31, 15);
-            label2.TabIndex = 2;
-            label2.Text = "부서";
-            // 
-            // tabControl1
-            // 
-            tabControl1.Controls.Add(DefaultProfilePage);
-            tabControl1.Controls.Add(MulProfilePage);
-            tabControl1.Controls.Add(UserInfoPage);
-            tabControl1.Dock = DockStyle.Fill;
-            tabControl1.Location = new Point(0, 0);
-            tabControl1.Margin = new Padding(2);
-            tabControl1.Name = "tabControl1";
-            tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(263, 396);
-            tabControl1.TabIndex = 0;
-            // 
             // UserInfoPage
             // 
-            UserInfoPage.Controls.Add(textBox3);
+            UserInfoPage.Controls.Add(CheckPwBox);
             UserInfoPage.Controls.Add(label10);
-            UserInfoPage.Controls.Add(button1);
+            UserInfoPage.Controls.Add(CancleButton2);
             UserInfoPage.Controls.Add(SaveInfoButton);
             UserInfoPage.Controls.Add(SearchAddressButton);
             UserInfoPage.Controls.Add(DeptBox);
@@ -352,19 +338,36 @@ namespace leehaeun
             UserInfoPage.Controls.Add(label8);
             UserInfoPage.Location = new Point(4, 24);
             UserInfoPage.Name = "UserInfoPage";
-            UserInfoPage.Size = new Size(255, 368);
+            UserInfoPage.Size = new Size(252, 365);
             UserInfoPage.TabIndex = 2;
             UserInfoPage.Text = "계정 정보";
             UserInfoPage.UseVisualStyleBackColor = true;
             // 
-            // button1
+            // CheckPwBox
             // 
-            button1.Location = new Point(193, 326);
-            button1.Name = "button1";
-            button1.Size = new Size(40, 23);
-            button1.TabIndex = 27;
-            button1.Text = "취소";
-            button1.UseVisualStyleBackColor = true;
+            CheckPwBox.Location = new Point(21, 130);
+            CheckPwBox.Name = "CheckPwBox";
+            CheckPwBox.PasswordChar = '*';
+            CheckPwBox.Size = new Size(212, 23);
+            CheckPwBox.TabIndex = 29;
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Location = new Point(21, 112);
+            label10.Name = "label10";
+            label10.Size = new Size(83, 15);
+            label10.TabIndex = 28;
+            label10.Text = "비밀번호 확인";
+            // 
+            // CancleButton2
+            // 
+            CancleButton2.Location = new Point(193, 326);
+            CancleButton2.Name = "CancleButton2";
+            CancleButton2.Size = new Size(40, 23);
+            CancleButton2.TabIndex = 27;
+            CancleButton2.Text = "취소";
+            CancleButton2.UseVisualStyleBackColor = true;
             // 
             // SaveInfoButton
             // 
@@ -476,77 +479,59 @@ namespace leehaeun
             label8.TabIndex = 14;
             label8.Text = "아이디";
             // 
-            // textBox3
-            // 
-            textBox3.Location = new Point(21, 130);
-            textBox3.Name = "textBox3";
-            textBox3.PasswordChar = '*';
-            textBox3.Size = new Size(212, 23);
-            textBox3.TabIndex = 29;
-            // 
-            // label10
-            // 
-            label10.AutoSize = true;
-            label10.Location = new Point(21, 112);
-            label10.Name = "label10";
-            label10.Size = new Size(83, 15);
-            label10.TabIndex = 28;
-            label10.Text = "비밀번호 확인";
-            // 
             // EditInfoForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(263, 396);
-            Controls.Add(tabControl1);
-            Margin = new Padding(2);
+            ClientSize = new Size(260, 393);
+            Controls.Add(tabControl);
             Name = "EditInfoForm";
-            Text = "Form1";
+            Text = "EditInfoForm";
+            tabControl.ResumeLayout(false);
+            DefaultProfilePage.ResumeLayout(false);
+            DefaultProfilePage.PerformLayout();
+            panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)ProfileImageBox0).EndInit();
             MulProfilePage.ResumeLayout(false);
             panel.ResumeLayout(false);
             panel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)ProfileImage).EndInit();
-            flowProfiles.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)ProfileImageBox1).EndInit();
+            ProfileFLP.ResumeLayout(false);
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
-            DefaultProfilePage.ResumeLayout(false);
-            panelBasic.ResumeLayout(false);
-            panelBasic.PerformLayout();
-            panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-            tabControl1.ResumeLayout(false);
             UserInfoPage.ResumeLayout(false);
             UserInfoPage.PerformLayout();
             ResumeLayout(false);
         }
 
         #endregion
-        private Label UserNamelabel;
+
+        private TabControl tabControl;
+        private TabPage DefaultProfilePage;
+        private Label EditMemberLabel;
+        private Label label1;
+        private FlowLayoutPanel MemberFLP;
+        private TextBox StatusBox;
+        private Panel panel2;
+        private Button CancelButton0;
+        private Button SaveButton;
+        private TextBox NicknameBox;
+        private Button ChangeProfileImageButton;
+        private PictureBox ProfileImageBox0;
+        private Label DeptLabel;
         private TabPage MulProfilePage;
-        private FlowLayoutPanel flowProfiles;
+        private Panel panel;
+        private PictureBox ProfileImageBox1;
+        private Button EditButton;
+        private Label NicknameLabel;
+        private FlowLayoutPanel ProfileFLP;
         private Panel panel3;
         private Button AddMulProfileButton;
         private Label label7;
-        private Panel panel;
-        private PictureBox ProfileImage;
-        private Button EditButton;
-        private Label NicknameLabel;
-        private TabPage DefaultProfilePage;
-        private Panel panelBasic;
-        private Button CancelButton;
-        private Button SaveButton;
-        private TabControl tabControl1;
-        private FlowLayoutPanel flowLayoutPanel1;
-        private Label label9;
-        private Panel panel2;
-        private Label label1;
-        private TextBox textBox1;
-        private TextBox textBox2;
-        private Button button3;
-        private PictureBox pictureBox1;
-        private Label label2;
         private TabPage UserInfoPage;
-        private Button button1;
+        private TextBox CheckPwBox;
+        private Label label10;
+        private Button CancleButton2;
         private Button SaveInfoButton;
         private Button SearchAddressButton;
         private TextBox DeptBox;
@@ -560,7 +545,5 @@ namespace leehaeun
         private Label label3;
         private Label label6;
         private Label label8;
-        private TextBox textBox3;
-        private Label label10;
     }
 }
