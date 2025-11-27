@@ -161,6 +161,8 @@ namespace 남예솔
         private void button2_Click(object sender, EventArgs e)
         {
             // 폼 닫으면 바로 열리게 수정
+            // 로그아웃 여부 확인
+            LoginForm.Logout = true;
             // 현재 폼 닫기
             this.Close();
         }

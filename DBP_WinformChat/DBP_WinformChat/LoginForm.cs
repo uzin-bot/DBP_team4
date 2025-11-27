@@ -14,6 +14,9 @@ namespace leehaeun
         // UserId 저장
         public static int UserId { get; private set; } = 0;
 
+        // 로그아웃 확인
+        public static bool Logout { private get; set; } = false;
+
         // 로그인 버튼
         private void LoginButton_Click(object sender, EventArgs e)
         {
@@ -43,7 +46,10 @@ namespace leehaeun
                 FormHide();
                 var chatListForm = new 남예솔.chatlist();
                 chatListForm.ShowDialog();
-                FormShow();
+
+                // 로그아웃이면 폼 열기
+                if (Logout) FormShow();
+                else this.Close();
             }
             else
             {
@@ -75,6 +81,7 @@ namespace leehaeun
             SaveConfig();
             IdBox.Text = "";
             PwBox.Text = "";
+            Logout = false;
             this.Hide();
         }
 
