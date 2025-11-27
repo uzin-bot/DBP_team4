@@ -23,6 +23,15 @@ namespace leehaeun
             Login();
         }
 
+        // 회원가입버튼
+        private void SignUpLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            FormHide();
+            var signUp = new SignUpForm();
+            signUp.ShowDialog();
+            FormShow();
+        }
+
         // 로그인
         private void Login()
         {
@@ -32,22 +41,20 @@ namespace leehaeun
 
             string query = $"SELECT UserId FROM User WHERE LoginId = '{id}' AND PasswordHash = '{pwHash}';";
             DataTable dt = DBconnector.GetInstance().Query(query);
-            bool result = dt != null && dt.Rows.Count > 0;
 
-            if (result)
+            if (dt != null && dt.Rows.Count > 0)
             {
                 // 로그인 성공
                 UserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
-                UserInfo.GetUserInfo();
-                UserInfo.GetProfileInfo();
-                UserInfo.GetMulProfileInfo();
+                UserInfo.GetInfo();
 
-                // 채팅 목록 폼
+                // 채팅 리스트 폼
                 FormHide();
                 var chatListForm = new 남예솔.chatlist();
                 chatListForm.ShowDialog();
 
-                // 로그아웃 여부 확인
+                // 채팅 리스트 폼이 닫혔을 때
+                // 로그아웃인지 프로그램 종료인지 확인
                 if (Logout) FormShow();
                 else this.Close();
             }
@@ -55,15 +62,6 @@ namespace leehaeun
             {
                 MessageBox.Show("로그인 실패");
             }
-        }
-
-        // 회원가입버튼
-        private void SignUpLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            FormHide();
-            var signUp = new SignUpForm();
-            signUp.ShowDialog();
-            FormShow();
         }
 
         // 폼 열릴 때

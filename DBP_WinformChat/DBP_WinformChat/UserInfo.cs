@@ -18,9 +18,12 @@ namespace leehaeun
         // 사용자 기본 프로필
         public static DataTable Profile { get; private set; } = null!;
 
-        // 사용자 멀티 프로필
-        // 프로필에 합칠 수도 있음
-        public static DataTable MulProfile { get; private set; } = null!;
+        // DB에서 사용자 및 프로필 정보 불러오기
+        public static void GetInfo()
+        {
+            GetUserInfo();
+            GetProfileInfo();
+        }
 
         // DB에서 사용자 정보 불러오기
         public static void GetUserInfo()
@@ -31,18 +34,11 @@ namespace leehaeun
             GetDeptName(DeptId);
         }
 
-        // DB에서 사용자 기본 프로필 정보 불러오기
+        // DB에서 사용자 프로필 정보 불러오기
         public static void GetProfileInfo()
         {
-            string query = $"SELECT * FROM Profile WHERE UserId = '{LoginForm.UserId}' AND IsDefault = 1;";
+            string query = $"SELECT * FROM Profile WHERE UserId = '{LoginForm.UserId}' ORDER BY ProfileId;";
             Profile = DBconnector.GetInstance().Query(query);
-        }
-
-        // DB에서 사용자 멀티 프로필 정보 불러오기
-        public static void GetMulProfileInfo()
-        {
-            string query = $"SELECT * FROM Profile WHERE UserId = '{LoginForm.UserId}' AND IsDefault = 0;";
-            MulProfile = DBconnector.GetInstance().Query(query);
         }
 
         // DeptId로 DeptName 찾고 User 테이블에 추가
@@ -54,11 +50,11 @@ namespace leehaeun
             User.Rows[0]["DeptName"] = dt.Rows[0]["DeptName"];
         }
 
+        // DataTable 초기화
         public static void ResetDataTable()
         {
             User = null!;
             Profile = null!;
-            MulProfile = null!;
         }
     }
 }

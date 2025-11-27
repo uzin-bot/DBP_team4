@@ -31,8 +31,9 @@ namespace leehaeun
             string query = $"SELECT COUNT(*) FROM User WHERE LoginId = '{id}';";
 
             DataTable dt = DBconnector.GetInstance().Query(query);
+            bool result = dt != null && dt.Rows.Count > 0;
 
-            if (dt != null && dt.Rows.Count > 0)
+            if (result)
             {
                 if (Convert.ToInt32(dt.Rows[0][0]) > 0)
                 {
@@ -110,6 +111,7 @@ namespace leehaeun
                 this.Close();
             }
         }
+
         private void ChangeProfileButton_Click(object sender, EventArgs e)
         {
             var FD = new OpenFileDialog();
