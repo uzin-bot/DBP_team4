@@ -37,16 +37,6 @@ namespace DBP_WinformChat
             return dbconnectorObject;
         }
 
-        public static DBconnector getInstatnce()
-        {
-            if (dbconnectorObject == null)
-            {
-                dbconnectorObject = new DBconnector();
-            }
-
-            return dbconnectorObject;
-        }
-
         // read  쿼리
         public DataTable Query(string sql)
         {

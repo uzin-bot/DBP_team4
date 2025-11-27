@@ -1,20 +1,159 @@
-﻿using DBP_WinformChat;
-using Microsoft.VisualBasic.Logging;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace leehaeun
 {
-    public partial class EditProfileForm : Form
+    public partial class EditInfoForm : Form
     {
-        public EditProfileForm()
+        public EditInfoForm()
         {
             InitializeComponent();
-            LoadProfileInfo();
-            LoadMulProfileInfo();
+            LoadDefaultProfileInfo();
         }
 
-        // 다른 유저들? 정보 저장할 DataTable도 추가
+        private void LoadDefaultProfileInfo()
+        {
+            NicknameBox.Text = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+            NicknameBox.Tag = UserInfo.Profile.Rows[0]["ProfileId"].ToString();
+            DeptLabel.Text = UserInfo.User.Rows[0]["DeptName"].ToString();
+            StatusBox.Text = UserInfo.Profile.Rows[0]["StatusMessage"].ToString();
+            NicknameLabel.Text = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+
+            string? base64String = UserInfo.Profile.Rows[0]["ProfileImage"].ToString();
+            if (!string.IsNullOrEmpty(base64String))
+            {
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+                using var ms = new MemoryStream(imageBytes);
+                ProfileImageBox0.Image = Image.FromStream(ms);
+                ProfileImageBox1.Image = Image.FromStream(ms);
+                ProfileImageBox0.Tag = base64String;
+            }
+
+            EditMemberLabel.Text = "기본 프로필";
+        }
+
+        private void LoadMulProfileList()
+        {
+            // 멀티 프로필 리스트
+        }
+
+        private void LoadMulProfileInfo()
+        {
+            // 멀티 프로필 상세 정보 로딩(탭1)
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+
+
+            UserInfo.GetInfo();
+        }
+
+        private void CancelButton0_Click(object sender, EventArgs e)
+        {
+            CancelCheck();
+        }
+
+        private void EditButton_Click(object sender, EventArgs e)
+        {
+            LoadDefaultProfileInfo();
+        }
+
+        private void CancelCheck()
+        {
+            // 저장 안된 정보 있는지 확인
+        }
+
+        private void AddMulProfileButton_Click(object sender, EventArgs e)
+        {
+            // 버튼 추가
+            // 버튼 이벤트 추가
+            // DB에 기본 정보로 프로필 생성 쿼리 보내기
+        }
+
+        /* 
+        private void LoadUserInfo()
+        {
+            UserInfo.GetUserInfo();
+
+            IdBox.Text = UserInfo.User.Rows[0]["LoginId"].ToString();
+            NameBox.Text = UserInfo.User.Rows[0]["Name"].ToString();
+            ZipCodeBox.Text = UserInfo.User.Rows[0]["ZipCode"].ToString();
+            AddressBox.Text = UserInfo.User.Rows[0]["address"].ToString();
+            DeptBox.Text = UserInfo.User.Rows[0]["DeptName"].ToString();
+        }
+
+        // 회원가입 폼 내부 메서드와 동일
+        private void SearchAddressButton_Click(object sender, EventArgs e)
+        {
+            var searchAddress = new SearchAddressForm();
+            if (searchAddress.ShowDialog() == DialogResult.OK)
+            {
+                AddressBox.Text = searchAddress.selectedAddress;
+                ZipCodeBox.Text = searchAddress.selectedZipCode;
+            }
+        }
+
+        private void SaveInfoButton_Click(object sender, EventArgs e)
+        {
+            // 이름 변경
+            if (NameBox.Text != UserInfo.User.Rows[0]["Name"].ToString())
+            {
+                string query = $"UPDATE User SET Name = '{NameBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                int affected = DBconnector.GetInstance().NonQuery(query);
+                if (affected <= 0) MessageBox.Show("변경 실패");
+            }
+
+            // 비밀번호 변경
+            string pwHash = Sha256.Instance.HashSHA256(PwBox.Text);
+            if (pwHash != UserInfo.User.Rows[0]["PasswordHash"].ToString())
+            {
+                string query = $"UPDATE User SET PasswordHash = '{pwHash}' WHERE UserId = '{LoginForm.UserId}';";
+                int affected = DBconnector.GetInstance().NonQuery(query);
+                if (affected <= 0) MessageBox.Show("변경 실패");
+            }
+
+            // 주소 변경
+            if (AddressBox.Text != UserInfo.User.Rows[0]["Address"].ToString() ||
+                ZipCodeBox.Text != UserInfo.User.Rows[0]["ZipCode"].ToString())
+            {
+                string query = $"UPDATE User SET Address = '{AddressBox.Text}', ZipCode = '{ZipCodeBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                int affected = DBconnector.GetInstance().NonQuery(query);
+                if (affected <= 0) MessageBox.Show("변경 실패");
+            }
+
+            MessageBox.Show("변경 완료");
+
+            LoadUserInfo();
+        }
+
+        private void CancelButton_Click(object sender, EventArgs e)
+        {
+            if (NameBox.Text != UserInfo.User.Rows[0]["Name"].ToString() ||
+                !string.IsNullOrEmpty(PwBox.Text) ||
+                AddressBox.Text != UserInfo.User.Rows[0]["Address"].ToString() ||
+                ZipCodeBox.Text != UserInfo.User.Rows[0]["ZipCode"].ToString())
+            {
+                DialogResult result = MessageBox.Show("변경 내용을 취소하시겠습니까?",
+                    "확인",
+                    MessageBoxButtons.OKCancel,
+                    MessageBoxIcon.Question
+                );
+
+                if (result == DialogResult.OK) this.Close();
+            }
+            else this.Close();
+        }
+
+
+        // 임시
 
         private void LoadProfileInfo()
         {
@@ -256,5 +395,6 @@ namespace leehaeun
 
             flowProfiles.Controls.Add(newPanel);
         }
+        */
     }
 }

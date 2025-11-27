@@ -11,10 +11,7 @@
     <Compile Update="Dept.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="EditProfileForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="EditUserInfoForm.cs">
+    <Compile Update="EditInfoForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="LoginForm.cs">
