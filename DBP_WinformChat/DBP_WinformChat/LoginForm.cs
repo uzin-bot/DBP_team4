@@ -47,7 +47,7 @@ namespace leehaeun
                 var chatListForm = new 남예솔.chatlist();
                 chatListForm.ShowDialog();
 
-                // 로그아웃이면 폼 열기
+                // 로그아웃 여부 확인
                 if (Logout) FormShow();
                 else this.Close();
             }
