@@ -67,6 +67,8 @@
             label3 = new Label();
             label6 = new Label();
             label8 = new Label();
+            tabPage1 = new TabPage();
+            dataGridView1 = new DataGridView();
             tabControl.SuspendLayout();
             DefaultProfilePage.SuspendLayout();
             panel2.SuspendLayout();
@@ -77,6 +79,8 @@
             panel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ProfileImageMBox).BeginInit();
             UserInfoPage.SuspendLayout();
+            tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             SuspendLayout();
             // 
             // tabControl
@@ -84,6 +88,7 @@
             tabControl.Controls.Add(DefaultProfilePage);
             tabControl.Controls.Add(MulProfilePage);
             tabControl.Controls.Add(UserInfoPage);
+            tabControl.Controls.Add(tabPage1);
             tabControl.Dock = DockStyle.Fill;
             tabControl.Location = new Point(0, 0);
             tabControl.Margin = new Padding(2);
@@ -212,7 +217,7 @@
             ProfileImagePBox.SizeMode = PictureBoxSizeMode.Zoom;
             ProfileImagePBox.TabIndex = 16;
             ProfileImagePBox.TabStop = false;
-            ProfileImagePBox.Tag = "default.jpg";
+            ProfileImagePBox.Tag = "";
             // 
             // DeptLabel
             // 
@@ -483,6 +488,25 @@
             label8.TabIndex = 14;
             label8.Text = "아이디";
             // 
+            // tabPage1
+            // 
+            tabPage1.Controls.Add(dataGridView1);
+            tabPage1.Location = new Point(4, 24);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(3);
+            tabPage1.Size = new Size(252, 365);
+            tabPage1.TabIndex = 3;
+            tabPage1.Text = "tabPage1";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // dataGridView1
+            // 
+            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView1.Location = new Point(3, 3);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.Size = new Size(246, 359);
+            dataGridView1.TabIndex = 0;
+            // 
             // EditInfoForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -505,6 +529,8 @@
             ((System.ComponentModel.ISupportInitialize)ProfileImageMBox).EndInit();
             UserInfoPage.ResumeLayout(false);
             UserInfoPage.PerformLayout();
+            tabPage1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ResumeLayout(false);
         }
 
@@ -549,5 +575,7 @@
         private Label label3;
         private Label label6;
         private Label label8;
+        private TabPage tabPage1;
+        private DataGridView dataGridView1;
     }
 }

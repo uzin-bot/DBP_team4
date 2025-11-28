@@ -1,15 +1,20 @@
 ﻿using DBP_WinformChat;
+using MySql.Data.MySqlClient;
 using System.Data;
 
 namespace leehaeun
 {
     public partial class EditInfoForm : Form
     {
+        private DataRow CurrProfile { get; set; } = UserInfo.Profile.Rows[0];   // 기본 프로필
+        
+        private DataTable MulProfileMember { get; set; }
+
         public EditInfoForm()
         {
             InitializeComponent();
             LoadUserInfo();
-            LoadProfileInfo(UserInfo.Profile.Rows[0]);  // 기본 프로필
+            LoadProfileInfo();
             LoadMulProfileList();
         }
 
@@ -24,15 +29,15 @@ namespace leehaeun
         }
 
         // 프로필 정보 로딩
-        private void LoadProfileInfo(DataRow row)
+        private void LoadProfileInfo()
         {
-            NicknameBox.Text = row["Nickname"].ToString();
-            NicknameBox.Tag = row["ProfileId"].ToString();
+            NicknameBox.Text = CurrProfile["Nickname"].ToString();
+            NicknameBox.Tag = CurrProfile["ProfileId"].ToString();
             DeptLabel.Text = UserInfo.User["DeptName"].ToString();
-            StatusBox.Text = row["StatusMessage"].ToString();
-            NicknameLabel.Text = row["Nickname"].ToString();
+            StatusBox.Text = CurrProfile["StatusMessage"].ToString();
+            NicknameLabel.Text = CurrProfile["Nickname"].ToString();
 
-            string? base64String = row["ProfileImage"].ToString();
+            string? base64String = CurrProfile["ProfileImage"].ToString();
             if (!string.IsNullOrEmpty(base64String))
             {
                 byte[] imageBytes = Convert.FromBase64String(base64String);
@@ -47,13 +52,21 @@ namespace leehaeun
                 ProfileImagePBox.Tag = null;
             }
 
-            bool result = Convert.ToBoolean(row["IsDefault"]);
-            if (result) EditMemberLabel.Text = "기본 프로필";
-            else EditMemberLabel.Text = "멤버 관리";
+            bool result = Convert.ToBoolean(CurrProfile["IsDefault"]);
+            if (result)
+            {
+                EditMemberLabel.Text = "기본 프로필";
+            }
+            else
+            {
+                EditMemberLabel.Text = "멤버 관리";
+                LoadMulProfileMemberList();
+            } 
 
             tabControl.SelectedIndex = 0;
         }
 
+        // 멀티 프로필 리스트 로딩
         private void LoadMulProfileList()
         {
             for (int i = 1; i < UserInfo.Profile.Rows.Count; i++)
@@ -63,9 +76,79 @@ namespace leehaeun
             }
         }
 
+        private void LoadMulProfileMember()
+        {
+            string oquery = $@"
+                SELECT * FROM UserProfileMap
+                JOIN Profile ON UserProfileMap.TargetUserId = Profile.UserId
+                WHERE UserProfileMap.OwnerUserId = {LoginForm.UserId};
+            ";
+            DataTable odt = DBconnector.GetInstance().Query(oquery);
+            odt.PrimaryKey = new DataColumn[] { odt.Columns["RelatedUserId"] };
+
+            string tquery = $@"
+                SELECT * FROM UserProfileMap
+                JOIN Profile ON UserProfileMap.OwnerUserId = Profile.UserId
+                WHERE UserProfileMap.TargetUserId = {LoginForm.UserId};
+            ";
+            DataTable tdt = DBconnector.GetInstance().Query(tquery);
+
+            DataTable dt = odt.Copy();
+
+            foreach (DataRow row in tdt.Rows)
+            {
+                DataRow exist = dt.Rows.Find(row["RelatedUserId"]);
+                if (exist != null)
+                    exist.ItemArray = row.ItemArray;
+            }
+
+            dataGridView1.DataSource = dt;
+        }
+
+        private void LoadMulProfileMemberList()
+        {
+            // CurrProfile의 멤버 리스트 출력
+            // AddNewMember(row);
+        }
+
+        private void AddNewMember(DataRow row)
+        {
+            Panel newPanel = new Panel();
+            newPanel.Size = new Size(216, 35);
+            newPanel.Location = new Point(2, 2);
+
+            PictureBox profileImage = new PictureBox();
+            profileImage.Location = new Point(3, 3);
+            profileImage.Size = new Size(30, 29);
+            profileImage.SizeMode = PictureBoxSizeMode.Zoom;
+            profileImage.Image = DBP_WinformChat.Properties.Resources._default;
+
+            Label nicknameLabel = new Label();
+            nicknameLabel.Location = new Point(38, 10);
+            nicknameLabel.AutoSize = true;
+            nicknameLabel.Text = row["Nickname"].ToString();
+
+            Button editButton = new Button();
+            editButton.Text = "관리";
+            editButton.Size = new Size(39, 22);
+            editButton.Location = new Point(125, 6);
+
+            Button deleteButton = new Button();
+            deleteButton.Text = "삭제";
+            deleteButton.Size = new Size(39, 22);
+            deleteButton.Location = new Point(168, 6);
+
+            newPanel.Controls.Add(profileImage);
+            newPanel.Controls.Add(nicknameLabel);
+            newPanel.Controls.Add(editButton);
+            newPanel.Controls.Add(deleteButton);
+
+            ProfileFLP.Controls.Add(newPanel);
+        }
+
+        // 프로필 이미지 변경
         private void ChangeProfileImageButton_Click(object sender, EventArgs e)
         {
-            /*
             var FD = new OpenFileDialog();
 
             if (FD.ShowDialog() == DialogResult.OK)
@@ -76,67 +159,73 @@ namespace leehaeun
                 double ratio = Math.Min((double)maxSize / img.Width, (double)maxSize / img.Height);
                 using var resized = new Bitmap(img, new Size((int)(img.Width * ratio), (int)(img.Height * ratio)));
 
-                ProfileImageBox.Image = (Image)resized.Clone();
+                ProfileImagePBox.Image = (Image)resized.Clone();
 
                 using var ms = new MemoryStream();
                 resized.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                ProfileImageBox.Tag = Convert.ToBase64String(ms.ToArray());
+                ProfileImagePBox.Tag = Convert.ToBase64String(ms.ToArray());
             }
 
             FD.Dispose();
-            */
         }
 
         // 기본 프로필 탭 컨트롤
+        // 저장 버튼
         private void SavePButton_Click(object sender, EventArgs e)
         {
-            /*
-            // UserId, ProfileId 둘 다 비교
-            if (NicknameBox.Text != UserInfo.Profile.Rows[0]["Nickame"].ToString())
+            SaveProfileInfo();
+        }
+
+        // 프로필 저장
+        private void SaveProfileInfo()
+        {
+            // 닉네임 변경
+            if (NicknameBox.Text != CurrProfile["Nickname"].ToString())
             {
                 string query = $"UPDATE Profile SET Name = '{NicknameBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
                 int affected = DBconnector.GetInstance().NonQuery(query);
-                if (affected <= 0) MessageBox.Show("���� ����");
+                if (affected <= 0) MessageBox.Show("닉네임 변경 실패");
             }
-            if (StatusBox.Text != UserInfo.Profile.Rows[0]["StatusMessage"].ToString())
+
+            // 상태메시지 변경
+            if (StatusBox.Text != CurrProfile["StatusMessage"].ToString())
             {
                 string query = $"UPDATE Profile SET Address = '{StatusBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
                 int affected = DBconnector.GetInstance().NonQuery(query);
-                if (affected <= 0) MessageBox.Show("���� ����");
-            }
-            if (ProfileImageBox.Tag?.ToString() != UserInfo.Profile.Rows[0]["ProfileImage"].ToString())
-            {
-                if (ProfileImageBox.Tag == null)
-                {
-                    string query = $"UPDATE Profile SET ProfileImage = null WHERE UserId = '{LoginForm.UserId}';";
-                    int affected = DBconnector.GetInstance().NonQuery(query);
-                    if (affected <= 0) MessageBox.Show("���� ����");
-                }
-                else
-                {
-                    string query = $"UPDATE Profile SET ProfileImage = '{ProfileImageBox.Tag?.ToString()}' WHERE UserId = '{LoginForm.UserId}';";
-                    int affected = DBconnector.GetInstance().NonQuery(query);
-                    if (affected <= 0) MessageBox.Show("���� ����");
-                }
+                if (affected <= 0) MessageBox.Show("상태메시지 변경 실패");
             }
 
-            MessageBox.Show("���� �Ϸ�");
-            LoadProfileInfo();
-            */
+            // 프로필 이미지 변경
+            if (ProfileImagePBox.Tag?.ToString() != CurrProfile["ProfileImage"].ToString() &&
+                string.IsNullOrEmpty(ProfileImagePBox.Tag.ToString()))
+            {
+                string query = $"UPDATE Profile SET ProfileImage = '{ProfileImagePBox.Tag?.ToString()}' WHERE UserId = '{LoginForm.UserId}';";
+                int affected = DBconnector.GetInstance().NonQuery(query);
+                if (affected <= 0) MessageBox.Show("프로필 이미지 변경 실패");
+            }
+
+            // 멤버 변경 추가
+
+
+            MessageBox.Show("프로필 저장 완료");
             UserInfo.GetProfileInfo();
+            LoadProfileInfo();
         }
 
+        // 취소 버튼
         private void CancelPButton_Click(object sender, EventArgs e)
         {
             CancelCheck();
         }
 
         // 멀티 프로필 탭 컨트롤
+        // 관리 버튼
         private void EditButton_Click(object sender, EventArgs e)
         {
-            LoadProfileInfo(UserInfo.Profile.Rows[0]);
+            LoadProfileInfo();
         }
 
+        // 새 멀티프로필 추가
         private void AddMulProfileButton_Click(object sender, EventArgs e)
         {
             // 기본 정보로 새로운 프로필 생성
@@ -153,6 +242,7 @@ namespace leehaeun
             AddNewProfile(row);
         }
 
+        // 새 멀티프로필 패널 추가
         private void AddNewProfile(DataRow row)
         {
             Panel newPanel = new Panel();
@@ -200,7 +290,7 @@ namespace leehaeun
 
             editButton.Click += (s, args) =>
             {
-                LoadProfileInfo(row);
+                LoadProfileInfo();
             };
 
             deleteButton.Click += (s, args) =>
@@ -210,9 +300,10 @@ namespace leehaeun
                 ProfileFLP.Controls.Remove(newPanel);
                 newPanel.Dispose();
 
-                // DB에서도 삭제
-                string delQuery = $"DELETE FROM Profile WHERE ProfileId = {row["ProfileId"]};";
-                DBconnector.GetInstance().NonQuery(delQuery);
+                // DB에서 삭제
+                int profileId = Convert.ToInt32(row["ProfileID"]);
+                string Query = $"DELETE FROM Profile WHERE ProfileId = {profileId};";
+                DBconnector.GetInstance().NonQuery(Query);
                 UserInfo.GetProfileInfo();
             };
         }
@@ -230,7 +321,20 @@ namespace leehaeun
             }
         }
 
+        // 사용자 정보 저장 버튼
         private void SaveIButton_Click(object sender, EventArgs e)
+        {
+            SaveUserInfo();
+        }
+
+        // 취소 버튼
+        private void CancleIButton_Click(object sender, EventArgs e)
+        {
+            CancelCheck();
+        }
+
+        // 사용자 정보 저장
+        private void SaveUserInfo()
         {
             // 이름 변경
             if (NameBox.Text != UserInfo.User["Name"].ToString())
@@ -262,11 +366,6 @@ namespace leehaeun
 
             UserInfo.GetUserInfo();
             LoadUserInfo();
-        }
-
-        private void CancleIButton_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void CancelCheck()
