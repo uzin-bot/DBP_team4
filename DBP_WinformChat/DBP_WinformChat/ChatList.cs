@@ -15,9 +15,9 @@ namespace 남예솔
         // UserInfo의 DataTable User 정보 불러오는걸로 수정
         // UserInfo.User에서 바로 받아오셔도 됩니다!
 
-        private int currentUserId = Convert.ToInt32(UserInfo.User.Rows[0]["UserId"]);
-        private string currentUserName = UserInfo.User.Rows[0]["Name"].ToString();
-        private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+        private int currentUserId = Convert.ToInt32(UserInfo.User["UserId"]);
+        private string currentUserName = UserInfo.User["Name"].ToString();
+        private string currentUserNickname = UserInfo.User["Nickname"].ToString();
 
         /*
         private int currentUserId;

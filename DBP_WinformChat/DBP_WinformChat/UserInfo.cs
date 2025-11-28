@@ -7,7 +7,7 @@ namespace leehaeun
     {
 
         // 사용자 정보
-        public static DataTable User { get; private set; } = null!;
+        public static DataRow User { get; private set; } = null!;
 
         // 사용자 기본 프로필
         public static DataTable Profile { get; private set; } = null!;
@@ -31,8 +31,10 @@ namespace leehaeun
         public static void GetUserInfo()
         {
             string query = $"SELECT * FROM User WHERE Userid = '{LoginForm.UserId}';";
-            User = DBconnector.GetInstance().Query(query);
-            int DeptId = Convert.ToInt32(User.Rows[0]["DeptId"]);
+            DataTable dt = DBconnector.GetInstance().Query(query);
+            dt.Columns.Add("DeptName", typeof(string));
+            User = dt.Rows[0];
+            int DeptId = Convert.ToInt32(User["DeptId"]);
             GetDeptName(DeptId);
         }
 
@@ -57,8 +59,7 @@ namespace leehaeun
         {
             string query = $"SELECT * FROM Department WHERE DeptId = {DeptId};";
             DataTable dt = DBconnector.GetInstance().Query(query);
-            User.Columns.Add("DeptName", typeof(string));
-            User.Rows[0]["DeptName"] = dt.Rows[0]["DeptName"];
+            User["DeptName"] = dt.Rows[0]["DeptName"];
         }
 
         // DataTable 초기화

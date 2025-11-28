@@ -95,7 +95,7 @@ namespace leehaeun
                 string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 string query3 = $@"INSERT INTO
                     Profile(UserId, NickName, IsDefault, CreatedAt)
-                    VALUES('{UserId}', '{nickname}', 1, '{now}');";
+                    VALUES({UserId}, '{nickname}', 1, '{now}');";
                 int affected2 = DBconnector.GetInstance().NonQuery(query3);
                 if (affected2 <= 0) MessageBox.Show("프로필 생성 실패");
 
