@@ -18,13 +18,7 @@ C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\bin\Debu
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\bin\Debug\net8.0-windows\runtimes\win-x64\native\krb5_64.dll
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\bin\Debug\net8.0-windows\runtimes\win-x64\native\krbcc64.dll
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.csproj.AssemblyReference.cache
-C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\namyesol.ChatForm.resources
-C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\namyesol.ChatList.resources
-C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\namyesol.Dept.resources
-C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.Form1.resources
-C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.Login.resources
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.Properties.Resources.resources
-C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.SignUp.resources
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.csproj.GenerateResource.cache
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.AssemblyInfoInputs.cache
@@ -37,7 +31,6 @@ C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debu
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.pdb
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.genruntimeconfig.cache
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\ref\DBP_WinformChat.dll
-C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\kyg.TempForm.resources
 C:\Users\user\source\repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.csproj.AssemblyReference.cache
 C:\Users\user\source\repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\kyg.ChatForm.resources
 C:\Users\user\source\repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\남예솔.chatlist.resources
