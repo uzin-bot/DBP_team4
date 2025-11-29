@@ -1,5 +1,4 @@
 ﻿using DBP_WinformChat;
-using MySql.Data.MySqlClient;
 using System.Data;
 
 namespace leehaeun
@@ -7,7 +6,7 @@ namespace leehaeun
     public partial class EditInfoForm : Form
     {
         private DataRow CurrProfile { get; set; } = UserInfo.Profile.Rows[0];   // 기본 프로필
-        
+
         private DataTable MulProfileMember { get; set; }
 
         public EditInfoForm()
@@ -53,7 +52,6 @@ namespace leehaeun
             bool isDefault = Convert.ToBoolean(CurrProfile["IsDefault"]);
             if (isDefault)
             {
-                EditMemberLabel.Text = "기본 프로필";
                 // 멀티 프로필 탭 기본 프로필
                 NicknameLabel.Text = UserInfo.Profile.Rows[0]["Nickname"].ToString();
                 string? dbase64String = UserInfo.Profile.Rows[0]["ProfileImage"].ToString();
@@ -67,10 +65,17 @@ namespace leehaeun
                 {
                     ProfileImageMBox.Image = DBP_WinformChat.Properties.Resources._default;
                 }
+
+                label2.Visible = false;
+                EditMButton.Visible = false;
+                MemberFLP.Visible = false;
             }
             else
             {
-                EditMemberLabel.Text = "멤버 관리";
+                label2.Visible = true;
+                EditMButton.Visible = true;
+                MemberFLP.Visible = true;
+
                 LoadMulProfileMemberList();
             }
 
@@ -80,8 +85,6 @@ namespace leehaeun
         // 멀티 프로필 리스트 로딩
         private void LoadMulProfileList()
         {
-            GetMulProfileMember();
-            
             // 기본 프로필 제외
             for (int i = 1; i < UserInfo.Profile.Rows.Count; i++)
             {
@@ -90,36 +93,21 @@ namespace leehaeun
             }
         }
 
-        private void GetMulProfileMember()
-        {
-            // 현재 프로필의 멀티 프로필 멤버 정보
-            string query = $@"SELECT 
-                COALESCE(t.ProfileId, o.ProfileId) AS FinalProfileId,
-                    p.*
-                FROM UserProfileMap o
-                LEFT JOIN UserProfileMap t 
-                       ON o.TargetUserId = t.OwnerUserId 
-                      AND t.TargetUserId = {LoginForm.UserId}
-                JOIN Profile p
-                      ON p.ProfileId = COALESCE(t.ProfileId, o.ProfileId)
-                WHERE o.OwnerUserId = {LoginForm.UserId};";
-            MulProfileMember = DBconnector.GetInstance().Query(query);
-        }
-
-        private void AddNewMember(DataRow row)
+        // 새 멀티프로필 패널 추가
+        private void AddNewProfile(DataRow row)
         {
             Panel newPanel = new Panel();
             newPanel.Size = new Size(216, 35);
-            newPanel.Location = new Point(2, 2);
+            newPanel.Location = new Point(2, 41);
 
             PictureBox profileImage = new PictureBox();
-            profileImage.Location = new Point(3, 3);
+            profileImage.Location = new Point(0, 3);
             profileImage.Size = new Size(30, 29);
-            profileImage.SizeMode = PictureBoxSizeMode.Zoom;
+            profileImage.SizeMode = PictureBoxSizeMode.StretchImage;
             profileImage.Image = DBP_WinformChat.Properties.Resources._default;
 
             Label nicknameLabel = new Label();
-            nicknameLabel.Location = new Point(38, 10);
+            nicknameLabel.Location = new Point(35, 10);
             nicknameLabel.AutoSize = true;
             nicknameLabel.Text = row["Nickname"].ToString();
 
@@ -139,8 +127,146 @@ namespace leehaeun
             newPanel.Controls.Add(deleteButton);
 
             ProfileFLP.Controls.Add(newPanel);
+
+            string? base64String = row["ProfileImage"].ToString();
+            if (!string.IsNullOrEmpty(base64String))
+            {
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+                using var ms = new MemoryStream(imageBytes);
+                profileImage.Image = Image.FromStream(ms);
+            }
+
+            nicknameLabel.Text = row["Nickname"].ToString();
+            nicknameLabel.Tag = row["ProfileId"].ToString();
+
+            editButton.Click += (s, args) =>
+            {
+                CurrProfile = row;
+                LoadProfileInfo();
+            };
+
+            deleteButton.Click += (s, args) =>
+            {
+                DialogResult result = MessageBox.Show("삭제 하시겠습니까?",
+                "확인",
+                MessageBoxButtons.OKCancel,
+                MessageBoxIcon.Question
+                );
+                if (result == DialogResult.OK)
+                {
+                    // DB에서 해당 프로필, 해당 프로필과 연결된 맵 삭제
+                    int profileId = Convert.ToInt32(row["ProfileID"]);
+                    string query = $"DELETE FROM Profile WHERE ProfileId = {profileId};";
+                    DBconnector.GetInstance().NonQuery(query);
+                    string mquery = $"DELETE FROM UserProfileMap WHERE OwnerUserId = {LoginForm.UserId} AND ProfileId = {profileId}";
+                    DBconnector.GetInstance().NonQuery(mquery);
+                    ProfileFLP.Controls.Remove(newPanel);
+                    newPanel.Dispose();
+                    UserInfo.GetProfileInfo();
+                }
+            };
         }
 
+        // 멀티 프로필 매핑 정보
+        private void GetMulProfileMember()
+        {
+            // 현재 프로필의 멀티 프로필 멤버 정보
+            string query = $@"
+                SELECT
+                    u.UserId,
+                    u.Name,
+                    p.ProfileId,
+                    p.Nickname,
+                    p.ProfileImage,
+                    p.StatusMessage,
+                    d.DeptName
+                FROM (
+                    SELECT 
+                        o.TargetUserId,
+                        COALESCE(t.ProfileId, o.ProfileId) AS FinalProfileId
+                    FROM UserProfileMap o
+                    LEFT JOIN UserProfileMap t
+                        ON t.OwnerUserId = o.TargetUserId
+                       AND t.TargetUserId = {LoginForm.UserId}
+                    WHERE o.OwnerUserId = {LoginForm.UserId}
+                      AND o.ProfileId = {CurrProfile["ProfileId"]}
+                ) AS map
+                JOIN User u
+                    ON u.UserId = map.TargetUserId
+                JOIN Profile p
+                    ON p.ProfileId = map.FinalProfileId
+                LEFT JOIN Department d
+                    ON u.DeptId = d.DeptId;";
+            MulProfileMember = DBconnector.GetInstance().Query(query);
+        }
+
+        private void LoadMulProfileMemberList()
+        {
+            GetMulProfileMember();
+            MemberFLP.Controls.Clear();
+
+            foreach (DataRow row in MulProfileMember.Rows)
+            {
+                AddNewMember(row);
+            }
+        }
+
+        // 멀티 프로필 멤버 관리
+        private void AddNewMember(DataRow row)
+        {
+            Panel newPanel = new Panel();
+            newPanel.Size = new Size(216, 35);
+            newPanel.Location = new Point(2, 2);
+
+            PictureBox profileImage = new PictureBox();
+            profileImage.Location = new Point(3, 3);
+            profileImage.Size = new Size(30, 29);
+            profileImage.SizeMode = PictureBoxSizeMode.StretchImage;
+            profileImage.Image = DBP_WinformChat.Properties.Resources._default;
+
+            Label nicknameLabel = new Label();
+            nicknameLabel.Location = new Point(38, 10);
+            nicknameLabel.AutoSize = true;
+            nicknameLabel.Text = row["Nickname"].ToString();
+
+            Button deleteButton = new Button();
+            deleteButton.Text = "삭제";
+            deleteButton.Size = new Size(39, 22);
+            deleteButton.Location = new Point(168, 6);
+
+            newPanel.Controls.Add(profileImage);
+            newPanel.Controls.Add(nicknameLabel);
+            newPanel.Controls.Add(deleteButton);
+
+            MemberFLP.Controls.Add(newPanel);
+
+            string name = row["DeptName"].ToString();
+            name += " ";
+            name += row["Name"].ToString();
+            name += "(";
+            name += row["Nickname"].ToString();
+            name += ")";
+            nicknameLabel.Text = name;
+
+            string? base64String = row["ProfileImage"].ToString();
+            if (!string.IsNullOrEmpty(base64String))
+            {
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+                using var ms = new MemoryStream(imageBytes);
+                profileImage.Image = Image.FromStream(ms);
+            }
+
+            deleteButton.Click += (s, args) =>
+            {
+                int targetUserId = Convert.ToInt32(row["UserId"]);
+                string query = $"DELETE FROM UserProfileMap WHERE OwnerUserId = {LoginForm.UserId} AND TargetUserId = {targetUserId};";
+                DBconnector.GetInstance().NonQuery(query);
+                ProfileFLP.Controls.Remove(newPanel);
+                newPanel.Dispose();
+            };
+        }
+
+        // 기본 프로필 탭 컨트롤
         // 프로필 이미지 변경
         private void ChangeProfileImageButton_Click(object sender, EventArgs e)
         {
@@ -164,7 +290,6 @@ namespace leehaeun
             FD.Dispose();
         }
 
-        // 기본 프로필 탭 컨트롤
         // 저장 버튼
         private void SavePButton_Click(object sender, EventArgs e)
         {
@@ -199,12 +324,26 @@ namespace leehaeun
                 if (affected <= 0) MessageBox.Show("프로필 이미지 변경 실패");
             }
 
-            // 멤버 변경 추가
-
-
             MessageBox.Show("프로필 저장 완료");
             UserInfo.GetProfileInfo();
             LoadProfileInfo();
+        }
+
+        private void EditMButton_Click(object sender, EventArgs e)
+        {
+            // SearchResultForm 수정해서 같이 써도...
+            
+            var s = new SearchUserForm();
+            if (s.ShowDialog() == DialogResult.OK)
+            {
+                foreach (int targetId in s.selectedUserIds)
+                {
+                    string query = $"INSERT INTO UserProfileMap(OwnerUserId, TargetUserId, ProfileId) VALUES({LoginForm.UserId}, {targetId}, {CurrProfile["ProfileId"]});";
+                    DBconnector.GetInstance().NonQuery(query);
+                }
+            }
+
+            LoadMulProfileMemberList();
         }
 
         // 취소 버튼
@@ -217,6 +356,7 @@ namespace leehaeun
         // 관리 버튼
         private void EditButton_Click(object sender, EventArgs e)
         {
+            CurrProfile = UserInfo.Profile.Rows[0];
             LoadProfileInfo();
         }
 
@@ -237,74 +377,7 @@ namespace leehaeun
             AddNewProfile(row);
         }
 
-        // 새 멀티프로필 패널 추가
-        private void AddNewProfile(DataRow row)
-        {
-            Panel newPanel = new Panel();
-            newPanel.Size = new Size(216, 35);
-            newPanel.Location = new Point(2, 41);
-
-            PictureBox profileImage = new PictureBox();
-            profileImage.Location = new Point(3, 3);
-            profileImage.Size = new Size(30, 29);
-            profileImage.SizeMode = PictureBoxSizeMode.Zoom;
-            profileImage.Image = DBP_WinformChat.Properties.Resources._default;
-
-            Label nicknameLabel = new Label();
-            nicknameLabel.Location = new Point(38, 10);
-            nicknameLabel.AutoSize = true;
-            nicknameLabel.Text = row["Nickname"].ToString();
-
-            Button editButton = new Button();
-            editButton.Text = "관리";
-            editButton.Size = new Size(39, 22);
-            editButton.Location = new Point(125, 6);
-
-            Button deleteButton = new Button();
-            deleteButton.Text = "삭제";
-            deleteButton.Size = new Size(39, 22);
-            deleteButton.Location = new Point(168, 6);
-
-            newPanel.Controls.Add(profileImage);
-            newPanel.Controls.Add(nicknameLabel);
-            newPanel.Controls.Add(editButton);
-            newPanel.Controls.Add(deleteButton);
-
-            ProfileFLP.Controls.Add(newPanel);
-
-            string? base64String = row["ProfileImage"].ToString();
-            if (!string.IsNullOrEmpty(base64String))
-            {
-                byte[] imageBytes = Convert.FromBase64String(base64String);
-                using var ms = new MemoryStream(imageBytes);
-                profileImage.Image = Image.FromStream(ms);
-            }
-
-            nicknameLabel.Text = row["Nickname"].ToString();
-            nicknameLabel.Tag = row["ProfileId"].ToString();
-
-            editButton.Click += (s, args) =>
-            {
-                LoadProfileInfo();
-            };
-
-            deleteButton.Click += (s, args) =>
-            {
-                // 진짜 삭제할건지 묻기
-
-                ProfileFLP.Controls.Remove(newPanel);
-                newPanel.Dispose();
-
-                // DB에서 삭제
-                int profileId = Convert.ToInt32(row["ProfileID"]);
-                string Query = $"DELETE FROM Profile WHERE ProfileId = {profileId};";
-                DBconnector.GetInstance().NonQuery(Query);
-                UserInfo.GetProfileInfo();
-            };
-        }
-
         // 사용자 정보 탭
-
         // 회원가입 폼 내부 메서드와 동일
         private void SearchAddressButton_Click(object sender, EventArgs e)
         {
@@ -365,42 +438,16 @@ namespace leehaeun
 
         private void CancelCheck()
         {
-            // 저장 안된 정보 있는지 확인
-            // 선택된 탭이 0일때, 2일때
-            // this.Close();
-            /*
-            if (NameBox.Text != UserInfo.User.Rows[0]["Name"].ToString() ||
-                !string.IsNullOrEmpty(PwBox.Text) ||
-                AddressBox.Text != UserInfo.User.Rows[0]["Address"].ToString() ||
-                ZipCodeBox.Text != UserInfo.User.Rows[0]["ZipCode"].ToString())
-            {
-                DialogResult result = MessageBox.Show("변경 내용을 취소하시겠습니까?",
+            DialogResult result = MessageBox.Show("변경 내용을 취소하시겠습니까?",
                 "확인",
                 MessageBoxButtons.OKCancel,
                 MessageBoxIcon.Question
                 );
-
-                if (result == DialogResult.OK) this.Close();
+            if (result == DialogResult.OK)
+            {
+                LoadUserInfo();
+                LoadProfileInfo();
             }
-            else this.Close();
-            */
-
-            /*
-                if (NicknameBox.Text != UserInfo.Profile.Rows[0]["Nickame"].ToString() ||
-                StatusBox.Text != UserInfo.Profile.Rows[0]["StatusMessage"].ToString() ||
-                ProfileImageBox.Tag?.ToString() != UserInfo.Profile.Rows[0]["ProfileImage"].ToString())
-                {
-                DialogResult result = MessageBox.Show("���� ������ ����Ͻðڽ��ϱ�?",
-                "Ȯ��",
-                MessageBoxButtons.OKCancel,
-                MessageBoxIcon.Question
-                );
-
-                if (result == DialogResult.OK) this.Close();
-                }
-
-                this.Close();
-            */
         }
     }
 }

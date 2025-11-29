@@ -185,7 +185,7 @@ namespace leehaeun
             ProfileImageBox.Location = new Point(12, 12);
             ProfileImageBox.Name = "ProfileImageBox";
             ProfileImageBox.Size = new Size(86, 85);
-            ProfileImageBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            ProfileImageBox.SizeMode = PictureBoxSizeMode.Zoom;
             ProfileImageBox.TabIndex = 14;
             ProfileImageBox.TabStop = false;
             ProfileImageBox.Tag = "";
