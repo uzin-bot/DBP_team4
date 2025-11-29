@@ -35,7 +35,6 @@ namespace leehaeun
             NicknameBox.Tag = CurrProfile["ProfileId"].ToString();
             DeptLabel.Text = UserInfo.User["DeptName"].ToString();
             StatusBox.Text = CurrProfile["StatusMessage"].ToString();
-            NicknameLabel.Text = CurrProfile["Nickname"].ToString();
 
             string? base64String = CurrProfile["ProfileImage"].ToString();
             if (!string.IsNullOrEmpty(base64String))
@@ -43,7 +42,6 @@ namespace leehaeun
                 byte[] imageBytes = Convert.FromBase64String(base64String);
                 using var ms = new MemoryStream(imageBytes);
                 ProfileImagePBox.Image = Image.FromStream(ms);
-                ProfileImageMBox.Image = Image.FromStream(ms);
                 ProfileImagePBox.Tag = base64String;
             }
             else
@@ -52,16 +50,29 @@ namespace leehaeun
                 ProfileImagePBox.Tag = null;
             }
 
-            bool result = Convert.ToBoolean(CurrProfile["IsDefault"]);
-            if (result)
+            bool isDefault = Convert.ToBoolean(CurrProfile["IsDefault"]);
+            if (isDefault)
             {
                 EditMemberLabel.Text = "기본 프로필";
+                // 멀티 프로필 탭 기본 프로필
+                NicknameLabel.Text = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+                string? dbase64String = UserInfo.Profile.Rows[0]["ProfileImage"].ToString();
+                if (!string.IsNullOrEmpty(dbase64String))
+                {
+                    byte[] imageBytes = Convert.FromBase64String(dbase64String);
+                    using var ms = new MemoryStream(imageBytes);
+                    ProfileImageMBox.Image = Image.FromStream(ms);
+                }
+                else
+                {
+                    ProfileImageMBox.Image = DBP_WinformChat.Properties.Resources._default;
+                }
             }
             else
             {
                 EditMemberLabel.Text = "멤버 관리";
                 LoadMulProfileMemberList();
-            } 
+            }
 
             tabControl.SelectedIndex = 0;
         }
@@ -69,6 +80,9 @@ namespace leehaeun
         // 멀티 프로필 리스트 로딩
         private void LoadMulProfileList()
         {
+            GetMulProfileMember();
+            
+            // 기본 프로필 제외
             for (int i = 1; i < UserInfo.Profile.Rows.Count; i++)
             {
                 DataRow row = UserInfo.Profile.Rows[i];
@@ -76,39 +90,20 @@ namespace leehaeun
             }
         }
 
-        private void LoadMulProfileMember()
+        private void GetMulProfileMember()
         {
-            string oquery = $@"
-                SELECT * FROM UserProfileMap
-                JOIN Profile ON UserProfileMap.TargetUserId = Profile.UserId
-                WHERE UserProfileMap.OwnerUserId = {LoginForm.UserId};
-            ";
-            DataTable odt = DBconnector.GetInstance().Query(oquery);
-            odt.PrimaryKey = new DataColumn[] { odt.Columns["RelatedUserId"] };
-
-            string tquery = $@"
-                SELECT * FROM UserProfileMap
-                JOIN Profile ON UserProfileMap.OwnerUserId = Profile.UserId
-                WHERE UserProfileMap.TargetUserId = {LoginForm.UserId};
-            ";
-            DataTable tdt = DBconnector.GetInstance().Query(tquery);
-
-            DataTable dt = odt.Copy();
-
-            foreach (DataRow row in tdt.Rows)
-            {
-                DataRow exist = dt.Rows.Find(row["RelatedUserId"]);
-                if (exist != null)
-                    exist.ItemArray = row.ItemArray;
-            }
-
-            dataGridView1.DataSource = dt;
-        }
-
-        private void LoadMulProfileMemberList()
-        {
-            // CurrProfile의 멤버 리스트 출력
-            // AddNewMember(row);
+            // 현재 프로필의 멀티 프로필 멤버 정보
+            string query = $@"SELECT 
+                COALESCE(t.ProfileId, o.ProfileId) AS FinalProfileId,
+                    p.*
+                FROM UserProfileMap o
+                LEFT JOIN UserProfileMap t 
+                       ON o.TargetUserId = t.OwnerUserId 
+                      AND t.TargetUserId = {LoginForm.UserId}
+                JOIN Profile p
+                      ON p.ProfileId = COALESCE(t.ProfileId, o.ProfileId)
+                WHERE o.OwnerUserId = {LoginForm.UserId};";
+            MulProfileMember = DBconnector.GetInstance().Query(query);
         }
 
         private void AddNewMember(DataRow row)
