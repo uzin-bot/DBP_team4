@@ -11,11 +11,11 @@ public class kyg
 {
     private static TcpListener listener;
     // [UserID, TcpClient 객체] 맵: 로그인한 사용자 ID와 해당 클라이언트 연결 매핑
-    private static Dictionary<string, TcpClient> clients = new Dictionary<string, TcpClient>(); 
+    private static Dictionary<string, TcpClient> clients = new Dictionary<string, TcpClient>();
     private const int PORT = 8888;
     private static DBHelper dbHelper = new DBHelper(); // DBHelper 클래스 존재 가정
     // 서버 측 파일 저장 디렉토리 (4주차 5-F 검정)
-    private const string FILE_STORAGE_PATH = "C:\\DBP_ChatFiles\\"; 
+    private const string FILE_STORAGE_PATH = "C:\\DBP_ChatFiles\\";
 
     public static void StartServer()
     {
@@ -24,7 +24,7 @@ public class kyg
         {
             Directory.CreateDirectory(FILE_STORAGE_PATH);
         }
-        
+
         try
         {
             listener = new TcpListener(IPAddress.Any, PORT);
@@ -34,7 +34,7 @@ public class kyg
             while (true)
             {
                 // 클라이언트 연결 요청이 들어올 때까지 대기(블로킹)
-                TcpClient client = listener.AcceptTcpClient(); 
+                TcpClient client = listener.AcceptTcpClient();
                 Console.WriteLine($"[Server] New client connected: {client.Client.RemoteEndPoint}");
 
                 // 새 연결은 별도 스레드에서 처리
@@ -58,7 +58,7 @@ public class kyg
         NetworkStream stream = tcpClient.GetStream();
         byte[] buffer = new byte[1024];
         string userId = string.Empty;
-        
+
         // 5-F: 파일 전송 상태 관리 변수
         bool isReceivingFile = false;
         long fileSize = 0;
@@ -66,7 +66,7 @@ public class kyg
         string receiverId = string.Empty;
         string senderId = string.Empty;
         string fullPath = string.Empty;
-        
+
         FileStream fileStream = null; // 현재 파일 스트림 객체
         long remainingBytes = 0;     // 남은 파일 크기
 
@@ -80,7 +80,7 @@ public class kyg
 
                 if (isReceivingFile)
                 {
-                    // 🚨 1. 파일 데이터 수신 모드 🚨
+                    // 1. 파일 데이터 수신 모드
                     if (fileStream == null)
                     {
                         // FileStream 열기 (첫 파일 데이터 Read 시점)
@@ -99,17 +99,17 @@ public class kyg
                     if (remainingBytes <= 0)
                     {
                         // 파일 전송 완료
-                        fileStream.Dispose(); 
+                        fileStream.Dispose();
                         fileStream = null;
                         isReceivingFile = false;
 
                         // 2. 파일 전송 완료 알림 중계 및 DB 저장
                         string fileNotifyContent = $"FILE_RECEIVED:{fileName}:{fullPath}";
                         string fileNotifyMsg = $"CHAT:{senderId}:{receiverId}:{fileNotifyContent}";
-                        
+
                         SendMessageToClient(receiverId, fileNotifyMsg);
                         SaveChatMessageAndRecentChat(senderId, receiverId, $"[파일 전송 완료] {fileName}");
-                        
+
                         Console.WriteLine($"[File Success] {fileName} saved at {fullPath}");
                     }
 
@@ -142,8 +142,8 @@ public class kyg
                     }
 
                     string[] parts = receivedMessage.Split(new char[] { ':' }, 4);  // 중요: max 4 -> content에 ':' 포함 가능
-                    //if (parts.Length < 2) continue;
-                    
+                                                                                    //if (parts.Length < 2) continue;
+
                     string type = parts[0];
 
                     if (type == "LOGIN")
@@ -163,7 +163,11 @@ public class kyg
                         string content = parts[3];
 
                         // 중계 및 DB 저장
-                        SendMessageToClient(receiverId, receivedMessage);
+                        //SenderID와 ReceiverID가 다를 때만 전송(나와의 채팅 시 중복 방지)
+                        if (senderId != receiverId)
+                        {
+                            SendMessageToClient(receiverId, receivedMessage);
+                        }
                         SaveChatMessageAndRecentChat(senderId, receiverId, content);
                         Console.WriteLine($"[Chat] {senderId} -> {receiverId}: {content}");
                     }
@@ -210,7 +214,7 @@ public class kyg
 
             try
             {
-                // 🔥 연결이 실제로 살아있는지 확인 (중요)
+                // 연결이 실제로 살아있는지 확인
                 if (!receiverClient.Connected)
                 {
                     // 연결이 끊겨있으면 딕셔너리에서 제거
@@ -229,7 +233,7 @@ public class kyg
             }
             catch (Exception ex)
             {
-                // 🔥 예외 발생 시 연결 제거
+                // 예외 발생 시 연결 제거
                 lock (clients)
                 {
                     clients.Remove(receiverId);
@@ -248,8 +252,8 @@ public class kyg
             // 1. ChatMessage INSERT (3주차 5-C 대화 내용 유지 기반)
             string chatQuery = @"
                 INSERT INTO ChatMessage (SenderID, ReceiverID, Content, SendTime)
-                VALUES (@SenderID, @ReceiverID, @Content, NOW())"; 
-            
+                VALUES (@SenderID, @ReceiverID, @Content, NOW())";
+
             MySqlParameter[] chatParams = new MySqlParameter[]
             {
                 new MySqlParameter("@SenderID", senderId),
@@ -260,19 +264,19 @@ public class kyg
 
             // 2. RecentChat UPDATE (2주차 6-A 대화 목록 갱신 기반)
             UpdateRecentChat(senderId, receiverId);
-            UpdateRecentChat(receiverId, senderId); 
-            
+            UpdateRecentChat(receiverId, senderId);
+
         }
         catch (MySql.Data.MySqlClient.MySqlException sqlEx)
         {
-            Console.WriteLine($"[DB ERROR] SQL Exception: {sqlEx.Message}. Code: {sqlEx.Number}"); 
+            Console.WriteLine($"[DB ERROR] SQL Exception: {sqlEx.Message}. Code: {sqlEx.Number}");
         }
         catch (Exception dbEx)
         {
             Console.WriteLine($"[DB ERROR] General Exception: {dbEx.Message}");
         }
     }
-    
+
     private static void UpdateRecentChat(string userId, string partnerId)
     {
         // 2주차 6-A: 대화 목록 시간 갱신 로직
