@@ -1,16 +1,27 @@
-﻿using MySql.Data.MySqlClient;
+﻿using DBP_Chat; // Dept
+using DBP_WinformChat;
+using kyg;
+using leehaeun;
+using MySql.Data.MySqlClient;
 using System;
+using System.Data;
+using System.Data.Common;
 using System.Windows.Forms;
 
 namespace 남예솔
 {
 	public partial class chatlist : Form
 	{
-		string connStr = "server=223.130.151.111;port=3306;database=company;uid=root;pwd=비밀번호;";
+		//현재 로그인한 사용자 정보(UserInfo에서 가져옴)
+		private int currentUserId = Convert.ToInt32(UserInfo.User.Rows[0]["UserId"]);
+		private string currentUserName = UserInfo.User.Rows[0]["Name"].ToString();
+		private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
 
 		public chatlist()
 		{
 			InitializeComponent();
+
+			btndept.Click += btndept_Click; //클릭시 DeptForm으로 이동 
 		}
 
 		private void chatlist_Load(object sender, EventArgs e)
@@ -18,105 +29,92 @@ namespace 남예솔
 			LoadRecentChat();
 		}
 
-		//RecentChat + pinned_chat 반영
+		//RecentChat + 고정정렬
 		private void LoadRecentChat()
 		{
 			lvlist.Items.Clear();
 
-			using (MySqlConnection conn = new MySqlConnection(connStr))
+			string sql = $@"
+                SELECT 
+                    rc.PartnerUserId,
+                    u.Name,
+                    u.Nickname,
+                    d.DeptName,
+                    rc.LastMessage,        
+                    rc.LastMessageAt,
+                    rc.is_pinned
+                FROM RecentChat rc
+                JOIN User u ON rc.PartnerUserId = u.UserId
+                JOIN Department d ON u.DeptId = d.DeptId
+                WHERE rc.UserId = {currentUserId}
+                ORDER BY rc.is_pinned DESC, rc.LastMessageAt DESC";
+
+			DataTable dt = DBconnector.GetInstance().Query(sql);
+
+			foreach (DataRow row in dt.Rows)
 			{
-				conn.Open();
+				bool isPinned = Convert.ToInt32(row["is_pinned"]) == 1;
 
-				string sql = @"
-                    SELECT 
-                        r.emp_id,
-                        e.emp_name,
-                        d.dept_name,
-                        r.time,
-                        CASE WHEN p.emp_id IS NOT NULL THEN 1 ELSE 0 END AS is_pinned
-                    FROM RecentChat r
-                    JOIN employee e ON r.emp_id = e.emp_id
-                    JOIN department d ON e.dept_id = d.dept_id
-                    LEFT JOIN pinned_chat p ON r.emp_id = p.emp_id
-                    ORDER BY is_pinned DESC, r.time DESC;
-                ";
+				ListViewItem item = new ListViewItem();
+				item.ImageIndex = isPinned ? 0 : -1;
 
-				MySqlCommand cmd = new MySqlCommand(sql, conn);
-				MySqlDataReader dr = cmd.ExecuteReader();
+				item.SubItems.Add(row["PartnerUserId"].ToString());
+				item.SubItems.Add(row["Name"].ToString());
+				item.SubItems.Add(row["DeptName"].ToString());
 
-				while (dr.Read())
-				{
-					bool isPinned = dr.GetInt32("is_pinned") == 1;
+				//최근 메시지 길면 ...으로 잘림 (20제한 >> UI 변경시 늘리거나 해도 O)
+				string msg = row["LastMessage"].ToString();
+				if (msg.Length > 20) 
+					msg = msg.Substring(0, 20) + "…";
+				item.SubItems.Add(msg);
 
-					ListViewItem item = new ListViewItem();
-					item.ImageIndex = isPinned ? 0 : -1;
+				item.SubItems.Add(row["LastMessageAt"].ToString());
 
-					item.SubItems.Add(dr["emp_id"].ToString());
-					item.SubItems.Add(dr["emp_name"].ToString());
-					item.SubItems.Add(dr["dept_name"].ToString());
-					item.SubItems.Add(dr["time"].ToString());
-
-					lvlist.Items.Add(item);
-				}
+				lvlist.Items.Add(item);
 			}
 		}
 
-		//우클릭 항목 자동 선택
+		//우클릭 자동 선택
 		private void lvlist_MouseDown(object sender, MouseEventArgs e)
 		{
 			if (e.Button == MouseButtons.Right)
 			{
 				ListViewItem item = lvlist.GetItemAt(e.X, e.Y);
 				if (item != null)
-				{
 					item.Selected = true;
-				}
 			}
 		}
 
-		//더블 클릭  → 채팅창 열기
+		//더블클릭 → 채팅창 열기
 		private void lvlist_DoubleClick(object sender, EventArgs e)
 		{
 			if (lvlist.SelectedItems.Count == 0) return;
 
-			string targetID = lvlist.SelectedItems[0].SubItems[1].Text;
+			int targetUserId = Convert.ToInt32(lvlist.SelectedItems[0].SubItems[1].Text);
 
-			new ChatForm(targetID).Show();
+			new ChatForm(currentUserId, targetUserId).Show();
 		}
 
-		//채팅방 고정 추가
-		private void PinChat(string empId)
+		//고정하기
+		private void PinChat(int partnerUserId)
 		{
-			using (MySqlConnection conn = new MySqlConnection(connStr))
-			{
-				conn.Open();
+			string sql = $@"
+                UPDATE RecentChat 
+                SET is_pinned = 1
+                WHERE UserId = {currentUserId} AND PartnerUserId = {partnerUserId}";
 
-				string check = "SELECT COUNT(*) FROM pinned_chat WHERE emp_id=@id";
-				MySqlCommand c = new MySqlCommand(check, conn);
-				c.Parameters.AddWithValue("@id", empId);
-
-				if (Convert.ToInt32(c.ExecuteScalar()) > 0)
-					return;
-
-				string insert = "INSERT INTO pinned_chat(emp_id) VALUES(@id)";
-				MySqlCommand cmd = new MySqlCommand(insert, conn);
-				cmd.Parameters.AddWithValue("@id", empId);
-				cmd.ExecuteNonQuery();
-			}
+			DBconnector.GetInstance().NonQuery(sql);
 		}
 
 		//고정 해제
-		private void UnpinChat(string empId)
+		private void UnpinChat(int partnerUserId)
 		{
-			using (MySqlConnection conn = new MySqlConnection(connStr))
-			{
-				conn.Open();
+			string sql = $@"
+                UPDATE RecentChat 
+                SET is_pinned = 0 
+                WHERE UserId = {currentUserId} AND PartnerUserId = {partnerUserId}";
 
-				string sql = "DELETE FROM pinned_chat WHERE emp_id=@id";
-				MySqlCommand cmd = new MySqlCommand(sql, conn);
-				cmd.Parameters.AddWithValue("@id", empId);
-				cmd.ExecuteNonQuery();
-			}
+			DBconnector.GetInstance().NonQuery(sql);
 		}
 
 		//우클릭 메뉴 → 고정하기
@@ -124,9 +122,8 @@ namespace 남예솔
 		{
 			if (lvlist.SelectedItems.Count == 0) return;
 
-			string empId = lvlist.SelectedItems[0].SubItems[1].Text;
-
-			PinChat(empId);
+			int partnerUserId = Convert.ToInt32(lvlist.SelectedItems[0].SubItems[1].Text);
+			PinChat(partnerUserId);
 			LoadRecentChat();
 		}
 
@@ -135,10 +132,16 @@ namespace 남예솔
 		{
 			if (lvlist.SelectedItems.Count == 0) return;
 
-			string empId = lvlist.SelectedItems[0].SubItems[1].Text;
-
-			UnpinChat(empId);
+			int partnerUserId = Convert.ToInt32(lvlist.SelectedItems[0].SubItems[1].Text);
+			UnpinChat(partnerUserId);
 			LoadRecentChat();
+		}
+
+		//btndept → 친구 목록(DeptForm)으로 이동
+		private void btndept_Click(object sender, EventArgs e)
+		{
+			Dept deptForm = new Dept(currentUserId, currentUserName, currentUserNickname);
+			deptForm.Show();
 		}
 	}
 }

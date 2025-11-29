@@ -20,12 +20,14 @@
 			components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(chatlist));
 			panel1 = new Panel();
+			btndept = new Button();
 			label1 = new Label();
 			lvlist = new ListView();
 			columnHeaderIcon = new ColumnHeader();
 			columnHeader1 = new ColumnHeader();
 			columnHeader2 = new ColumnHeader();
 			columnHeader3 = new ColumnHeader();
+			columnHeaderMessage = new ColumnHeader();
 			columnHeader4 = new ColumnHeader();
 			contextMenuStrip1 = new ContextMenuStrip(components);
 			addpin = new ToolStripMenuItem();
@@ -38,12 +40,22 @@
 			// panel1
 			// 
 			panel1.BackColor = SystemColors.GradientInactiveCaption;
+			panel1.Controls.Add(btndept);
 			panel1.Controls.Add(label1);
 			panel1.Controls.Add(lvlist);
 			panel1.Location = new Point(12, 12);
 			panel1.Name = "panel1";
 			panel1.Size = new Size(827, 825);
 			panel1.TabIndex = 1;
+			// 
+			// btndept
+			// 
+			btndept.Location = new Point(673, 22);
+			btndept.Name = "btndept";
+			btndept.Size = new Size(112, 34);
+			btndept.TabIndex = 2;
+			btndept.Text = "친구 목록";
+			btndept.UseVisualStyleBackColor = true;
 			// 
 			// label1
 			// 
@@ -57,7 +69,7 @@
 			// 
 			// lvlist
 			// 
-			lvlist.Columns.AddRange(new ColumnHeader[] { columnHeaderIcon, columnHeader1, columnHeader2, columnHeader3, columnHeader4 });
+			lvlist.Columns.AddRange(new ColumnHeader[] { columnHeaderIcon, columnHeader1, columnHeader2, columnHeader3, columnHeaderMessage, columnHeader4 });
 			lvlist.ContextMenuStrip = contextMenuStrip1;
 			lvlist.FullRowSelect = true;
 			lvlist.GridLines = true;
@@ -79,22 +91,27 @@
 			// columnHeader1
 			// 
 			columnHeader1.Text = "ID";
-			columnHeader1.Width = 140;
+			columnHeader1.Width = 100;
 			// 
 			// columnHeader2
 			// 
 			columnHeader2.Text = "이름";
-			columnHeader2.Width = 190;
+			columnHeader2.Width = 120;
 			// 
 			// columnHeader3
 			// 
 			columnHeader3.Text = "부서";
-			columnHeader3.Width = 190;
+			columnHeader3.Width = 130;
+			// 
+			// columnHeaderMessage
+			// 
+			columnHeaderMessage.Text = "최근 메시지";
+			columnHeaderMessage.Width = 250;
 			// 
 			// columnHeader4
 			// 
 			columnHeader4.Text = "시간";
-			columnHeader4.Width = 260;
+			columnHeader4.Width = 183;
 			// 
 			// contextMenuStrip1
 			// 
@@ -146,10 +163,12 @@
 		private ColumnHeader columnHeader1;
 		private ColumnHeader columnHeader2;
 		private ColumnHeader columnHeader3;
+		private ColumnHeader columnHeaderMessage; // ★ 추가됨
 		private ColumnHeader columnHeader4;
 		private ImageList imageList1;
 		private ContextMenuStrip contextMenuStrip1;
 		private ToolStripMenuItem addpin;
 		private ToolStripMenuItem deletepin;
+		private Button btndept;
 	}
 }
