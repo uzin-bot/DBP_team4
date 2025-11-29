@@ -32,6 +32,7 @@
 			lBlist = new ListBox();
 			label4 = new Label();
 			btnChat = new Button();
+			btnchatlist = new Button();
 			gpinfo.SuspendLayout();
 			panel1.SuspendLayout();
 			SuspendLayout();
@@ -39,7 +40,7 @@
 			// tvdept
 			// 
 			tvdept.BackColor = SystemColors.GradientInactiveCaption;
-			tvdept.Location = new Point(29, 41);
+			tvdept.Location = new Point(23, 28);
 			tvdept.Name = "tvdept";
 			tvdept.Size = new Size(490, 816);
 			tvdept.TabIndex = 0;
@@ -57,7 +58,7 @@
 			gpinfo.ForeColor = SystemColors.Desktop;
 			gpinfo.Location = new Point(542, 41);
 			gpinfo.Name = "gpinfo";
-			gpinfo.Size = new Size(300, 303);
+			gpinfo.Size = new Size(300, 347);
 			gpinfo.TabIndex = 1;
 			gpinfo.TabStop = false;
 			gpinfo.Text = "직원 검색";
@@ -66,7 +67,7 @@
 			// 
 			btnsearch.BackColor = SystemColors.GradientActiveCaption;
 			btnsearch.FlatStyle = FlatStyle.Popup;
-			btnsearch.Location = new Point(92, 253);
+			btnsearch.Location = new Point(92, 283);
 			btnsearch.Name = "btnsearch";
 			btnsearch.Size = new Size(112, 34);
 			btnsearch.TabIndex = 8;
@@ -75,21 +76,21 @@
 			// 
 			// txtdept
 			// 
-			txtdept.Location = new Point(101, 200);
+			txtdept.Location = new Point(101, 213);
 			txtdept.Name = "txtdept";
 			txtdept.Size = new Size(176, 31);
 			txtdept.TabIndex = 7;
 			// 
 			// txtname
 			// 
-			txtname.Location = new Point(101, 124);
+			txtname.Location = new Point(101, 137);
 			txtname.Name = "txtname";
 			txtname.Size = new Size(176, 31);
 			txtname.TabIndex = 6;
 			// 
 			// txtID
 			// 
-			txtID.Location = new Point(101, 52);
+			txtID.Location = new Point(101, 65);
 			txtID.Name = "txtID";
 			txtID.Size = new Size(176, 31);
 			txtID.TabIndex = 5;
@@ -97,7 +98,7 @@
 			// label2
 			// 
 			label2.AutoSize = true;
-			label2.Location = new Point(27, 203);
+			label2.Location = new Point(27, 216);
 			label2.Name = "label2";
 			label2.Size = new Size(58, 25);
 			label2.TabIndex = 3;
@@ -106,7 +107,7 @@
 			// label3
 			// 
 			label3.AutoSize = true;
-			label3.Location = new Point(27, 52);
+			label3.Location = new Point(27, 65);
 			label3.Name = "label3";
 			label3.Size = new Size(40, 25);
 			label3.TabIndex = 4;
@@ -115,7 +116,7 @@
 			// label1
 			// 
 			label1.AutoSize = true;
-			label1.Location = new Point(27, 124);
+			label1.Location = new Point(27, 137);
 			label1.Name = "label1";
 			label1.Size = new Size(58, 25);
 			label1.TabIndex = 2;
@@ -127,7 +128,7 @@
 			panel1.Controls.Add(btnadd);
 			panel1.Controls.Add(lBlist);
 			panel1.Controls.Add(label4);
-			panel1.Location = new Point(542, 372);
+			panel1.Location = new Point(542, 425);
 			panel1.Name = "panel1";
 			panel1.Size = new Size(300, 420);
 			panel1.TabIndex = 2;
@@ -176,19 +177,29 @@
 			// 
 			btnChat.BackColor = SystemColors.GradientActiveCaption;
 			btnChat.FlatStyle = FlatStyle.Popup;
-			btnChat.Location = new Point(634, 823);
+			btnChat.Location = new Point(634, 876);
 			btnChat.Name = "btnChat";
 			btnChat.Size = new Size(112, 34);
 			btnChat.TabIndex = 3;
 			btnChat.Text = "채팅하기";
 			btnChat.UseVisualStyleBackColor = false;
 			// 
+			// btnchatlist
+			// 
+			btnchatlist.Location = new Point(386, 876);
+			btnchatlist.Name = "btnchatlist";
+			btnchatlist.Size = new Size(112, 34);
+			btnchatlist.TabIndex = 4;
+			btnchatlist.Text = "채팅 목록";
+			btnchatlist.UseVisualStyleBackColor = true;
+			// 
 			// Dept
 			// 
 			AutoScaleDimensions = new SizeF(10F, 25F);
 			AutoScaleMode = AutoScaleMode.Font;
 			BackColor = SystemColors.Window;
-			ClientSize = new Size(873, 902);
+			ClientSize = new Size(873, 942);
+			Controls.Add(btnchatlist);
 			Controls.Add(btnChat);
 			Controls.Add(panel1);
 			Controls.Add(gpinfo);
@@ -221,5 +232,6 @@
 		private System.Windows.Forms.Button btndelete;
 		private System.Windows.Forms.Button btnadd;
 		private System.Windows.Forms.Button btnChat;
+		private Button btnchatlist;
 	}
 }

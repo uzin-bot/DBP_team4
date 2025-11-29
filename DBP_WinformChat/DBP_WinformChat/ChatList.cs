@@ -12,17 +12,68 @@ namespace 남예솔
     public partial class chatlist : Form
     {
         // 현재 로그인한 사용자 정보
+        // UserInfo의 DataTable User 정보 불러오는걸로 수정
+        // UserInfo.User에서 바로 받아오셔도 됩니다!
+
+        //private int currentUserId = Convert.ToInt32(UserInfo.User.Rows[0]["UserId"]);
+        //private string currentUserName = UserInfo.User.Rows[0]["Name"].ToString();
+        //private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+
+        // 1. 변수 선언만 해둡니다.
         private int currentUserId;
         private string currentUserName;
         private string currentUserNickname;
 
-        public chatlist(int userId, string name, string nickname)
+        public chatlist()
         {
             InitializeComponent();
-            this.currentUserId = userId;
-            this.currentUserName = name;
-            this.currentUserNickname = nickname;
+
+            // 2. 생성자에서 안전하게 데이터를 가져옵니다.
+
+            // (1) 사용자 기본 정보 (UserInfo.User)
+            if (UserInfo.User.Rows.Count > 0)
+            {
+                currentUserId = Convert.ToInt32(UserInfo.User.Rows[0]["UserId"]);
+                currentUserName = UserInfo.User.Rows[0]["Name"].ToString();
+            }
+            else
+            {
+                // 만약 유저 정보도 없다면 예외 처리 (로그인 오류 등)
+                MessageBox.Show("회원 정보를 불러올 수 없습니다.");
+                this.Close();
+                return;
+            }
+
+            // (2) 프로필 정보 (UserInfo.Profile) - 여기가 문제의 원인!
+            // 프로필 데이터가 있는지 확인(Count > 0)하고 가져옵니다.
+            if (UserInfo.Profile.Rows.Count > 0)
+            {
+                currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+            }
+            else
+            {
+                // 프로필이 아직 설정되지 않은 경우 기본값 사용
+                currentUserNickname = currentUserName; // 닉네임 없으면 그냥 이름 사용
+            }
         }
+
+        /*
+        private int currentUserId;
+        private string currentUserName;
+        private string currentUserNickname;
+        */
+
+        /*
+        public chatlist()
+        {
+            InitializeComponent();
+            
+            //this.currentUserId = userId;
+            //this.currentUserName = name;
+            //this.currentUserNickname = nickname;
+            
+        }
+        */
 
         private void chatlist_Load(object sender, EventArgs e)
         {
@@ -149,14 +200,17 @@ namespace 남예솔
         // 로그아웃 
         private void button2_Click(object sender, EventArgs e)
         {
-
-            // 로그인 폼 다시 열기
-            Login loginForm = new Login();
-            loginForm.Show();
-
+            // 로그아웃 여부 확인
+            LoginForm.Logout = true;
             // 현재 폼 닫기
             this.Close();
+        }
 
+        // 사용자 정보
+        private void button3_Click(object sender, EventArgs e)
+        {
+            var f = new EditInfoForm();
+            f.Show();
         }
     }
 }

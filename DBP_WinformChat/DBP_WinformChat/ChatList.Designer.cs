@@ -33,6 +33,7 @@
             imageList1 = new ImageList(components);
             button1 = new Button();
             button2 = new Button();
+            button3 = new Button();
             panel1.SuspendLayout();
             contextMenuStrip1.SuspendLayout();
             SuspendLayout();
@@ -53,7 +54,7 @@
             label1.Font = new Font("맑은 고딕", 12F);
             label1.Location = new Point(17, 22);
             label1.Name = "label1";
-            label1.Size = new Size(186, 28);
+            label1.Size = new Size(150, 21);
             label1.TabIndex = 0;
             label1.Text = "현재 채팅중인 목록";
             // 
@@ -103,19 +104,19 @@
             contextMenuStrip1.ImageScalingSize = new Size(24, 24);
             contextMenuStrip1.Items.AddRange(new ToolStripItem[] { addpin, deletepin });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(144, 52);
+            contextMenuStrip1.Size = new Size(127, 48);
             // 
             // addpin
             // 
             addpin.Name = "addpin";
-            addpin.Size = new Size(143, 24);
+            addpin.Size = new Size(126, 22);
             addpin.Text = "고정하기";
             addpin.Click += addpin_Click;
             // 
             // deletepin
             // 
             deletepin.Name = "deletepin";
-            deletepin.Size = new Size(143, 24);
+            deletepin.Size = new Size(126, 22);
             deletepin.Text = "고정 해제";
             deletepin.Click += deletepin_Click;
             // 
@@ -138,7 +139,7 @@
             // 
             // button2
             // 
-            button2.Location = new Point(181, 858);
+            button2.Location = new Point(251, 859);
             button2.Name = "button2";
             button2.Size = new Size(94, 29);
             button2.TabIndex = 3;
@@ -146,9 +147,20 @@
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
             // 
+            // button3
+            // 
+            button3.Location = new Point(151, 859);
+            button3.Name = "button3";
+            button3.Size = new Size(94, 29);
+            button3.TabIndex = 4;
+            button3.Text = "로그아웃";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
+            // 
             // chatlist
             // 
             ClientSize = new Size(851, 900);
+            Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(button1);
             Controls.Add(panel1);
@@ -177,5 +189,6 @@
 		private ToolStripMenuItem deletepin;
         private Button button1;
         private Button button2;
+        private Button button3;
     }
 }

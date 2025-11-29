@@ -40,7 +40,7 @@ namespace kyg
             this.Text = $"{partnerName} 님과의 채팅 ({myId})";
 
 
-            // 🚨🚨🚨 5-E: 이모티콘 맵 초기화 (Resources 폴더 직접 참조) 🚨🚨🚨
+            // 5-E: 이모티콘 맵 초기화 (Resources 폴더 직접 참조)
             LoadEmojisFromDirectory();
             // 5-E: 이모티콘 맵 초기화 (ChatForm.resx 리소스 사용)
             //formResourceManager = new ResourceManager(typeof(ChatForm));

@@ -93,10 +93,8 @@ C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\kyg.ChatForm.resources
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\남예솔.chatlist.resources
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_Chat.Dept.resources
-C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.Login.resources
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.Properties.Resources.resources
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_Chat.SearchResultForm.resources
-C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.SignUp.resources
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.csproj.GenerateResource.cache
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.AssemblyInfoInputs.cache
@@ -112,3 +110,7 @@ C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\bin\Debug\net8.0-windows\Resources\Emojis\smiley.png
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\bin\Debug\net8.0-windows\Resources\Emojis\crying.png
 C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\bin\Debug\net8.0-windows\Resources\Emojis\heart.png
+C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.EditInfoForm.resources
+C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.LoginForm.resources
+C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.SearchAddressForm.resources
+C:\Users\OWNER\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.SignUpForm.resources
