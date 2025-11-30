@@ -7,32 +7,30 @@ namespace leehaeun
     {
 
         // 사용자 정보
-        public static DataTable User { get; private set; } = null!;
+        // DataTable -> DataRow
+        public static DataRow User { get; private set; } = null!;
 
-        // 사용자 기본 프로필
+        // 사용자 프로필
         public static DataTable Profile { get; private set; } = null!;
 
-        // 내가 상대에게 보여줄 멀티프로필
-        public static DataTable? OutboundProfile { get; private set; } = null;
-
-        // 상대가 나에게 보여줄 멀티프로필
-        // public static DataTable? InboundProfile { get; private set; } = null;
-        // 프로필 열 때만 받아와도 될듯(더블클릭하면 바로 받아와서 프로필 열리게)
+        // 멀티 프로필 테이블 삭제
 
         // DB에서 사용자 및 프로필 정보 불러오기
         public static void GetInfo()
         {
             GetUserInfo();
             GetProfileInfo();
-            GetMulProfileMapping();
+            // 멀티 프로필 가져오는 메서드 삭제
         }
 
         // DB에서 사용자 정보 불러오기
         public static void GetUserInfo()
         {
             string query = $"SELECT * FROM User WHERE Userid = '{LoginForm.UserId}';";
-            User = DBconnector.GetInstance().Query(query);
-            int DeptId = Convert.ToInt32(User.Rows[0]["DeptId"]);
+            DataTable dt = DBconnector.GetInstance().Query(query);
+            dt.Columns.Add("DeptName", typeof(string));
+            User = dt.Rows[0];
+            int DeptId = Convert.ToInt32(User["DeptId"]);
             GetDeptName(DeptId);
         }
 
@@ -43,22 +41,14 @@ namespace leehaeun
             Profile = DBconnector.GetInstance().Query(query);
         }
 
-        // DB에서 멀티프로필 매핑 정보 불러오기
-        public static void GetMulProfileMapping()
-        {
-            string oquery = $"SELECT * FROM UserProfileMap WHERE OwnerUserId = {LoginForm.UserId};";
-            OutboundProfile = DBconnector.GetInstance().Query(oquery);
-            //string iquery = $"SELECT * FROM UserProfileMap WHERE TargetUserId = {LoginForm.UserId};";
-            //InboundProfile = DBconnector.GetInstance().Query(iquery);
-        }
+        // 멀티 프로필 매핑 정보 불러오기 메서드 삭제
 
         // DeptId로 DeptName 찾고 User 테이블에 추가
         private static void GetDeptName(int DeptId)
         {
             string query = $"SELECT * FROM Department WHERE DeptId = {DeptId};";
             DataTable dt = DBconnector.GetInstance().Query(query);
-            User.Columns.Add("DeptName", typeof(string));
-            User.Rows[0]["DeptName"] = dt.Rows[0]["DeptName"];
+            User["DeptName"] = dt.Rows[0]["DeptName"];
         }
 
         // DataTable 초기화
@@ -66,8 +56,7 @@ namespace leehaeun
         {
             User = null!;
             Profile = null!;
-            OutboundProfile = null;
-            //InboundProfile = null!;
+            // 멀티 프로필 테이블 초기화 삭제
         }
     }
 }
