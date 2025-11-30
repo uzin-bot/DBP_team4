@@ -6,6 +6,9 @@ using System.Net;
 using System;
 using System.IO;
 using MySql.Data.MySqlClient;
+using kyg_chatServer;
+using System.Data;
+using System.Data.Common;
 
 public class kyg
 {
@@ -117,7 +120,7 @@ public class kyg
                 }
                 else
                 {
-                    // 🚨 2. 텍스트 데이터 수신 모드 (LOGIN, CHAT, FILE_HEADER) 🚨
+                    // 2. 텍스트 데이터 수신 모드 (LOGIN, CHAT, FILE_HEADER)
                     string receivedMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead).TrimEnd('\0');
                     Console.WriteLine($"[Received Raw] {receivedMessage}");
 
@@ -244,32 +247,30 @@ public class kyg
     }
 
 
-    private static void SaveChatMessageAndRecentChat(string senderId, string receiverId, string content)
+    private static void SaveChatMessageAndRecentChat(string senderId, string receiverId, string content, bool isFile = false, string filePath = null)
     {
         // 2주차 5-A: 메시지 DB 저장 로직 (비즈니스 로직)
         try
         {
             // 1. ChatMessage INSERT (3주차 5-C 대화 내용 유지 기반)
-            string chatQuery = @"
-                INSERT INTO ChatMessage (SenderID, ReceiverID, Content, SendTime)
-                VALUES (@SenderID, @ReceiverID, @Content, NOW())";
+            string filePathValue = filePath != null ? $"'{filePath}'" : "NULL";
+            string chatQuery = $@"
+                INSERT INTO ChatMessage (FromUserId, ToUserId, Content, SentAt, IsRead, IsFile, FilePath)
+                VALUES ({senderId}, {receiverId}, '{content}', NOW(), 0, {(isFile ? 1 : 0)}, {filePathValue})";
 
-            MySqlParameter[] chatParams = new MySqlParameter[]
-            {
-                new MySqlParameter("@SenderID", senderId),
-                new MySqlParameter("@ReceiverID", receiverId),
-                new MySqlParameter("@Content", content)
-            };
-            dbHelper.ExecuteNonQuery(chatQuery, chatParams);
+            DBconnector.GetInstance().NonQuery(chatQuery);
+
+
+            // 방금 삽입한 MessageId 가져오기
+            string getIdQuery = "SELECT LAST_INSERT_ID()";
+            DataTable dt = DBconnector.GetInstance().Query(getIdQuery);
+            long messageId = Convert.ToInt64(dt.Rows[0][0]);
+
 
             // 2. RecentChat UPDATE (2주차 6-A 대화 목록 갱신 기반)
-            UpdateRecentChat(senderId, receiverId);
-            UpdateRecentChat(receiverId, senderId);
+            UpdateRecentChat(senderId, receiverId, messageId);
+            UpdateRecentChat(receiverId, senderId, messageId);
 
-        }
-        catch (MySql.Data.MySqlClient.MySqlException sqlEx)
-        {
-            Console.WriteLine($"[DB ERROR] SQL Exception: {sqlEx.Message}. Code: {sqlEx.Number}");
         }
         catch (Exception dbEx)
         {
@@ -277,20 +278,43 @@ public class kyg
         }
     }
 
-    private static void UpdateRecentChat(string userId, string partnerId)
+    private static void UpdateRecentChat(string userId, string partnerId, long lastMessageId)
     {
         // 2주차 6-A: 대화 목록 시간 갱신 로직
-        string query = @"
-            INSERT INTO RecentChat (UserID, PartnerID, LastMessageTime)
-            VALUES (@UserID, @PartnerID, NOW())
-            ON DUPLICATE KEY UPDATE LastMessageTime = NOW()";
-
-        MySqlParameter[] parameters = new MySqlParameter[]
+        try
         {
-            new MySqlParameter("@UserID", userId),
-            new MySqlParameter("@PartnerID", partnerId)
-        };
+            // 먼저 존재 여부 확인 (기존에는 duplicate 써서 간단하게 처리했지만 이렇게 바꿈0
+            string checkQuery =
+                "SELECT COUNT(*) FROM RecentChat " +
+                "WHERE UserId = " + userId + " AND PartnerUserId = " + partnerId;
 
-        dbHelper.ExecuteNonQuery(query, parameters);
+            DataTable dt = DBconnector.GetInstance().Query(checkQuery);
+            int count = Convert.ToInt32(dt.Rows[0][0]);
+
+            string query;
+            if (count > 0)
+            {
+                // UPDATE (있으면 업데이트)
+                query =
+                    "UPDATE RecentChat " +
+                    "SET LastMessageId = " + lastMessageId + ", " +
+                        "LastMessageAt = NOW(), " +
+                        "UnreadCount = UnreadCount + 1 " +
+                    "WHERE UserId = " + userId + " AND PartnerUserId = " + partnerId;
+            }
+            else
+            {
+                // INSERT (없으면 인서트)
+                query =
+                    "INSERT INTO RecentChat (UserId, PartnerUserId, LastMessageId, LastMessageAt, is_pinned, UnreadCount) " +
+                    "VALUES (" + userId + ", " + partnerId + ", " + lastMessageId + ", NOW(), 0, 1)";
+            }
+
+            DBconnector.GetInstance().NonQuery(query);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("[DB ERROR] UpdateRecentChat: " + ex.Message);
+        }
     }
 }

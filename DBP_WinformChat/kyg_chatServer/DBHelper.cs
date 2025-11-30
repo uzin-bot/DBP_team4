@@ -5,7 +5,7 @@ using System;
 public class DBHelper
 {
     // DB 연결 문자열: 실제 사용하시는 정보로 설정되었습니다.
-    private readonly string connectionString = "Server=223.130.151.111;Database=s5762981;Uid=s5762981;Pwd=s5762981;";
+    private readonly string connectionString = "Server=223.130.151.111;Database=s5840357;Uid=s5840357;Pwd=s5840357;";
 
     // DB 연결 객체 반환
     public MySqlConnection GetConnection()

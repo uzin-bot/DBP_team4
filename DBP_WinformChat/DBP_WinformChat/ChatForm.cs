@@ -202,8 +202,8 @@ namespace kyg
             try
             {
                 string query = $" SELECT  FromUserId, Content, SentAt FROM ChatMessage" +
-                    $" WHERE (FromUserId = '{myId}' AND ToUserId = '{partnerId}') " +
-                    $"OR (FromUserId = '{partnerId}' AND ToUserId = '{myId}') ORDER BY SentAt ASC";
+                    $" WHERE (FromUserId = {myId} AND ToUserId = {partnerId}) " +
+                    $"OR (FromUserId = {partnerId} AND ToUserId = {myId}) ORDER BY SentAt ASC";
 
                 DataTable history = DBconnector.GetInstance().Query(query);
 
@@ -213,8 +213,8 @@ namespace kyg
                 {
                     int senderId = Convert.ToInt32(row["FromUserId"]); // string -> int 로 수정
                     string content = row["Content"].ToString();
-                    // SendTime 컬럼을 DateTime 형식으로 읽어와 포맷
-                    DateTime sendTime = (DateTime)row["SendTime"];
+                    // SendAT 컬럼을 DateTime 형식으로 읽어와 포맷
+                    DateTime sendTime = (DateTime)row["SentAt"];
                     string timeString = sendTime.ToString("tt hh:mm");
 
                     if (content.StartsWith("EMOJI:"))
