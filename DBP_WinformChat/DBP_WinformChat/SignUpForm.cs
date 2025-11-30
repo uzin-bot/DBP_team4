@@ -82,13 +82,9 @@ namespace leehaeun
                 string pwHash = Sha256.Instance.HashSHA256(pw);
                 string query1 = $@"INSERT INTO
                     User(LoginId, PasswordHash, Name, Nickname, Address, ZipCode, DeptId, Role)
-                    VALUES('{id}', '{pwHash}', '{name}', '{nickname}', '{address}', '{zipCode}', {deptId}, 'user');";
+                    VALUES('{id}', '{pwHash}', '{name}', '{nickname}', '{address}', {zipCode}, {deptId}, 'user');";
                 int affected1 = DBconnector.GetInstance().NonQuery(query1);
-                if (affected1 <= 0)
-                {
-                    MessageBox.Show("회원가입 실패");
-                    return;
-                }
+                if (affected1 <= 0) MessageBox.Show("회원가입 실패");
 
                 // 방금 가입한 계정의 UserId
                 string query2 = $"SELECT UserId FROM User WHERE LoginId = '{id}';";
@@ -99,24 +95,16 @@ namespace leehaeun
                 string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 string query3 = $@"INSERT INTO
                     Profile(UserId, NickName, IsDefault, CreatedAt)
-                    VALUES({UserId}, '{nickname}', 1, '{now}');";
+                    VALUES('{UserId}', '{nickname}', 1, '{now}');";
                 int affected2 = DBconnector.GetInstance().NonQuery(query3);
-                if (affected2 <= 0)
-                {
-                    MessageBox.Show("프로필 생성 실패");
-                    return;
-                }
+                if (affected2 <= 0) MessageBox.Show("프로필 생성 실패");
 
                 // 프로필 이미지 있으면 업데이트
                 if (!string.IsNullOrEmpty(profileImage))
                 {
                     string query4 = $"UPDATE Profile SET ProfileImage = '{profileImage}' WHERE UserId = {UserId} AND IsDefault = 1;";
                     int affected3 = DBconnector.GetInstance().NonQuery(query4);
-                    if (affected3 <= 0)
-                    {
-                        MessageBox.Show("프로필 이미지 업로드 실패");
-                        return;
-                    }
+                    if (affected3 <= 0) MessageBox.Show("프로필 이미지 업로드 실패");
                 }
 
                 MessageBox.Show("회원가입 완료");

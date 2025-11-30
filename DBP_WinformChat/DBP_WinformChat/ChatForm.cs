@@ -39,13 +39,9 @@ namespace kyg
             string partnerName = GetUserName(partnerId);
             this.Text = $"{partnerName} 님과의 채팅 ({myId})";
 
-
-            // 5-E: 이모티콘 맵 초기화 (Resources 폴더 직접 참조)
-            LoadEmojisFromDirectory();
             // 5-E: 이모티콘 맵 초기화 (ChatForm.resx 리소스 사용)
-            //formResourceManager = new ResourceManager(typeof(ChatForm));
+            formResourceManager = new ResourceManager(typeof(ChatForm));
 
-            /*
             try
             {
                 emojiMap.Add("EMO1", (Image)formResourceManager.GetObject("smiley"));
@@ -56,7 +52,7 @@ namespace kyg
             {
                 MessageBox.Show("이모티콘 리소스 로드 중 오류 발생. resx 파일 확인 필요: " + ex.Message, "리소징 오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            */
+
             if (niChatAlert != null) niChatAlert.Visible = true;
 
 
@@ -74,48 +70,9 @@ namespace kyg
             this.btnEmojiSmiley.Click += btnEmojiSmiley_Click;
             this.btnEmojiCrying.Click += btnEmojiCrying_Click;
             this.btnEmojiHeart.Click += btnEmojiHeart_Click;
+
             this.FormClosing += ChatForm_FormClosing;
         }
-
-        private void LoadEmojisFromDirectory()
-        {
-            // 1. 실행 파일이 있는 디렉토리를 기준으로 'Resources\Emojis' 폴더 경로를 생성합니다.
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string emojiDirPath = Path.Combine(baseDir, "Resources", "Emojis");
-
-            // 2. 파일에서 이미지를 로드하고 맵에 추가
-            try
-            {
-                // MemoryStream을 사용하여 파일 잠금을 방지하며 이미지를 로드
-                // EMO1 = smiley.png
-                using (var streamSmiley = new MemoryStream(File.ReadAllBytes(Path.Combine(emojiDirPath, "smiley.png"))))
-                {
-                    emojiMap.Add("EMO1", Image.FromStream(streamSmiley));
-                }
-                // EMO2 = crying.png
-                using (var streamCrying = new MemoryStream(File.ReadAllBytes(Path.Combine(emojiDirPath, "crying.png"))))
-                {
-                    emojiMap.Add("EMO2", Image.FromStream(streamCrying));
-                }
-                // EMO3 = heart.png
-                using (var streamHeart = new MemoryStream(File.ReadAllBytes(Path.Combine(emojiDirPath, "heart.png"))))
-                {
-                    emojiMap.Add("EMO3", Image.FromStream(streamHeart));
-                }
-            }
-            catch (FileNotFoundException ex)
-            {
-                // 파일 경로 오류가 발생하면 사용자에게 정확한 경로를 안내
-                MessageBox.Show($"이모지 파일 로드 실패: {ex.Message}.\n(확인 경로: {emojiDirPath})",
-                                "파일 경로 오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("이미지 로드 중 예상치 못한 오류 발생: " + ex.Message,
-                                "로딩 오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
 
         // 추가 메서드
         // User 테이블에서 이름 가져오기
@@ -180,9 +137,7 @@ namespace kyg
                 stream.Flush();
 
                 // 3. 내 화면에 표시 (로컬 출력)
-                // 시간 표시 통합
-                string currentTime = DateTime.Now.ToString("tt hh:mm");
-                DisplayEmoji(myId, emojiCode, currentTime);
+                DisplayEmoji(myId, emojiCode);
             }
             catch (Exception ex)
             {
@@ -202,8 +157,8 @@ namespace kyg
             try
             {
                 string query = $" SELECT  FromUserId, Content, SentAt FROM ChatMessage" +
-                    $" WHERE (FromUserId = {myId} AND ToUserId = {partnerId}) " +
-                    $"OR (FromUserId = {partnerId} AND ToUserId = {myId}) ORDER BY SentAt ASC";
+                    $" WHERE (FromUserId = '{myId}' AND ToUserId = '{partnerId}') " +
+                    $"OR (FromUserId = '{partnerId}' AND ToUserId = '{myId}') ORDER BY SentAt ASC";
 
                 DataTable history = DBconnector.GetInstance().Query(query);
 
@@ -213,18 +168,14 @@ namespace kyg
                 {
                     int senderId = Convert.ToInt32(row["FromUserId"]); // string -> int 로 수정
                     string content = row["Content"].ToString();
-                    // SendAT 컬럼을 DateTime 형식으로 읽어와 포맷
-                    DateTime sendTime = (DateTime)row["SentAt"];
-                    string timeString = sendTime.ToString("tt hh:mm");
 
                     if (content.StartsWith("EMOJI:"))
                     {
-                        DisplayEmoji(senderId, content.Substring(6), timeString);
+                        DisplayEmoji(senderId, content.Substring(6));
                     }
                     else
                     {
-                        // DisplayMessage에 timeString 전달
-                        DisplayMessage($"[{senderId}]: {content}", senderId == myId, timeString);
+                        DisplayMessage($"[{senderId}]: {content}\n", senderId == myId);
                     }
                 }
             }
@@ -279,9 +230,7 @@ namespace kyg
                 stream.Write(data, 0, data.Length);
                 stream.Flush();
 
-                // 현재 시간을 포맷하여 DisplayMessage에 전달
-                string currentTime = DateTime.Now.ToString("tt hh:mm");
-                DisplayMessage($"[나]: {content}\n", true, currentTime);
+                DisplayMessage($"[나]: {content}\n", true);
                 txtInput.Clear();
             }
             finally
@@ -313,18 +262,14 @@ namespace kyg
                         int senderId = Convert.ToInt32(parts[1]); // string -> int 
                         string content = parts[3];
 
-                        //if (this.IsDisposed || !this.IsHandleCreated) continue; // 폼이 닫혔다면 다음 루프로 넘어감
+                        if (this.IsDisposed || !this.IsHandleCreated) continue; // 폼이 닫혔다면 다음 루프로 넘어감
                         // UI 스레드에서 UI 업데이트 및 알림 처리 (Invoke 필수)
                         this.Invoke((MethodInvoker)delegate
                         {
-                            if (this.IsDisposed) return;
                             // 5-E: 이모티콘 수신 처리
-
-                            // 현재 시간을 포맷하여 출력 함수에 전달
-                            string currentTime = DateTime.Now.ToString("tt hh:mm");
                             if (content.StartsWith("EMOJI:"))
                             {
-                                DisplayEmoji(senderId, content.Substring(6), currentTime); // EMOJI: 뒤의 코드만 전달
+                                DisplayEmoji(senderId, content.Substring(6)); // EMOJI: 뒤의 코드만 전달
                             }
                             // 5-F: 파일 수신 알림 처리
                             else if (content.StartsWith("FILE_RECEIVED:"))
@@ -341,12 +286,12 @@ namespace kyg
                                 {
                                     MessageBox.Show($"파일은 서버 경로 '{fullPath}'에 저장되어 있습니다.", "다운로드 경로");
                                 }
-                                DisplayMessage($"[{senderId}]: 파일 전송 알림: {fileName}", false, currentTime);
+                                DisplayMessage($"[{senderId}]: 파일 전송 알림: {fileName}\n", false);
                             }
                             else
                             {
                                 // 일반 메시지 수신 (2주차 5-A)
-                                DisplayMessage($"[{senderId}]: {content}", false, currentTime);
+                                DisplayMessage($"[{senderId}]: {content}\n", false);
                             }
 
                             // 3주차 5-B: 대화 도착 알림 기능 (폼이 비활성/최소화 상태일 때)
@@ -395,12 +340,10 @@ namespace kyg
             */
         }
 
-        private void DisplayMessage(string message, bool isMine, string timeString)
+        private void DisplayMessage(string message, bool isMine)
         {
-            // 메시지 + 시간 정보를 함께 출력합니다.
-            string fullMessage = $"{message} ({timeString})\n";
-
-            rtbChatLog.AppendText(fullMessage);
+            // RichTextBox에 텍스트 출력 및 자동 스크롤
+            rtbChatLog.AppendText(message);
             rtbChatLog.ScrollToCaret();
         }
 
@@ -436,15 +379,14 @@ namespace kyg
         }
 
         // 4주차 5-E 구현: RichTextBox에 이미지를 삽입하는 메서드
-        private void DisplayEmoji(int senderId, string emojiCode, string timeString)
+        private void DisplayEmoji(int senderId, string emojiCode)
         {
             // 1. 커서를 RichTextBox의 끝으로 이동
             rtbChatLog.SelectionStart = rtbChatLog.TextLength;
             rtbChatLog.SelectionLength = 0;
 
             // 2. 발신자 ID 텍스트 출력
-            // 텍스트 출력 시 시간 포함
-            rtbChatLog.AppendText($"[{senderId}] ({timeString}): ");
+            rtbChatLog.AppendText($"[{senderId}]: ");
 
             Image img = null;
             // 3. 이모지 맵에서 코드에 해당하는 이미지 로드 확인
@@ -526,9 +468,7 @@ namespace kyg
                     stream.Write(fileBytes, 0, fileBytes.Length);
                     stream.Flush();
 
-                    // 현재 시간을 포맷하여 DisplayMessage에 전달
-                    string currentTime = DateTime.Now.ToString("tt hh:mm");
-                    DisplayMessage($"[나]: 파일 전송 요청 완료: {fileName}", true, currentTime);
+                    DisplayMessage($"[나]: 파일 전송 요청 완료: {fileName}\n", true);
 
                     if (ofd.FileNames.Length > 1)
                     {
