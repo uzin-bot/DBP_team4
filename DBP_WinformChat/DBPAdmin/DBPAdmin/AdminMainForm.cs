@@ -116,7 +116,7 @@ namespace DBPAdmin
         {
             try
             {
-                var dt = db.Query("SELECT COUNT(*) FROM User WHERE IsAdmin = 0");
+                var dt = db.Query("SELECT COUNT(*) FROM User WHERE Role = 'user'");
                 return dt.Rows.Count > 0 ? Convert.ToInt32(dt.Rows[0][0]) : 0;
             }
             catch { return 0; }
@@ -136,8 +136,8 @@ namespace DBPAdmin
         {
             try
             {
-                var dt = db.Query(@"SELECT COUNT(DISTINCT UserId) FROM LoginLog 
-                                   WHERE DATE(LoginTime) = CURDATE() AND Action = 'LOGIN'");
+                var dt = db.Query(@"SELECT COUNT(DISTINCT UserId) FROM UserLog 
+                                   WHERE DATE(CreatedAt) = CURDATE() AND ActionType = 'LOGIN'");
                 return dt.Rows.Count > 0 ? Convert.ToInt32(dt.Rows[0][0]) : 0;
             }
             catch { return 0; }
@@ -146,7 +146,7 @@ namespace DBPAdmin
         // ==================== B. 부서관리 ====================
         private void ShowDepartmentManage()
         {
-            var title = UIHelper.CreateTitle("부서 관리 (2단계 구조)");
+            var title = UIHelper.CreateTitle("부서 관리 (계층 구조)");
             title.Location = new Point(15, 15);
             pnlContent.Controls.Add(title);
 
@@ -166,12 +166,10 @@ namespace DBPAdmin
             pnlContent.Controls.Add(searchCard);
 
             var dgv = UIHelper.CreateDGV(cardX, 145, cardWidth, 450, "dgvDepartment");
-            dgv.Columns.Add("Id", "ID");
-            dgv.Columns["Id"].Visible = false;
-            dgv.Columns.Add("Level", "레벨");
-            dgv.Columns["Level"].Width = 60;
+            dgv.Columns.Add("DeptId", "ID");
+            dgv.Columns["DeptId"].Visible = false;
+            dgv.Columns.Add("DeptName", "부서명");
             dgv.Columns.Add("ParentName", "상위부서");
-            dgv.Columns.Add("Name", "부서명");
             dgv.Columns.Add("UserCount", "인원수");
             dgv.Columns["UserCount"].Width = 80;
 
@@ -205,20 +203,20 @@ namespace DBPAdmin
             dgv.Rows.Clear();
 
             string query = @"
-                SELECT d.DeptId AS Id, d.DeptName AS Name, d.Level, d.ParentId,
+                SELECT d.DeptId, d.DeptName, d.ParentDeptId,
                        IFNULL(p.DeptName, '-') AS ParentName,
-                       (SELECT COUNT(*) FROM User WHERE DepartmentId = d.DeptId) AS UserCount
+                       (SELECT COUNT(*) FROM User WHERE DeptId = d.DeptId) AS UserCount
                 FROM Department d
-                LEFT JOIN Department p ON d.ParentId = p.DeptId
+                LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
                 WHERE d.DeptName LIKE @search
-                ORDER BY d.Level, d.ParentId, d.DeptName";
+                ORDER BY d.ParentDeptId, d.DeptName";
 
             try
             {
                 var dt = db.Query(query, new MySqlParameter("@search", $"%{searchKeyword}%"));
                 foreach (DataRow row in dt.Rows)
                 {
-                    dgv.Rows.Add(row["Id"], row["Level"], row["ParentName"], row["Name"], row["UserCount"]);
+                    dgv.Rows.Add(row["DeptId"], row["DeptName"], row["ParentName"], row["UserCount"]);
                 }
             }
             catch (Exception ex)
@@ -232,7 +230,7 @@ namespace DBPAdmin
             if (e.RowIndex < 0) return;
 
             var dgv = sender as DataGridView;
-            int deptId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["Id"].Value);
+            int deptId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["DeptId"].Value);
 
             if (dgv.Columns[e.ColumnIndex].Name == "Edit")
             {
@@ -268,7 +266,7 @@ namespace DBPAdmin
             title.Location = new Point(15, 15);
             editPanel.Controls.Add(title);
 
-            int cardWidth = 570, cardHeight = 380;
+            int cardWidth = 570, cardHeight = 300;
             int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
             int cardY = UIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
 
@@ -281,28 +279,9 @@ namespace DBPAdmin
             inputCard.Controls.Add(txtName);
             yPos += 80;
 
-            inputCard.Controls.Add(UIHelper.CreateLabel("부서 레벨", 30, yPos, 10, Color.Black, true));
-            var cboLevel = UIHelper.CreateComboBox(30, yPos + 25, 510, 30, "cboDeptLevel");
-            cboLevel.Items.Add(new ComboBoxItem { Text = "1단계 (최상위 부서)", Value = "1" });
-            cboLevel.Items.Add(new ComboBoxItem { Text = "2단계 (하위 부서)", Value = "2" });
-            cboLevel.DisplayMember = "Text";
-            cboLevel.ValueMember = "Value";
-            cboLevel.SelectedIndex = 0;
-            cboLevel.SelectedIndexChanged += (s, e) =>
-            {
-                var cboParent = inputCard.Controls.Find("cboDeptParent", true).FirstOrDefault() as ComboBox;
-                if (cboParent != null && cboLevel.SelectedItem is ComboBoxItem item)
-                {
-                    cboParent.Enabled = (item.Value == "2");
-                }
-            };
-            inputCard.Controls.Add(cboLevel);
-            yPos += 80;
-
-            inputCard.Controls.Add(UIHelper.CreateLabel("상위 부서 (2단계 선택 시)", 30, yPos, 10, Color.Black, true));
-            var cboParent = UIHelper.CreateComboBox(30, yPos + 25, 510, 30, "cboDeptParent");
-            cboParent.Enabled = false;
-            LoadParentDepartmentCombo(cboParent);
+            inputCard.Controls.Add(UIHelper.CreateLabel("상위 부서 (선택 안 하면 최상위)", 30, yPos, 10, Color.Black, true));
+            var cboParent = UIHelper.CreateComboBox(30, yPos + 25, 510, 30, "cboParentDept");
+            LoadParentDepartmentCombo(cboParent, deptId);
             inputCard.Controls.Add(cboParent);
             yPos += 80;
 
@@ -310,7 +289,7 @@ namespace DBPAdmin
             btnSave.Click += (s, e) => SaveDepartment(deptId, editPanel);
             inputCard.Controls.Add(btnSave);
 
-            var btnCancel = UIHelper.CreateBlueButton("취소", 290, yPos, 250, 40);
+            var btnCancel = UIHelper.CreateBlueButton("취소", 290, yPos, 220, 40);
             btnCancel.BackColor = Color.Gray;
             btnCancel.Click += (s, e) => CloseDepartmentEditPanel(editPanel);
             inputCard.Controls.Add(btnCancel);
@@ -319,18 +298,28 @@ namespace DBPAdmin
 
             if (deptId.HasValue)
             {
-                LoadDepartmentForEdit(deptId.Value, txtName, cboLevel, cboParent);
+                LoadDepartmentForEdit(deptId.Value, txtName, cboParent);
             }
         }
 
-        private void LoadParentDepartmentCombo(ComboBox cbo)
+        private void LoadParentDepartmentCombo(ComboBox cbo, int? excludeDeptId)
         {
             cbo.Items.Clear();
-            cbo.Items.Add(new ComboBoxItem { Text = "선택 안함", Value = "" });
+            cbo.Items.Add(new ComboBoxItem { Text = "없음 (최상위 부서)", Value = "" });
 
             try
             {
-                var dt = db.Query("SELECT DeptId, DeptName FROM Department WHERE Level = 1 ORDER BY DeptName");
+                string query = "SELECT DeptId, DeptName FROM Department";
+                if (excludeDeptId.HasValue)
+                {
+                    query += " WHERE DeptId != @excludeId";
+                }
+                query += " ORDER BY DeptName";
+
+                var dt = excludeDeptId.HasValue
+                    ? db.Query(query, new MySqlParameter("@excludeId", excludeDeptId.Value))
+                    : db.Query(query);
+
                 foreach (DataRow row in dt.Rows)
                 {
                     cbo.Items.Add(new ComboBoxItem
@@ -350,11 +339,11 @@ namespace DBPAdmin
             }
         }
 
-        private void LoadDepartmentForEdit(int deptId, TextBox txtName, ComboBox cboLevel, ComboBox cboParent)
+        private void LoadDepartmentForEdit(int deptId, TextBox txtName, ComboBox cboParent)
         {
             try
             {
-                var dt = db.Query("SELECT DeptName, Level, ParentId FROM Department WHERE DeptId = @id",
+                var dt = db.Query("SELECT DeptName, ParentDeptId FROM Department WHERE DeptId = @id",
                     new MySqlParameter("@id", deptId));
 
                 if (dt.Rows.Count > 0)
@@ -362,12 +351,9 @@ namespace DBPAdmin
                     var row = dt.Rows[0];
                     txtName.Text = row["DeptName"].ToString();
 
-                    int level = Convert.ToInt32(row["Level"]);
-                    cboLevel.SelectedIndex = level - 1;
-
-                    if (level == 2 && row["ParentId"] != DBNull.Value)
+                    if (row["ParentDeptId"] != DBNull.Value)
                     {
-                        string parentId = row["ParentId"].ToString();
+                        string parentId = row["ParentDeptId"].ToString();
                         for (int i = 0; i < cboParent.Items.Count; i++)
                         {
                             if (cboParent.Items[i] is ComboBoxItem item && item.Value == parentId)
@@ -388,8 +374,7 @@ namespace DBPAdmin
         private void SaveDepartment(int? deptId, Panel editPanel)
         {
             var txtName = editPanel.Controls.Find("txtDeptName", true).FirstOrDefault() as TextBox;
-            var cboLevel = editPanel.Controls.Find("cboDeptLevel", true).FirstOrDefault() as ComboBox;
-            var cboParent = editPanel.Controls.Find("cboDeptParent", true).FirstOrDefault() as ComboBox;
+            var cboParent = editPanel.Controls.Find("cboParentDept", true).FirstOrDefault() as ComboBox;
 
             if (string.IsNullOrWhiteSpace(txtName?.Text))
             {
@@ -397,22 +382,9 @@ namespace DBPAdmin
                 return;
             }
 
-            if (!(cboLevel.SelectedItem is ComboBoxItem levelItem))
-            {
-                MessageBox.Show("부서 레벨을 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            int level = Convert.ToInt32(levelItem.Value);
             int? parentId = null;
-
-            if (level == 2)
+            if (cboParent.SelectedItem is ComboBoxItem parentItem && !string.IsNullOrEmpty(parentItem.Value))
             {
-                if (!(cboParent.SelectedItem is ComboBoxItem parentItem) || string.IsNullOrEmpty(parentItem.Value))
-                {
-                    MessageBox.Show("2단계 부서는 상위 부서를 선택해야 합니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
                 parentId = Convert.ToInt32(parentItem.Value);
             }
 
@@ -420,18 +392,16 @@ namespace DBPAdmin
             {
                 if (deptId.HasValue)
                 {
-                    db.NonQuery("UPDATE Department SET DeptName = @name, Level = @level, ParentId = @parentId WHERE DeptId = @id",
+                    db.NonQuery("UPDATE Department SET DeptName = @name, ParentDeptId = @parentId WHERE DeptId = @id",
                         new MySqlParameter("@name", txtName.Text),
-                        new MySqlParameter("@level", level),
                         new MySqlParameter("@parentId", parentId.HasValue ? (object)parentId.Value : DBNull.Value),
                         new MySqlParameter("@id", deptId.Value));
                     MessageBox.Show("부서가 수정되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    db.NonQuery("INSERT INTO Department (DeptName, Level, ParentId) VALUES (@name, @level, @parentId)",
+                    db.NonQuery("INSERT INTO Department (DeptName, ParentDeptId) VALUES (@name, @parentId)",
                         new MySqlParameter("@name", txtName.Text),
-                        new MySqlParameter("@level", level),
                         new MySqlParameter("@parentId", parentId.HasValue ? (object)parentId.Value : DBNull.Value));
                     MessageBox.Show("부서가 추가되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -456,14 +426,16 @@ namespace DBPAdmin
         {
             try
             {
-                var dtChild = db.Query("SELECT COUNT(*) FROM Department WHERE ParentId = @id", new MySqlParameter("@id", deptId));
+                var dtChild = db.Query("SELECT COUNT(*) FROM Department WHERE ParentDeptId = @id",
+                    new MySqlParameter("@id", deptId));
                 if (dtChild.Rows.Count > 0 && Convert.ToInt32(dtChild.Rows[0][0]) > 0)
                 {
                     MessageBox.Show("하위 부서가 존재하여 삭제할 수 없습니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                var dtUser = db.Query("SELECT COUNT(*) FROM User WHERE DepartmentId = @id", new MySqlParameter("@id", deptId));
+                var dtUser = db.Query("SELECT COUNT(*) FROM User WHERE DeptId = @id",
+                    new MySqlParameter("@id", deptId));
                 if (dtUser.Rows.Count > 0 && Convert.ToInt32(dtUser.Rows[0][0]) > 0)
                 {
                     MessageBox.Show("소속 사용자가 존재하여 삭제할 수 없습니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -491,7 +463,7 @@ namespace DBPAdmin
             int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
 
             var searchCard = UIHelper.CreateCard(cardX, 70, cardWidth, 60);
-            var txtSearch = UIHelper.CreateTextBox(15, 18, 500, 25, "txtUserSearch", "이름 또는 이메일 검색...");
+            var txtSearch = UIHelper.CreateTextBox(15, 18, 500, 25, "txtUserSearch", "이름 또는 ID 검색...");
             var cboDept = UIHelper.CreateComboBox(530, 18, 200, 25, "cboDeptFilter");
             LoadDepartmentComboForFilter(cboDept);
 
@@ -508,11 +480,14 @@ namespace DBPAdmin
             pnlContent.Controls.Add(searchCard);
 
             var dgv = UIHelper.CreateDGV(cardX, 145, cardWidth, 450, "dgvUsers");
-            dgv.Columns.Add("Id", "ID");
-            dgv.Columns["Id"].Visible = false;
+            dgv.Columns.Add("UserId", "ID");
+            dgv.Columns["UserId"].Visible = false;
             dgv.Columns.Add("Name", "이름");
-            dgv.Columns["Name"].Width = 150;
-            dgv.Columns.Add("Email", "이메일");
+            dgv.Columns["Name"].Width = 120;
+            dgv.Columns.Add("LoginId", "로그인ID");
+            dgv.Columns["LoginId"].Width = 150;
+            dgv.Columns.Add("Nickname", "별명");
+            dgv.Columns["Nickname"].Width = 120;
             dgv.Columns.Add("DeptName", "현재 부서");
             dgv.Columns.Add("DeptId", "DeptId");
             dgv.Columns["DeptId"].Visible = false;
@@ -521,7 +496,7 @@ namespace DBPAdmin
             {
                 Text = "부서 변경",
                 UseColumnTextForButtonValue = true,
-                Width = 120,
+                Width = 100,
                 Name = "ChangeDept"
             });
 
@@ -529,7 +504,7 @@ namespace DBPAdmin
             {
                 Text = "삭제",
                 UseColumnTextForButtonValue = true,
-                Width = 100,
+                Width = 80,
                 Name = "Delete"
             });
 
@@ -571,17 +546,17 @@ namespace DBPAdmin
             dgv.Rows.Clear();
 
             string query = @"
-                SELECT u.UserId AS Id, u.Name, u.LoginId AS Email, u.DepartmentId,
+                SELECT u.UserId, u.Name, u.LoginId, u.Nickname, u.DeptId,
                        IFNULL(d.DeptName, '미배정') AS DeptName
                 FROM User u
-                LEFT JOIN Department d ON u.DepartmentId = d.DeptId
-                WHERE u.IsAdmin = 0 AND (u.Name LIKE @search OR u.LoginId LIKE @search)";
+                LEFT JOIN Department d ON u.DeptId = d.DeptId
+                WHERE u.Role = 'user' AND (u.Name LIKE @search OR u.LoginId LIKE @search)";
 
             var parameters = new List<MySqlParameter> { new MySqlParameter("@search", $"%{searchKeyword}%") };
 
             if (!string.IsNullOrEmpty(deptId) && deptId != "0")
             {
-                query += " AND u.DepartmentId = @deptId";
+                query += " AND u.DeptId = @deptId";
                 parameters.Add(new MySqlParameter("@deptId", Convert.ToInt32(deptId)));
             }
 
@@ -592,8 +567,14 @@ namespace DBPAdmin
                 var dt = db.Query(query, parameters.ToArray());
                 foreach (DataRow row in dt.Rows)
                 {
-                    dgv.Rows.Add(row["Id"], row["Name"], row["Email"], row["DeptName"],
-                        row["DepartmentId"] == DBNull.Value ? null : row["DepartmentId"]);
+                    dgv.Rows.Add(
+                        row["UserId"],
+                        row["Name"],
+                        row["LoginId"],
+                        row["Nickname"] == DBNull.Value ? "" : row["Nickname"],
+                        row["DeptName"],
+                        row["DeptId"] == DBNull.Value ? null : row["DeptId"]
+                    );
                 }
             }
             catch (Exception ex)
@@ -607,7 +588,7 @@ namespace DBPAdmin
             if (e.RowIndex < 0) return;
 
             var dgv = sender as DataGridView;
-            int userId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["Id"].Value);
+            int userId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["UserId"].Value);
             string userName = dgv.Rows[e.RowIndex].Cells["Name"].Value.ToString();
 
             if (dgv.Columns[e.ColumnIndex].Name == "ChangeDept")
@@ -678,14 +659,12 @@ namespace DBPAdmin
 
             try
             {
-                var dt = db.Query("SELECT DeptId, DeptName, Level FROM Department ORDER BY Level, DeptName");
+                var dt = db.Query("SELECT DeptId, DeptName FROM Department ORDER BY DeptName");
                 foreach (DataRow row in dt.Rows)
                 {
-                    int level = Convert.ToInt32(row["Level"]);
-                    string indent = new string(' ', (level - 1) * 2);
                     cbo.Items.Add(new ComboBoxItem
                     {
-                        Text = indent + row["DeptName"].ToString(),
+                        Text = row["DeptName"].ToString(),
                         Value = row["DeptId"].ToString()
                     });
                 }
@@ -701,10 +680,11 @@ namespace DBPAdmin
         {
             try
             {
-                var dt = db.Query("SELECT DepartmentId FROM User WHERE UserId = @id", new MySqlParameter("@id", userId));
-                if (dt.Rows.Count > 0 && dt.Rows[0]["DepartmentId"] != DBNull.Value)
+                var dt = db.Query("SELECT DeptId FROM User WHERE UserId = @id",
+                    new MySqlParameter("@id", userId));
+                if (dt.Rows.Count > 0 && dt.Rows[0]["DeptId"] != DBNull.Value)
                 {
-                    string deptId = dt.Rows[0]["DepartmentId"].ToString();
+                    string deptId = dt.Rows[0]["DeptId"].ToString();
                     for (int i = 0; i < cboDept.Items.Count; i++)
                     {
                         if (cboDept.Items[i] is ComboBoxItem item && item.Value == deptId)
@@ -728,7 +708,7 @@ namespace DBPAdmin
 
             try
             {
-                db.NonQuery("UPDATE User SET DepartmentId = @deptId WHERE UserId = @userId",
+                db.NonQuery("UPDATE User SET DeptId = @deptId WHERE UserId = @userId",
                     new MySqlParameter("@deptId", Convert.ToInt32(item.Value)),
                     new MySqlParameter("@userId", userId));
 
@@ -753,11 +733,29 @@ namespace DBPAdmin
         {
             try
             {
-                db.NonQuery("DELETE FROM ViewPermission WHERE UserId = @id", new MySqlParameter("@id", userId));
-                db.NonQuery("DELETE FROM ChatPermission WHERE UserAId = @id OR UserBId = @id", new MySqlParameter("@id", userId));
-                db.NonQuery("DELETE FROM LoginLog WHERE UserId = @id", new MySqlParameter("@id", userId));
-                db.NonQuery("DELETE FROM ChatMessage WHERE SenderId = @id OR ReceiverId = @id", new MySqlParameter("@id", userId));
-                db.NonQuery("DELETE FROM User WHERE UserId = @id", new MySqlParameter("@id", userId));
+                // 관련 데이터 삭제 (외래키 제약조건 순서 고려)
+                db.NonQuery("DELETE FROM UserVisibleUser WHERE OwnerUserId = @id OR VisibleUserId = @id",
+                    new MySqlParameter("@id", userId));
+                db.NonQuery("DELETE FROM UserVisibleDept WHERE OwnerUserId = @id",
+                    new MySqlParameter("@id", userId));
+                db.NonQuery("DELETE FROM ChatPermission WHERE UserAId = @id OR UserBId = @id",
+                    new MySqlParameter("@id", userId));
+                db.NonQuery("DELETE FROM RecentChat WHERE UserId = @id OR PartnerUserId = @id",
+                    new MySqlParameter("@id", userId));
+                db.NonQuery("DELETE FROM ChatMessage WHERE FromUserId = @id OR ToUserId = @id",
+                    new MySqlParameter("@id", userId));
+                db.NonQuery("DELETE FROM UserLog WHERE UserId = @id",
+                    new MySqlParameter("@id", userId));
+                db.NonQuery("DELETE FROM UserProfileMap WHERE OwnerUserId = @id OR TargetUserId = @id",
+                    new MySqlParameter("@id", userId));
+
+                // Profile 테이블에서 해당 사용자의 프로필 삭제
+                db.NonQuery("DELETE FROM Profile WHERE UserId = @id",
+                    new MySqlParameter("@id", userId));
+
+                // 사용자 삭제
+                db.NonQuery("DELETE FROM User WHERE UserId = @id",
+                    new MySqlParameter("@id", userId));
 
                 LoadUserData("", null);
                 MessageBox.Show("사용자가 삭제되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -768,65 +766,63 @@ namespace DBPAdmin
             }
         }
 
-        // ==================== D. 대화 내용 검색 ====================
+        // ==================== D. 대화내용 검색 ====================
         private void ShowChatSearch()
         {
-            var title = UIHelper.CreateTitle("전체 대화 내용 검색");
+            var title = UIHelper.CreateTitle("대화내용 검색");
             title.Location = new Point(15, 15);
             pnlContent.Controls.Add(title);
 
             int cardWidth = 970;
             int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
 
-            var searchCard = UIHelper.CreateCard(cardX, 70, cardWidth, 220);
+            var searchCard = UIHelper.CreateCard(cardX, 70, cardWidth, 70);
 
-            searchCard.Controls.Add(UIHelper.CreateLabel("사용자 선택", 25, 25, 9, Color.Black, true));
-            var cboUser = UIHelper.CreateComboBox(25, 50, 430, 25, "cboChatUser");
-            LoadUserComboForSearch(cboUser);
-            searchCard.Controls.Add(cboUser);
+            searchCard.Controls.Add(UIHelper.CreateLabel("발신자", 20, 15, 9, Color.Black, true));
+            var cboSender = UIHelper.CreateComboBox(80, 12, 180, 25, "cboSender");
+            LoadUserComboForSearch(cboSender);
+            searchCard.Controls.Add(cboSender);
 
-            searchCard.Controls.Add(UIHelper.CreateLabel("검색 키워드", 490, 25, 9, Color.Black, true));
-            var txtKeyword = UIHelper.CreateTextBox(490, 50, 430, 25, "txtChatKeyword");
-            searchCard.Controls.Add(txtKeyword);
+            searchCard.Controls.Add(UIHelper.CreateLabel("수신자", 280, 15, 9, Color.Black, true));
+            var cboReceiver = UIHelper.CreateComboBox(340, 12, 180, 25, "cboReceiver");
+            LoadUserComboForSearch(cboReceiver);
+            searchCard.Controls.Add(cboReceiver);
 
-            searchCard.Controls.Add(UIHelper.CreateLabel("시작일", 25, 100, 9, Color.Black, true));
-            var dtpStart = UIHelper.CreateDateTimePicker(25, 125, 430, 25, "dtpChatStart");
-            dtpStart.Value = DateTime.Now.AddMonths(-1);
-            searchCard.Controls.Add(dtpStart);
+            searchCard.Controls.Add(UIHelper.CreateLabel("내용", 540, 15, 9, Color.Black, true));
+            var txtContent = UIHelper.CreateTextBox(590, 12, 250, 25, "txtContent", "메시지 내용 검색...");
+            searchCard.Controls.Add(txtContent);
 
-            searchCard.Controls.Add(UIHelper.CreateLabel("종료일", 490, 100, 9, Color.Black, true));
-            var dtpEnd = UIHelper.CreateDateTimePicker(490, 125, 430, 25, "dtpChatEnd");
-            dtpEnd.Value = DateTime.Now;
-            searchCard.Controls.Add(dtpEnd);
-
-            var btnSearch = UIHelper.CreateBlueButton("검색", 25, 170, 920, 35);
+            var btnSearch = UIHelper.CreateBlueButton("검색", 860, 10, 90, 30);
             btnSearch.Click += BtnSearchChat_Click;
             searchCard.Controls.Add(btnSearch);
+
             pnlContent.Controls.Add(searchCard);
 
-            var resultCard = UIHelper.CreateCard(cardX, 305, cardWidth, 290);
-            resultCard.Name = "pnlChatResult";
-            resultCard.AutoScroll = true;
+            var dgv = UIHelper.CreateDGV(cardX, 155, cardWidth, 490, "dgvChat");
+            dgv.Columns.Add("MessageId", "ID");
+            dgv.Columns["MessageId"].Visible = false;
+            dgv.Columns.Add("FromUser", "발신자");
+            dgv.Columns["FromUser"].Width = 120;
+            dgv.Columns.Add("ToUser", "수신자");
+            dgv.Columns["ToUser"].Width = 120;
+            dgv.Columns.Add("Content", "메시지");
+            dgv.Columns["Content"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dgv.Columns.Add("SentAt", "전송시간");
+            dgv.Columns["SentAt"].Width = 150;
+            dgv.Columns.Add("IsRead", "읽음");
+            dgv.Columns["IsRead"].Width = 60;
 
-            var lblResult = UIHelper.CreateLabel("검색 조건을 입력하고 검색 버튼을 눌러주세요", 0, 120, 11, UIHelper.Colors.TextSecondary);
-            lblResult.Size = new Size(cardWidth, 30);
-            lblResult.TextAlign = ContentAlignment.MiddleCenter;
-            lblResult.Name = "lblChatResult";
-            resultCard.Controls.Add(lblResult);
-            pnlContent.Controls.Add(resultCard);
+            pnlContent.Controls.Add(dgv);
         }
 
-        private void LoadUserComboForSearch(ComboBox cbo, bool includeAll = true)
+        private void LoadUserComboForSearch(ComboBox cbo)
         {
             cbo.Items.Clear();
-            if (includeAll)
-            {
-                cbo.Items.Add(new ComboBoxItem { Text = "전체", Value = "0" });
-            }
+            cbo.Items.Add(new ComboBoxItem { Text = "전체", Value = "0" });
 
             try
             {
-                var dt = db.Query("SELECT UserId, Name FROM User WHERE IsAdmin = 0 ORDER BY Name");
+                var dt = db.Query("SELECT UserId, Name FROM User WHERE Role = 'user' ORDER BY Name");
                 foreach (DataRow row in dt.Rows)
                 {
                     cbo.Items.Add(new ComboBoxItem
@@ -838,88 +834,82 @@ namespace DBPAdmin
 
                 cbo.DisplayMember = "Text";
                 cbo.ValueMember = "Value";
-                if (cbo.Items.Count > 0) cbo.SelectedIndex = 0;
+                cbo.SelectedIndex = 0;
             }
             catch { }
         }
 
         private void BtnSearchChat_Click(object sender, EventArgs e)
         {
-            var cboUser = pnlContent.Controls.Find("cboChatUser", true).FirstOrDefault() as ComboBox;
-            var txtKeyword = pnlContent.Controls.Find("txtChatKeyword", true).FirstOrDefault() as TextBox;
-            var dtpStart = pnlContent.Controls.Find("dtpChatStart", true).FirstOrDefault() as DateTimePicker;
-            var dtpEnd = pnlContent.Controls.Find("dtpChatEnd", true).FirstOrDefault() as DateTimePicker;
-            var resultPanel = pnlContent.Controls.Find("pnlChatResult", true).FirstOrDefault() as Panel;
+            var cboSender = pnlContent.Controls.Find("cboSender", true).FirstOrDefault() as ComboBox;
+            var cboReceiver = pnlContent.Controls.Find("cboReceiver", true).FirstOrDefault() as ComboBox;
+            var txtContent = pnlContent.Controls.Find("txtContent", true).FirstOrDefault() as TextBox;
 
-            if (cboUser == null || txtKeyword == null || dtpStart == null || dtpEnd == null || resultPanel == null)
-                return;
+            string senderId = (cboSender?.SelectedItem as ComboBoxItem)?.Value;
+            string receiverId = (cboReceiver?.SelectedItem as ComboBoxItem)?.Value;
+            string content = txtContent?.Text ?? "";
 
-            resultPanel.Controls.Clear();
+            LoadChatData(senderId, receiverId, content);
+        }
+
+        private void LoadChatData(string senderId, string receiverId, string content)
+        {
+            var dgv = pnlContent.Controls.Find("dgvChat", true).FirstOrDefault() as DataGridView;
+            if (dgv == null) return;
+
+            dgv.Rows.Clear();
 
             string query = @"
-                SELECT cm.MessageId AS Id, cm.Message, cm.SendTime,
-                       us.Name AS SenderName, ur.Name AS ReceiverName
+                SELECT cm.MessageId, cm.Content, cm.SentAt, cm.IsRead,
+                       us.Name AS FromUser, ur.Name AS ToUser
                 FROM ChatMessage cm
-                INNER JOIN User us ON cm.SenderId = us.UserId
-                INNER JOIN User ur ON cm.ReceiverId = ur.UserId
-                WHERE cm.SendTime BETWEEN @startDate AND @endDate";
+                INNER JOIN User us ON cm.FromUserId = us.UserId
+                INNER JOIN User ur ON cm.ToUserId = ur.UserId
+                WHERE 1=1";
 
-            var parameters = new List<MySqlParameter>
-            {
-                new MySqlParameter("@startDate", dtpStart.Value.Date),
-                new MySqlParameter("@endDate", dtpEnd.Value.Date.AddDays(1).AddSeconds(-1))
-            };
+            var parameters = new List<MySqlParameter>();
 
-            if (cboUser.SelectedItem is ComboBoxItem userItem && userItem.Value != "0")
+            if (!string.IsNullOrEmpty(senderId) && senderId != "0")
             {
-                query += " AND (cm.SenderId = @userId OR cm.ReceiverId = @userId)";
-                parameters.Add(new MySqlParameter("@userId", Convert.ToInt32(userItem.Value)));
+                query += " AND cm.FromUserId = @senderId";
+                parameters.Add(new MySqlParameter("@senderId", Convert.ToInt32(senderId)));
             }
 
-            if (!string.IsNullOrWhiteSpace(txtKeyword.Text))
+            if (!string.IsNullOrEmpty(receiverId) && receiverId != "0")
             {
-                query += " AND cm.Message LIKE @keyword";
-                parameters.Add(new MySqlParameter("@keyword", $"%{txtKeyword.Text}%"));
+                query += " AND cm.ToUserId = @receiverId";
+                parameters.Add(new MySqlParameter("@receiverId", Convert.ToInt32(receiverId)));
             }
 
-            query += " ORDER BY cm.SendTime DESC LIMIT 100";
+            if (!string.IsNullOrWhiteSpace(content) && content != "메시지 내용 검색...")
+            {
+                query += " AND cm.Content LIKE @content";
+                parameters.Add(new MySqlParameter("@content", $"%{content}%"));
+            }
+
+            query += " ORDER BY cm.SentAt DESC LIMIT 500";
 
             try
             {
                 var dt = db.Query(query, parameters.ToArray());
-
-                if (dt.Rows.Count == 0)
-                {
-                    var lblEmpty = UIHelper.CreateLabel("검색 결과가 없습니다.", 0, 120, 11, UIHelper.Colors.TextSecondary);
-                    lblEmpty.Size = new Size(970, 30);
-                    lblEmpty.TextAlign = ContentAlignment.MiddleCenter;
-                    resultPanel.Controls.Add(lblEmpty);
-                    return;
-                }
-
-                int yPos = 10;
                 foreach (DataRow row in dt.Rows)
                 {
-                    var msgPanel = UIHelper.CreateCard(10, yPos, 930, 80);
-                    msgPanel.BackColor = UIHelper.Colors.AccentLight;
-
-                    msgPanel.Controls.Add(UIHelper.CreateLabel($"{row["SenderName"]} → {row["ReceiverName"]}", 10, 10, 9, Color.Black, true));
-                    msgPanel.Controls.Add(UIHelper.CreateLabel(Convert.ToDateTime(row["SendTime"]).ToString("yyyy-MM-dd HH:mm:ss"), 10, 30, 8, UIHelper.Colors.TextSecondary));
-
-                    var lblMsg = UIHelper.CreateLabel(row["Message"].ToString(), 10, 50, 9, Color.Black);
-                    lblMsg.Size = new Size(900, 20);
-                    msgPanel.Controls.Add(lblMsg);
-
-                    resultPanel.Controls.Add(msgPanel);
-                    yPos += 90;
+                    string isRead = Convert.ToBoolean(row["IsRead"]) ? "읽음" : "안읽음";
+                    dgv.Rows.Add(
+                        row["MessageId"],
+                        row["FromUser"],
+                        row["ToUser"],
+                        row["Content"],
+                        Convert.ToDateTime(row["SentAt"]).ToString("yyyy-MM-dd HH:mm:ss"),
+                        isRead
+                    );
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"대화 검색 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"대화 내역 로드 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
 
         // ==================== E. 로그인/로그아웃 기록 ====================
         private void ShowLoginLog()
@@ -931,7 +921,6 @@ namespace DBPAdmin
             int cardWidth = 970;
             int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
 
-            // ⭐ 검색 영역을 한 줄로 간결하게 구성
             var searchCard = UIHelper.CreateCard(cardX, 60, cardWidth, 70);
 
             searchCard.Controls.Add(UIHelper.CreateLabel("사용자", 20, 15, 9, Color.Black, true));
@@ -954,14 +943,13 @@ namespace DBPAdmin
             searchCard.Controls.Add(btnSearch);
             pnlContent.Controls.Add(searchCard);
 
-            // ⭐ DataGridView를 최대한 크게 배치
             var dgv = UIHelper.CreateDGV(cardX, 145, cardWidth, 500, "dgvLoginLog");
             dgv.Columns.Add("UserName", "사용자");
             dgv.Columns["UserName"].Width = 200;
-            dgv.Columns.Add("Action", "활동");
-            dgv.Columns["Action"].Width = 120;
-            dgv.Columns.Add("LogTime", "시간");
-            dgv.Columns["LogTime"].Width = 200;
+            dgv.Columns.Add("ActionType", "활동");
+            dgv.Columns["ActionType"].Width = 120;
+            dgv.Columns.Add("CreatedAt", "시간");
+            dgv.Columns["CreatedAt"].Width = 200;
             pnlContent.Controls.Add(dgv);
 
             LoadLoginLogData(null, DateTime.Now.AddMonths(-1), DateTime.Now);
@@ -973,15 +961,11 @@ namespace DBPAdmin
             var dtpStart = pnlContent.Controls.Find("dtpLogStart", true).FirstOrDefault() as DateTimePicker;
             var dtpEnd = pnlContent.Controls.Find("dtpLogEnd", true).FirstOrDefault() as DateTimePicker;
 
-            if (cboUser == null || dtpStart == null || dtpEnd == null) return;
+            string userId = (cboUser?.SelectedItem as ComboBoxItem)?.Value;
+            DateTime startDate = dtpStart?.Value ?? DateTime.Now.AddMonths(-1);
+            DateTime endDate = dtpEnd?.Value ?? DateTime.Now;
 
-            string userId = null;
-            if (cboUser.SelectedItem is ComboBoxItem item && item.Value != "0")
-            {
-                userId = item.Value;
-            }
-
-            LoadLoginLogData(userId, dtpStart.Value, dtpEnd.Value);
+            LoadLoginLogData(userId, startDate, endDate);
         }
 
         private void LoadLoginLogData(string userId, DateTime startDate, DateTime endDate)
@@ -992,32 +976,35 @@ namespace DBPAdmin
             dgv.Rows.Clear();
 
             string query = @"
-                SELECT u.Name AS UserName, ll.Action, ll.LoginTime AS LogTime
-                FROM LoginLog ll
-                INNER JOIN User u ON ll.UserId = u.UserId
-                WHERE ll.LoginTime BETWEEN @startDate AND @endDate";
+                SELECT u.Name AS UserName, ul.ActionType, ul.CreatedAt
+                FROM UserLog ul
+                INNER JOIN User u ON ul.UserId = u.UserId
+                WHERE DATE(ul.CreatedAt) BETWEEN @start AND @end";
 
             var parameters = new List<MySqlParameter>
             {
-                new MySqlParameter("@startDate", startDate.Date),
-                new MySqlParameter("@endDate", endDate.Date.AddDays(1).AddSeconds(-1))
+                new MySqlParameter("@start", startDate.Date),
+                new MySqlParameter("@end", endDate.Date.AddDays(1).AddSeconds(-1))
             };
 
-            if (!string.IsNullOrEmpty(userId))
+            if (!string.IsNullOrEmpty(userId) && userId != "0")
             {
-                query += " AND ll.UserId = @userId";
-                parameters.Add(new MySqlParameter("@userId", userId));
+                query += " AND ul.UserId = @userId";
+                parameters.Add(new MySqlParameter("@userId", Convert.ToInt32(userId)));
             }
 
-            query += " ORDER BY ll.LoginTime DESC LIMIT 1000";
+            query += " ORDER BY ul.CreatedAt DESC LIMIT 500";
 
             try
             {
                 var dt = db.Query(query, parameters.ToArray());
                 foreach (DataRow row in dt.Rows)
                 {
-                    string action = row["Action"].ToString() == "LOGIN" ? "로그인" : "로그아웃";
-                    dgv.Rows.Add(row["UserName"], action, Convert.ToDateTime(row["LogTime"]).ToString("yyyy-MM-dd HH:mm:ss"));
+                    dgv.Rows.Add(
+                        row["UserName"],
+                        row["ActionType"],
+                        Convert.ToDateTime(row["CreatedAt"]).ToString("yyyy-MM-dd HH:mm:ss")
+                    );
                 }
             }
             catch (Exception ex)
@@ -1026,294 +1013,406 @@ namespace DBPAdmin
             }
         }
 
-        // ==================== G. 직원보기 권한 + H. 대화 권한 ====================
+        // ==================== F. 권한 관리 ====================
         private void ShowPermissionManage()
         {
             var title = UIHelper.CreateTitle("권한 관리");
             title.Location = new Point(15, 15);
             pnlContent.Controls.Add(title);
 
-            int cardWidth = 475, cardHeight = 520, cardSpacing = 20;
-            int totalWidth = (cardWidth * 2) + cardSpacing;
-            int startX = UIHelper.CalculateCenterX(pnlContent.Width, totalWidth);
-            int cardY = 70;
+            // 탭 버튼
+            var btnTab1 = UIHelper.CreateBlueButton("부서별 보기 권한", 15, 60, 200, 40);
+            var btnTab2 = UIHelper.CreateBlueButton("사용자별 보기 권한", 225, 60, 200, 40);
+            var btnTab3 = UIHelper.CreateBlueButton("대화 차단 관리", 435, 60, 200, 40);
 
-            // 직원 보기 권한 설정
-            var card1 = UIHelper.CreateCard(startX, cardY, cardWidth, cardHeight);
-            card1.Controls.Add(UIHelper.CreateLabel("직원 보기 권한 설정", 20, 20, 11, Color.Black, true));
-
-            card1.Controls.Add(UIHelper.CreateLabel("사용자 선택", 20, 60, 9, Color.Black, true));
-            var cboUser1 = UIHelper.CreateComboBox(20, 85, 425, 25, "cboViewPermUser");
-            LoadUserComboForSearch(cboUser1, false);
-            cboUser1.SelectedIndexChanged += CboViewPermUser_SelectedIndexChanged;
-            card1.Controls.Add(cboUser1);
-
-            var lblDesc = UIHelper.CreateLabel("보이는 부서 범위 (체크된 부서의 직원만 보임)", 20, 135, 9, Color.Black, true);
-            lblDesc.Size = new Size(425, 20);
-            card1.Controls.Add(lblDesc);
-
-            var pnlDeptChecks = new Panel
+            btnTab1.Click += (s, e) =>
             {
-                Location = new Point(20, 165),
-                Size = new Size(425, 290),
-                Name = "pnlViewDeptChecks",
-                AutoScroll = true,
-                BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.White
+                ShowPermissionTab1();
+                btnTab1.BackColor = UIHelper.Colors.Primary;
+                btnTab2.BackColor = Color.Gray;
+                btnTab3.BackColor = Color.Gray;
             };
-            card1.Controls.Add(pnlDeptChecks);
-
-            var btnSave1 = UIHelper.CreateBlueButton("저장", 20, 465, 425, 40);
-            btnSave1.Click += BtnSaveViewPermission_Click;
-            card1.Controls.Add(btnSave1);
-            pnlContent.Controls.Add(card1);
-
-            // 대화 허용/차단 관리
-            var card2 = UIHelper.CreateCard(startX + cardWidth + cardSpacing, cardY, cardWidth, cardHeight);
-            card2.Controls.Add(UIHelper.CreateLabel("대화 허용/차단 관리", 20, 20, 11, Color.Black, true));
-
-            card2.Controls.Add(UIHelper.CreateLabel("사용자 A", 20, 60, 9, Color.Black, true));
-            var cboUserA = UIHelper.CreateComboBox(20, 85, 425, 25, "cboChatPermUserA");
-            LoadUserComboForSearch(cboUserA, false);
-            card2.Controls.Add(cboUserA);
-
-            card2.Controls.Add(UIHelper.CreateLabel("사용자 B", 20, 135, 9, Color.Black, true));
-            var cboUserB = UIHelper.CreateComboBox(20, 160, 425, 25, "cboChatPermUserB");
-            LoadUserComboForSearch(cboUserB, false);
-            card2.Controls.Add(cboUserB);
-
-            card2.Controls.Add(UIHelper.CreateLabel("대화 설정", 20, 210, 9, Color.Black, true));
-            var cboSetting = UIHelper.CreateComboBox(20, 235, 425, 25, "cboChatSetting");
-            cboSetting.Items.Add(new ComboBoxItem { Text = "허용", Value = "0" });
-            cboSetting.Items.Add(new ComboBoxItem { Text = "차단", Value = "1" });
-            cboSetting.DisplayMember = "Text";
-            cboSetting.ValueMember = "Value";
-            cboSetting.SelectedIndex = 0;
-            card2.Controls.Add(cboSetting);
-
-            card2.Controls.Add(UIHelper.CreateLabel("현재 차단 목록", 20, 280, 9, Color.Black, true));
-
-            var lstBlocked = new ListBox
+            btnTab2.Click += (s, e) =>
             {
-                Location = new Point(20, 305),
-                Size = new Size(425, 140),
-                Name = "lstChatBlocked",
-                Font = UIHelper.Fonts.Normal
+                ShowPermissionTab2();
+                btnTab1.BackColor = Color.Gray;
+                btnTab2.BackColor = UIHelper.Colors.Primary;
+                btnTab3.BackColor = Color.Gray;
             };
-            card2.Controls.Add(lstBlocked);
+            btnTab3.Click += (s, e) =>
+            {
+                ShowPermissionTab3();
+                btnTab1.BackColor = Color.Gray;
+                btnTab2.BackColor = Color.Gray;
+                btnTab3.BackColor = UIHelper.Colors.Primary;
+            };
 
-            var btnSave2 = UIHelper.CreateBlueButton("적용", 20, 465, 425, 40);
-            btnSave2.Click += BtnSaveChatPermission_Click;
-            card2.Controls.Add(btnSave2);
-            pnlContent.Controls.Add(card2);
+            pnlContent.Controls.Add(btnTab1);
+            pnlContent.Controls.Add(btnTab2);
+            pnlContent.Controls.Add(btnTab3);
 
-            LoadDepartmentCheckBoxes(pnlDeptChecks);
-            LoadChatBlockedList();
+            // 기본 탭1 표시
+            ShowPermissionTab1();
+            btnTab2.BackColor = Color.Gray;
+            btnTab3.BackColor = Color.Gray;
         }
 
-        private void CboViewPermUser_SelectedIndexChanged(object sender, EventArgs e)
+        // Tab1: 부서별 보기 권한 (UserVisibleDept)
+        private void ShowPermissionTab1()
         {
-            var cbo = sender as ComboBox;
-            if (cbo?.SelectedItem is ComboBoxItem item && !string.IsNullOrEmpty(item.Value) && item.Value != "0")
+            var existing = pnlContent.Controls.Find("pnlPermTab", true).FirstOrDefault();
+            if (existing != null) pnlContent.Controls.Remove(existing);
+
+            var tabPanel = new Panel
             {
-                LoadUserViewPermissions(Convert.ToInt32(item.Value));
+                Name = "pnlPermTab",
+                Location = new Point(15, 120),
+                Size = new Size(pnlContent.Width - 30, pnlContent.Height - 140),
+                BackColor = Color.Transparent
+            };
+
+            int cardWidth = 970;
+            int cardX = UIHelper.CalculateCenterX(tabPanel.Width, cardWidth);
+
+            var searchCard = UIHelper.CreateCard(cardX - 15, 10, cardWidth, 60);
+            searchCard.Controls.Add(UIHelper.CreateLabel("사용자", 20, 18, 9, Color.Black, true));
+            var cboUser = UIHelper.CreateComboBox(80, 15, 200, 25, "cboPermUser");
+            LoadUserComboForSearch(cboUser);
+            searchCard.Controls.Add(cboUser);
+
+            var btnSearch = UIHelper.CreateBlueButton("조회", 300, 13, 80, 35);
+            btnSearch.Click += (s, e) => LoadDeptPermissionData((cboUser.SelectedItem as ComboBoxItem)?.Value);
+            searchCard.Controls.Add(btnSearch);
+
+            var btnAdd = UIHelper.CreateBlueButton("+ 권한 추가", 850, 13, 100, 35);
+            btnAdd.Click += (s, e) => ShowAddDeptPermission();
+            searchCard.Controls.Add(btnAdd);
+
+            tabPanel.Controls.Add(searchCard);
+
+            var dgv = UIHelper.CreateDGV(cardX - 15, 85, cardWidth, 450, "dgvDeptPerm");
+            dgv.Columns.Add("PermissionId", "ID");
+            dgv.Columns["PermissionId"].Visible = false;
+            dgv.Columns.Add("UserName", "사용자");
+            dgv.Columns.Add("DeptName", "볼 수 있는 부서");
+            dgv.Columns.Add(new DataGridViewButtonColumn
+            {
+                Text = "삭제",
+                UseColumnTextForButtonValue = true,
+                Width = 100,
+                Name = "Delete"
+            });
+
+            dgv.CellClick += DgvDeptPerm_CellClick;
+            tabPanel.Controls.Add(dgv);
+
+            pnlContent.Controls.Add(tabPanel);
+            LoadDeptPermissionData(null);
+        }
+
+        private void LoadDeptPermissionData(string userId)
+        {
+            var dgv = pnlContent.Controls.Find("dgvDeptPerm", true).FirstOrDefault() as DataGridView;
+            if (dgv == null) return;
+
+            dgv.Rows.Clear();
+
+            string query = @"
+                SELECT uvd.OwnerUserId AS PermissionId, u.Name AS UserName, d.DeptName
+                FROM UserVisibleDept uvd
+                INNER JOIN User u ON uvd.OwnerUserId = u.UserId
+                INNER JOIN Department d ON uvd.DeptId = d.DeptId
+                WHERE 1=1";
+
+            var parameters = new List<MySqlParameter>();
+
+            if (!string.IsNullOrEmpty(userId) && userId != "0")
+            {
+                query += " AND uvd.OwnerUserId = @userId";
+                parameters.Add(new MySqlParameter("@userId", Convert.ToInt32(userId)));
             }
-        }
 
-        private void LoadDepartmentCheckBoxes(Panel pnl)
-        {
-            if (pnl.Controls.Count > 0) return;
-
-            pnl.Controls.Clear();
+            query += " ORDER BY u.Name, d.DeptName";
 
             try
             {
-                var dt = db.Query("SELECT DeptId, DeptName, Level, ParentId FROM Department ORDER BY Level, ParentId, DeptName");
-                int yPos = 10;
-
+                var dt = db.Query(query, parameters.ToArray());
                 foreach (DataRow row in dt.Rows)
                 {
-                    int level = Convert.ToInt32(row["Level"]);
-                    string indent = new string(' ', (level - 1) * 4);
-
-                    var chk = new CheckBox
-                    {
-                        Text = indent + row["DeptName"].ToString(),
-                        Location = new Point(10, yPos),
-                        Size = new Size(380, 25),
-                        Tag = row["DeptId"],
-                        Font = UIHelper.Fonts.Normal
-                    };
-                    pnl.Controls.Add(chk);
-                    yPos += 30;
+                    dgv.Rows.Add(row["PermissionId"], row["UserName"], row["DeptName"]);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"부서 목록 로드 실패: {ex.Message}", "오류");
+                MessageBox.Show($"부서 권한 로드 실패: {ex.Message}", "오류");
             }
         }
 
-        private void LoadUserViewPermissions(int userId)
+        private void DgvDeptPerm_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            var pnl = pnlContent.Controls.Find("pnlViewDeptChecks", true).FirstOrDefault() as Panel;
-            if (pnl == null) return;
+            if (e.RowIndex < 0) return;
 
-            if (pnl.Controls.Count == 0)
+            var dgv = sender as DataGridView;
+            if (dgv.Columns[e.ColumnIndex].Name == "Delete")
             {
-                LoadDepartmentCheckBoxes(pnl);
+                // 실제로는 OwnerUserId + DeptId 조합으로 삭제해야 하므로 수정 필요
+                MessageBox.Show("부서 권한 삭제 기능은 별도 구현이 필요합니다.");
+            }
+        }
+
+        private void ShowAddDeptPermission()
+        {
+            MessageBox.Show("부서 권한 추가 UI를 구현하세요.", "알림");
+        }
+
+        // Tab2: 사용자별 보기 권한 (UserVisibleUser)
+        private void ShowPermissionTab2()
+        {
+            var existing = pnlContent.Controls.Find("pnlPermTab", true).FirstOrDefault();
+            if (existing != null) pnlContent.Controls.Remove(existing);
+
+            var tabPanel = new Panel
+            {
+                Name = "pnlPermTab",
+                Location = new Point(15, 120),
+                Size = new Size(pnlContent.Width - 30, pnlContent.Height - 140),
+                BackColor = Color.Transparent
+            };
+
+            int cardWidth = 970;
+            int cardX = UIHelper.CalculateCenterX(tabPanel.Width, cardWidth);
+
+            var searchCard = UIHelper.CreateCard(cardX - 15, 10, cardWidth, 60);
+            searchCard.Controls.Add(UIHelper.CreateLabel("사용자", 20, 18, 9, Color.Black, true));
+            var cboUser = UIHelper.CreateComboBox(80, 15, 200, 25, "cboPermUser2");
+            LoadUserComboForSearch(cboUser);
+            searchCard.Controls.Add(cboUser);
+
+            var btnSearch = UIHelper.CreateBlueButton("조회", 300, 13, 80, 35);
+            btnSearch.Click += (s, e) => LoadUserPermissionData((cboUser.SelectedItem as ComboBoxItem)?.Value);
+            searchCard.Controls.Add(btnSearch);
+
+            var btnAdd = UIHelper.CreateBlueButton("+ 권한 추가", 850, 13, 100, 35);
+            btnAdd.Click += (s, e) => ShowAddUserPermission();
+            searchCard.Controls.Add(btnAdd);
+
+            tabPanel.Controls.Add(searchCard);
+
+            var dgv = UIHelper.CreateDGV(cardX - 15, 85, cardWidth, 450, "dgvUserPerm");
+            dgv.Columns.Add("OwnerUserId", "OwnerUserId");
+            dgv.Columns["OwnerUserId"].Visible = false;
+            dgv.Columns.Add("VisibleUserId", "VisibleUserId");
+            dgv.Columns["VisibleUserId"].Visible = false;
+            dgv.Columns.Add("OwnerName", "사용자");
+            dgv.Columns.Add("VisibleName", "볼 수 있는 사용자");
+            dgv.Columns.Add(new DataGridViewButtonColumn
+            {
+                Text = "삭제",
+                UseColumnTextForButtonValue = true,
+                Width = 100,
+                Name = "Delete"
+            });
+
+            dgv.CellClick += DgvUserPerm_CellClick;
+            tabPanel.Controls.Add(dgv);
+
+            pnlContent.Controls.Add(tabPanel);
+            LoadUserPermissionData(null);
+        }
+
+        private void LoadUserPermissionData(string userId)
+        {
+            var dgv = pnlContent.Controls.Find("dgvUserPerm", true).FirstOrDefault() as DataGridView;
+            if (dgv == null) return;
+
+            dgv.Rows.Clear();
+
+            string query = @"
+                SELECT uvu.OwnerUserId, uvu.VisibleUserId,
+                       u1.Name AS OwnerName, u2.Name AS VisibleName
+                FROM UserVisibleUser uvu
+                INNER JOIN User u1 ON uvu.OwnerUserId = u1.UserId
+                INNER JOIN User u2 ON uvu.VisibleUserId = u2.UserId
+                WHERE 1=1";
+
+            var parameters = new List<MySqlParameter>();
+
+            if (!string.IsNullOrEmpty(userId) && userId != "0")
+            {
+                query += " AND uvu.OwnerUserId = @userId";
+                parameters.Add(new MySqlParameter("@userId", Convert.ToInt32(userId)));
             }
 
-            foreach (Control ctrl in pnl.Controls)
-            {
-                if (ctrl is CheckBox chk) chk.Checked = false;
-            }
+            query += " ORDER BY u1.Name, u2.Name";
 
             try
             {
-                var dt = db.Query("SELECT CanViewDeptId FROM ViewPermission WHERE UserId = @userId",
-                    new MySqlParameter("@userId", userId));
-
+                var dt = db.Query(query, parameters.ToArray());
                 foreach (DataRow row in dt.Rows)
                 {
-                    int deptId = Convert.ToInt32(row["CanViewDeptId"]);
-                    foreach (Control ctrl in pnl.Controls)
-                    {
-                        if (ctrl is CheckBox chk && chk.Tag != null && Convert.ToInt32(chk.Tag) == deptId)
-                        {
-                            chk.Checked = true;
-                            break;
-                        }
-                    }
+                    dgv.Rows.Add(
+                        row["OwnerUserId"],
+                        row["VisibleUserId"],
+                        row["OwnerName"],
+                        row["VisibleName"]
+                    );
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"권한 로드 실패: {ex.Message}", "오류");
+                MessageBox.Show($"사용자 권한 로드 실패: {ex.Message}", "오류");
             }
         }
 
-        private void BtnSaveViewPermission_Click(object sender, EventArgs e)
+        private void DgvUserPerm_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            var cboUser = pnlContent.Controls.Find("cboViewPermUser", true).FirstOrDefault() as ComboBox;
-            var pnlDept = pnlContent.Controls.Find("pnlViewDeptChecks", true).FirstOrDefault() as Panel;
+            if (e.RowIndex < 0) return;
 
-            if (cboUser?.SelectedItem is ComboBoxItem item && !string.IsNullOrEmpty(item.Value) && pnlDept != null)
+            var dgv = sender as DataGridView;
+            if (dgv.Columns[e.ColumnIndex].Name == "Delete")
             {
-                int userId = Convert.ToInt32(item.Value);
+                int ownerId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["OwnerUserId"].Value);
+                int visibleId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["VisibleUserId"].Value);
 
                 try
                 {
-                    db.NonQuery("DELETE FROM ViewPermission WHERE UserId = @userId", new MySqlParameter("@userId", userId));
+                    db.NonQuery("DELETE FROM UserVisibleUser WHERE OwnerUserId = @oid AND VisibleUserId = @vid",
+                        new MySqlParameter("@oid", ownerId),
+                        new MySqlParameter("@vid", visibleId));
 
-                    foreach (Control ctrl in pnlDept.Controls)
-                    {
-                        if (ctrl is CheckBox chk && chk.Checked && chk.Tag != null)
-                        {
-                            int deptId = Convert.ToInt32(chk.Tag);
-                            db.NonQuery("INSERT INTO ViewPermission (UserId, CanViewDeptId) VALUES (@userId, @deptId)",
-                                new MySqlParameter("@userId", userId),
-                                new MySqlParameter("@deptId", deptId));
-                        }
-                    }
-
-                    MessageBox.Show("권한이 저장되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LoadUserPermissionData(null);
+                    MessageBox.Show("권한이 삭제되었습니다.", "성공");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"권한 저장 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"삭제 실패: {ex.Message}", "오류");
                 }
-            }
-            else
-            {
-                MessageBox.Show("사용자를 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
-        private void LoadChatBlockedList()
+        private void ShowAddUserPermission()
         {
-            var lst = pnlContent.Controls.Find("lstChatBlocked", true).FirstOrDefault() as ListBox;
-            if (lst == null) return;
+            MessageBox.Show("사용자 권한 추가 UI를 구현하세요.", "알림");
+        }
 
-            lst.Items.Clear();
+        // Tab3: 대화 차단 관리 (ChatPermission)
+        private void ShowPermissionTab3()
+        {
+            var existing = pnlContent.Controls.Find("pnlPermTab", true).FirstOrDefault();
+            if (existing != null) pnlContent.Controls.Remove(existing);
+
+            var tabPanel = new Panel
+            {
+                Name = "pnlPermTab",
+                Location = new Point(15, 120),
+                Size = new Size(pnlContent.Width - 30, pnlContent.Height - 140),
+                BackColor = Color.Transparent
+            };
+
+            int cardWidth = 970;
+            int cardX = UIHelper.CalculateCenterX(tabPanel.Width, cardWidth);
+
+            var searchCard = UIHelper.CreateCard(cardX - 15, 10, cardWidth, 60);
+            var btnRefresh = UIHelper.CreateBlueButton("새로고침", 20, 13, 100, 35);
+            btnRefresh.Click += (s, e) => LoadChatPermissionData();
+            searchCard.Controls.Add(btnRefresh);
+
+            var btnAdd = UIHelper.CreateBlueButton("+ 차단 추가", 850, 13, 100, 35);
+            btnAdd.Click += (s, e) => ShowAddChatBlock();
+            searchCard.Controls.Add(btnAdd);
+
+            tabPanel.Controls.Add(searchCard);
+
+            var dgv = UIHelper.CreateDGV(cardX - 15, 85, cardWidth, 450, "dgvChatPerm");
+            dgv.Columns.Add("UserAId", "UserAId");
+            dgv.Columns["UserAId"].Visible = false;
+            dgv.Columns.Add("UserBId", "UserBId");
+            dgv.Columns["UserBId"].Visible = false;
+            dgv.Columns.Add("UserAName", "사용자 A");
+            dgv.Columns.Add("UserBName", "사용자 B");
+            dgv.Columns.Add("IsBlocked", "상태");
+            dgv.Columns["IsBlocked"].Width = 100;
+            dgv.Columns.Add(new DataGridViewButtonColumn
+            {
+                Text = "해제",
+                UseColumnTextForButtonValue = true,
+                Width = 100,
+                Name = "Unblock"
+            });
+
+            dgv.CellClick += DgvChatPerm_CellClick;
+            tabPanel.Controls.Add(dgv);
+
+            pnlContent.Controls.Add(tabPanel);
+            LoadChatPermissionData();
+        }
+
+        private void LoadChatPermissionData()
+        {
+            var dgv = pnlContent.Controls.Find("dgvChatPerm", true).FirstOrDefault() as DataGridView;
+            if (dgv == null) return;
+
+            dgv.Rows.Clear();
+
+            string query = @"
+                SELECT cp.UserAId, cp.UserBId, cp.IsBlocked,
+                       u1.Name AS UserAName, u2.Name AS UserBName
+                FROM ChatPermission cp
+                INNER JOIN User u1 ON cp.UserAId = u1.UserId
+                INNER JOIN User u2 ON cp.UserBId = u2.UserId
+                WHERE cp.IsBlocked = 1
+                ORDER BY u1.Name, u2.Name";
 
             try
             {
-                var dt = db.Query(@"
-                    SELECT cp.PermissionId, ua.Name AS UserAName, ub.Name AS UserBName
-                    FROM ChatPermission cp
-                    INNER JOIN User ua ON cp.UserAId = ua.UserId
-                    INNER JOIN User ub ON cp.UserBId = ub.UserId
-                    WHERE cp.IsBlocked = 1");
-
+                var dt = db.Query(query);
                 foreach (DataRow row in dt.Rows)
                 {
-                    lst.Items.Add($"{row["UserAName"]} ↔ {row["UserBName"]} (ID: {row["PermissionId"]})");
+                    string status = Convert.ToBoolean(row["IsBlocked"]) ? "차단됨" : "허용";
+                    dgv.Rows.Add(
+                        row["UserAId"],
+                        row["UserBId"],
+                        row["UserAName"],
+                        row["UserBName"],
+                        status
+                    );
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"차단 목록 로드 실패: {ex.Message}", "오류");
+                MessageBox.Show($"대화 차단 목록 로드 실패: {ex.Message}", "오류");
             }
         }
 
-        private void BtnSaveChatPermission_Click(object sender, EventArgs e)
+        private void DgvChatPerm_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            var cboUserA = pnlContent.Controls.Find("cboChatPermUserA", true).FirstOrDefault() as ComboBox;
-            var cboUserB = pnlContent.Controls.Find("cboChatPermUserB", true).FirstOrDefault() as ComboBox;
-            var cboSetting = pnlContent.Controls.Find("cboChatSetting", true).FirstOrDefault() as ComboBox;
+            if (e.RowIndex < 0) return;
 
-            if (!(cboUserA?.SelectedItem is ComboBoxItem itemA) || string.IsNullOrEmpty(itemA.Value))
+            var dgv = sender as DataGridView;
+            if (dgv.Columns[e.ColumnIndex].Name == "Unblock")
             {
-                MessageBox.Show("사용자 A를 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+                int userAId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["UserAId"].Value);
+                int userBId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["UserBId"].Value);
 
-            if (!(cboUserB?.SelectedItem is ComboBoxItem itemB) || string.IsNullOrEmpty(itemB.Value))
-            {
-                MessageBox.Show("사용자 B를 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+                try
+                {
+                    db.NonQuery("DELETE FROM ChatPermission WHERE UserAId = @aid AND UserBId = @bid",
+                        new MySqlParameter("@aid", userAId),
+                        new MySqlParameter("@bid", userBId));
 
-            if (itemA.Value == itemB.Value)
-            {
-                MessageBox.Show("같은 사용자는 선택할 수 없습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            int userAId = Convert.ToInt32(itemA.Value);
-            int userBId = Convert.ToInt32(itemB.Value);
-            int isBlocked = cboSetting?.SelectedItem is ComboBoxItem settingItem ? Convert.ToInt32(settingItem.Value) : 0;
-
-            try
-            {
-                db.NonQuery(@"
-                    INSERT INTO ChatPermission (UserAId, UserBId, IsBlocked) 
-                    VALUES (@userA, @userB, @blocked)
-                    ON DUPLICATE KEY UPDATE IsBlocked = @blocked",
-                    new MySqlParameter("@userA", userAId),
-                    new MySqlParameter("@userB", userBId),
-                    new MySqlParameter("@blocked", isBlocked));
-
-                MessageBox.Show("대화 권한이 설정되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                LoadChatBlockedList();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"권한 설정 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    LoadChatPermissionData();
+                    MessageBox.Show("차단이 해제되었습니다.", "성공");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"차단 해제 실패: {ex.Message}", "오류");
+                }
             }
         }
-    }
 
-    // ==================== ComboBoxItem 클래스 ====================
-    public class ComboBoxItem
-    {
-        public string Text { get; set; }
-        public string Value { get; set; }
-
-        public override string ToString()
+        private void ShowAddChatBlock()
         {
-            return Text;
+            MessageBox.Show("대화 차단 추가 UI를 구현하세요.", "알림");
         }
     }
 }
