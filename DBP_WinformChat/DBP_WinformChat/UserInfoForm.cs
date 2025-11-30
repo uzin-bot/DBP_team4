@@ -20,6 +20,7 @@ namespace leehaeun
             GetUserProfileInfo();
         }
 
+
         private int targetUserId;
 
         private void GetUserProfileInfo()
