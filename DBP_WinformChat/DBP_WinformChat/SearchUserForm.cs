@@ -13,14 +13,15 @@ namespace leehaeun
             SearchUser();
         }
 
+        // 멀티프로필 매핑 안된 유저 검색(쿼리 수정)
         private void SearchUser()
         {
             string query = $@"
                 SELECT 
-                    u.UserId,
-                    u.Name,
-                    p.Nickname,
-                    p.ProfileId,
+                    u.UserId, 
+                    u.Name, 
+                    p.Nickname, 
+                    p.ProfileId, 
                     d.DeptName
                 FROM User u
                 LEFT JOIN UserProfileMap upm
@@ -29,7 +30,13 @@ namespace leehaeun
                 LEFT JOIN Profile p
                     ON p.ProfileId = upm.ProfileId
                 LEFT JOIN Department d
-                    ON d.DeptId = u.DeptId;
+                    ON d.DeptId = u.DeptId
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM UserProfileMap already
+                    WHERE already.OwnerUserId = {LoginForm.UserId}
+                    AND already.TargetUserId = u.UserId
+                );
                 ";
 
             DataTable dt = DBconnector.GetInstance().Query(query);
@@ -51,6 +58,7 @@ namespace leehaeun
             }
         }
 
+        // 선택된 유저의 UserId 리스트 생성
         private void AddButton_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in UserListView.CheckedItems)

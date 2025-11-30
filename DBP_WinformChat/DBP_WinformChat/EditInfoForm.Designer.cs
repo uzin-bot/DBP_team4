@@ -29,14 +29,12 @@
         private void InitializeComponent()
         {
             UserInfoPage = new TabPage();
-            CheckPwBox = new TextBox();
             DeptBox = new TextBox();
             AddressBox = new TextBox();
             ZipCodeBox = new TextBox();
             NameBox = new TextBox();
             PwBox = new TextBox();
             IdBox = new TextBox();
-            label10 = new Label();
             CancleIButton = new Button();
             SaveIButton = new Button();
             SearchAddressButton = new Button();
@@ -83,14 +81,12 @@
             // 
             // UserInfoPage
             // 
-            UserInfoPage.Controls.Add(CheckPwBox);
             UserInfoPage.Controls.Add(DeptBox);
             UserInfoPage.Controls.Add(AddressBox);
             UserInfoPage.Controls.Add(ZipCodeBox);
             UserInfoPage.Controls.Add(NameBox);
             UserInfoPage.Controls.Add(PwBox);
             UserInfoPage.Controls.Add(IdBox);
-            UserInfoPage.Controls.Add(label10);
             UserInfoPage.Controls.Add(CancleIButton);
             UserInfoPage.Controls.Add(SaveIButton);
             UserInfoPage.Controls.Add(SearchAddressButton);
@@ -101,22 +97,14 @@
             UserInfoPage.Controls.Add(label8);
             UserInfoPage.Location = new Point(4, 24);
             UserInfoPage.Name = "UserInfoPage";
-            UserInfoPage.Size = new Size(252, 365);
+            UserInfoPage.Size = new Size(252, 323);
             UserInfoPage.TabIndex = 2;
             UserInfoPage.Text = "계정 정보";
             UserInfoPage.UseVisualStyleBackColor = true;
             // 
-            // CheckPwBox
-            // 
-            CheckPwBox.Location = new Point(21, 130);
-            CheckPwBox.Name = "CheckPwBox";
-            CheckPwBox.PasswordChar = '*';
-            CheckPwBox.Size = new Size(212, 23);
-            CheckPwBox.TabIndex = 29;
-            // 
             // DeptBox
             // 
-            DeptBox.Location = new Point(21, 297);
+            DeptBox.Location = new Point(21, 251);
             DeptBox.Name = "DeptBox";
             DeptBox.ReadOnly = true;
             DeptBox.Size = new Size(212, 23);
@@ -124,7 +112,7 @@
             // 
             // AddressBox
             // 
-            AddressBox.Location = new Point(21, 251);
+            AddressBox.Location = new Point(21, 205);
             AddressBox.Name = "AddressBox";
             AddressBox.ReadOnly = true;
             AddressBox.Size = new Size(212, 23);
@@ -132,7 +120,7 @@
             // 
             // ZipCodeBox
             // 
-            ZipCodeBox.Location = new Point(21, 222);
+            ZipCodeBox.Location = new Point(21, 176);
             ZipCodeBox.Name = "ZipCodeBox";
             ZipCodeBox.ReadOnly = true;
             ZipCodeBox.Size = new Size(144, 23);
@@ -140,7 +128,7 @@
             // 
             // NameBox
             // 
-            NameBox.Location = new Point(21, 176);
+            NameBox.Location = new Point(21, 130);
             NameBox.Name = "NameBox";
             NameBox.Size = new Size(212, 23);
             NameBox.TabIndex = 21;
@@ -161,18 +149,9 @@
             IdBox.Size = new Size(212, 23);
             IdBox.TabIndex = 19;
             // 
-            // label10
-            // 
-            label10.AutoSize = true;
-            label10.Location = new Point(21, 112);
-            label10.Name = "label10";
-            label10.Size = new Size(83, 15);
-            label10.TabIndex = 28;
-            label10.Text = "비밀번호 확인";
-            // 
             // CancleIButton
             // 
-            CancleIButton.Location = new Point(171, 326);
+            CancleIButton.Location = new Point(171, 280);
             CancleIButton.Name = "CancleIButton";
             CancleIButton.Size = new Size(62, 23);
             CancleIButton.TabIndex = 27;
@@ -182,7 +161,7 @@
             // 
             // SaveIButton
             // 
-            SaveIButton.Location = new Point(21, 326);
+            SaveIButton.Location = new Point(21, 280);
             SaveIButton.Name = "SaveIButton";
             SaveIButton.Size = new Size(144, 23);
             SaveIButton.TabIndex = 26;
@@ -192,7 +171,7 @@
             // 
             // SearchAddressButton
             // 
-            SearchAddressButton.Location = new Point(171, 222);
+            SearchAddressButton.Location = new Point(171, 176);
             SearchAddressButton.Name = "SearchAddressButton";
             SearchAddressButton.Size = new Size(62, 23);
             SearchAddressButton.TabIndex = 25;
@@ -203,7 +182,7 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(21, 279);
+            label5.Location = new Point(21, 233);
             label5.Name = "label5";
             label5.Size = new Size(59, 15);
             label5.TabIndex = 18;
@@ -212,7 +191,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(21, 204);
+            label4.Location = new Point(21, 158);
             label4.Name = "label4";
             label4.Size = new Size(31, 15);
             label4.TabIndex = 17;
@@ -221,7 +200,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(21, 158);
+            label3.Location = new Point(21, 112);
             label3.Name = "label3";
             label3.Size = new Size(31, 15);
             label3.TabIndex = 16;
@@ -254,7 +233,7 @@
             MulProfilePage.Margin = new Padding(2);
             MulProfilePage.Name = "MulProfilePage";
             MulProfilePage.Padding = new Padding(2);
-            MulProfilePage.Size = new Size(252, 365);
+            MulProfilePage.Size = new Size(252, 323);
             MulProfilePage.TabIndex = 1;
             MulProfilePage.Text = "멀티프로필";
             MulProfilePage.UseVisualStyleBackColor = true;
@@ -336,7 +315,7 @@
             // 
             ProfileFLP.Location = new Point(19, 95);
             ProfileFLP.Name = "ProfileFLP";
-            ProfileFLP.Size = new Size(218, 253);
+            ProfileFLP.Size = new Size(218, 209);
             ProfileFLP.TabIndex = 0;
             // 
             // DefaultProfilePage
@@ -354,7 +333,7 @@
             DefaultProfilePage.Margin = new Padding(2);
             DefaultProfilePage.Name = "DefaultProfilePage";
             DefaultProfilePage.Padding = new Padding(2);
-            DefaultProfilePage.Size = new Size(252, 365);
+            DefaultProfilePage.Size = new Size(252, 323);
             DefaultProfilePage.TabIndex = 0;
             DefaultProfilePage.Text = "프로필";
             DefaultProfilePage.UseVisualStyleBackColor = true;
@@ -404,7 +383,7 @@
             // 
             MemberFLP.Location = new Point(16, 187);
             MemberFLP.Name = "MemberFLP";
-            MemberFLP.Size = new Size(219, 130);
+            MemberFLP.Size = new Size(219, 99);
             MemberFLP.TabIndex = 19;
             // 
             // StatusBox
@@ -429,7 +408,7 @@
             panel2.Controls.Add(CancelPButton);
             panel2.Controls.Add(SavePButton);
             panel2.Dock = DockStyle.Bottom;
-            panel2.Location = new Point(2, 333);
+            panel2.Location = new Point(2, 291);
             panel2.Margin = new Padding(2);
             panel2.Name = "panel2";
             panel2.Size = new Size(248, 30);
@@ -504,14 +483,14 @@
             tabControl.Margin = new Padding(2);
             tabControl.Name = "tabControl";
             tabControl.SelectedIndex = 0;
-            tabControl.Size = new Size(260, 393);
+            tabControl.Size = new Size(260, 351);
             tabControl.TabIndex = 1;
             // 
             // EditInfoForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(260, 393);
+            ClientSize = new Size(260, 351);
             Controls.Add(tabControl);
             Name = "EditInfoForm";
             Text = "EditInfoForm";
@@ -536,14 +515,12 @@
         #endregion
 
         private TabPage UserInfoPage;
-        private TextBox CheckPwBox;
         private TextBox DeptBox;
         private TextBox AddressBox;
         private TextBox ZipCodeBox;
         private TextBox NameBox;
         private TextBox PwBox;
         private TextBox IdBox;
-        private Label label10;
         private Button CancleIButton;
         private Button SaveIButton;
         private Button SearchAddressButton;

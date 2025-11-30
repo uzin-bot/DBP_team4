@@ -9,6 +9,8 @@ namespace leehaeun
 
         private DataTable MulProfileMember { get; set; }
 
+        // 디자인 폼에서 비밀번호 확인 삭제
+
         public EditInfoForm()
         {
             InitializeComponent();
@@ -66,16 +68,19 @@ namespace leehaeun
                     ProfileImageMBox.Image = DBP_WinformChat.Properties.Resources._default;
                 }
 
+                // 멀티프로필 멤버 관리 창 끄기
                 label2.Visible = false;
                 EditMButton.Visible = false;
                 MemberFLP.Visible = false;
             }
             else
             {
+                // 멀티프로필 멤버 관리 창 켜기
                 label2.Visible = true;
                 EditMButton.Visible = true;
                 MemberFLP.Visible = true;
 
+                // 멀티 프로필 멤버 리스트 로딩
                 LoadMulProfileMemberList();
             }
 
@@ -197,14 +202,17 @@ namespace leehaeun
                     ON p.ProfileId = map.FinalProfileId
                 LEFT JOIN Department d
                     ON u.DeptId = d.DeptId;";
+            // DataTable에 저장
             MulProfileMember = DBconnector.GetInstance().Query(query);
         }
 
         private void LoadMulProfileMemberList()
         {
             GetMulProfileMember();
+            // 멤버 관리 창 초기화
             MemberFLP.Controls.Clear();
 
+            // 멀티 프로필 멤버 추가
             foreach (DataRow row in MulProfileMember.Rows)
             {
                 AddNewMember(row);
@@ -240,6 +248,7 @@ namespace leehaeun
 
             MemberFLP.Controls.Add(newPanel);
 
+            // 부서이름 이름(닉네임) 형식
             string name = row["DeptName"].ToString();
             name += " ";
             name += row["Name"].ToString();
@@ -256,6 +265,7 @@ namespace leehaeun
                 profileImage.Image = Image.FromStream(ms);
             }
 
+            // DB에서 프로필 매핑 정보 및 패널 삭제
             deleteButton.Click += (s, args) =>
             {
                 int targetUserId = Convert.ToInt32(row["UserId"]);
@@ -329,15 +339,15 @@ namespace leehaeun
             LoadProfileInfo();
         }
 
+        // 멤버 추가 버튼
         private void EditMButton_Click(object sender, EventArgs e)
         {
-            // SearchResultForm 수정해서 같이 써도...
-            
             var s = new SearchUserForm();
             if (s.ShowDialog() == DialogResult.OK)
             {
                 foreach (int targetId in s.selectedUserIds)
                 {
+                    // 매핑 정보 추가
                     string query = $"INSERT INTO UserProfileMap(OwnerUserId, TargetUserId, ProfileId) VALUES({LoginForm.UserId}, {targetId}, {CurrProfile["ProfileId"]});";
                     DBconnector.GetInstance().NonQuery(query);
                 }
@@ -353,9 +363,10 @@ namespace leehaeun
         }
 
         // 멀티 프로필 탭 컨트롤
-        // 관리 버튼
+        // 기본 프로필 관리 버튼
         private void EditButton_Click(object sender, EventArgs e)
         {
+            // 현재 프로필을 기본 프로필로 변경
             CurrProfile = UserInfo.Profile.Rows[0];
             LoadProfileInfo();
         }
@@ -445,6 +456,7 @@ namespace leehaeun
                 );
             if (result == DialogResult.OK)
             {
+                // 수정 전 정보
                 LoadUserInfo();
                 LoadProfileInfo();
             }
