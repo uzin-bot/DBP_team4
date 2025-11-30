@@ -1095,16 +1095,15 @@ namespace DBPAdmin
 
             dgv.Rows.Clear();
 
-            string sql = @"
-                SELECT uvd.OwnerUserId, uvd.DeptId, u.Name AS UserName, d.DeptName
-                FROM UserVisibleDept uvd
-                INNER JOIN User u ON uvd.OwnerUserId = u.UserId
-                INNER JOIN Department d ON uvd.DeptId = d.DeptId
-                WHERE 1=1";
+            string sql = "SELECT uvd.OwnerUserId, uvd.DeptId, u.Name AS UserName, d.DeptName " +
+                         "FROM UserVisibleDept uvd " +
+                         "INNER JOIN User u ON uvd.OwnerUserId = u.UserId " +
+                         "INNER JOIN Department d ON uvd.DeptId = d.DeptId " +
+                         "WHERE 1=1";
 
             if (!string.IsNullOrEmpty(userId) && userId != "0")
             {
-                sql += $" AND uvd.OwnerUserId = {userId}";
+                sql += " AND uvd.OwnerUserId = " + userId;
             }
 
             sql += " ORDER BY u.Name, d.DeptName";
@@ -1316,17 +1315,16 @@ namespace DBPAdmin
 
             dgv.Rows.Clear();
 
-            string sql = @"
-                SELECT uvu.OwnerUserId, uvu.VisibleUserId,
-                       u1.Name AS OwnerName, u2.Name AS VisibleName
-                FROM UserVisibleUser uvu
-                INNER JOIN User u1 ON uvu.OwnerUserId = u1.UserId
-                INNER JOIN User u2 ON uvu.VisibleUserId = u2.UserId
-                WHERE 1=1";
+            string sql = "SELECT uvu.OwnerUserId, uvu.VisibleUserId, " +
+                         "u1.Name AS OwnerName, u2.Name AS VisibleName " +
+                         "FROM UserVisibleUser uvu " +
+                         "INNER JOIN User u1 ON uvu.OwnerUserId = u1.UserId " +
+                         "INNER JOIN User u2 ON uvu.VisibleUserId = u2.UserId " +
+                         "WHERE 1=1";
 
             if (!string.IsNullOrEmpty(userId) && userId != "0")
             {
-                sql += $" AND uvu.OwnerUserId = {userId}";
+                sql += " AND uvu.OwnerUserId = " + userId;
             }
 
             sql += " ORDER BY u1.Name, u2.Name";
@@ -1553,17 +1551,16 @@ namespace DBPAdmin
 
             dgv.Rows.Clear();
 
-            string sql = @"
-                SELECT cp.UserAId, cp.UserBId, cp.IsBlocked,
-                       u1.Name AS UserAName, u2.Name AS UserBName
-                FROM ChatPermission cp
-                INNER JOIN User u1 ON cp.UserAId = u1.UserId
-                INNER JOIN User u2 ON cp.UserBId = u2.UserId
-                WHERE 1=1";
+            string sql = "SELECT cp.UserAId, cp.UserBId, cp.IsBlocked, " +
+                         "u1.Name AS UserAName, u2.Name AS UserBName " +
+                         "FROM ChatPermission cp " +
+                         "INNER JOIN User u1 ON cp.UserAId = u1.UserId " +
+                         "INNER JOIN User u2 ON cp.UserBId = u2.UserId " +
+                         "WHERE 1=1";
 
             if (!string.IsNullOrEmpty(userId) && userId != "0")
             {
-                sql += $" AND (cp.UserAId = {userId} OR cp.UserBId = {userId})";
+                sql += " AND (cp.UserAId = " + userId + " OR cp.UserBId = " + userId + ")";
             }
 
             sql += " ORDER BY u1.Name, u2.Name";

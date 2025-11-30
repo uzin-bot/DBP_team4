@@ -214,4 +214,13 @@ namespace DBPAdmin
             return (containerWidth - totalWidth) / 2;
         }
     }
+
+    // UIHelper.cs 파일의 namespace DBPAdmin 내부(또는 파일 끝)에 아래 클래스를 추가하세요.
+    public class ComboBoxItem
+    {
+        public string Text { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+
+        public override string ToString() => Text ?? string.Empty;
+    }
 }
