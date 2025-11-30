@@ -46,7 +46,7 @@ namespace leehaeun
         private void LoadUserProfile(DataRow row)
         {
             NicknameBox.Text = row["Nickname"].ToString();
-            StatusBox.Text = row["StatueMessage"].ToString();
+            StatusBox.Text = row["StatusMessage"].ToString();
             string? base64String = row["ProfileImage"].ToString();
             if (!string.IsNullOrEmpty(base64String))
             {
