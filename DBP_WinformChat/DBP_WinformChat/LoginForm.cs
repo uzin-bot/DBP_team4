@@ -1,5 +1,6 @@
 ﻿using DBP_WinformChat;
 using System.Data;
+using DBPAdmin;
 
 namespace leehaeun
 {
@@ -39,19 +40,32 @@ namespace leehaeun
             string pw = PwBox.Text;
             string pwHash = Sha256.Instance.HashSHA256(pw);
 
-            string query = $"SELECT UserId FROM User WHERE LoginId = '{id}' AND PasswordHash = '{pwHash}';";
+            string query = $"SELECT UserId, Role FROM User WHERE LoginId = '{id}' AND PasswordHash = '{pwHash}';";
             DataTable dt = DBconnector.GetInstance().Query(query);
 
             if (dt != null && dt.Rows.Count > 0)
             {
                 // 로그인 성공
                 UserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
+                string role = dt.Rows[0]["Role"].ToString();
                 UserInfo.GetInfo();
 
                 // 채팅 리스트 폼
                 FormHide();
-                var chatListForm = new 남예솔.chatlist();
-                chatListForm.ShowDialog();
+
+                // Role에 따라 다른 폼 표시
+                if (role.Equals("admin"))
+                {
+                    // 어드민 폼
+                    var adminForm = new AdminMainForm();
+                    adminForm.ShowDialog();
+                }
+                else
+                {
+                    // 일반 사용자 - 채팅 리스트 폼
+                    var chatListForm = new 남예솔.chatlist();
+                    chatListForm.ShowDialog();
+                }
 
                 // 채팅 리스트 폼이 닫혔을 때
                 // 로그아웃인지 프로그램 종료인지 확인

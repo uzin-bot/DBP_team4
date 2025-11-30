@@ -128,3 +128,4 @@ C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debu
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.UserInfoForm.resources
 C:\Users\user\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.SearchUserForm.resources
 C:\Users\user\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.UserInfoForm.resources
+C:\Users\user\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\DBPAdmin.AdminMainForm.resources
