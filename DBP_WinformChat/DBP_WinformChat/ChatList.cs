@@ -7,6 +7,10 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Windows.Forms;
+using System.Net.Sockets;      
+using System.Text;              
+using System.Threading;         
+using System.Threading.Tasks;   
 
 namespace 남예솔
 {
@@ -18,39 +22,219 @@ namespace 남예솔
 		private string currentUserName = UserInfo.User["Name"].ToString();
 		private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
 
-		public chatlist()
-		{
-			InitializeComponent();
+        // 알람용 TCP 클라이언트
+        private TcpClient alertClient;
+        private NetworkStream alertStream;
 
-			btndept.Click += btndept_Click; //클릭시 DeptForm으로 이동 
-		}
+        private NotifyIcon niChatAlert;
 
-		private void chatlist_Load(object sender, EventArgs e)
-		{
-			LoadRecentChat();
-		}
+        public chatlist()
+        {
+            InitializeComponent();
 
-		//RecentChat + 고정정렬
-		private void LoadRecentChat()
-		{
-			lvlist.Items.Clear();
+            btndept.Click += btndept_Click; //클릭시 DeptForm으로 이동 
 
-			string sql = $@"
+            // NotifyIcon 초기화 추가 (수정사항)
+            niChatAlert = new NotifyIcon();
+            niChatAlert.Icon = SystemIcons.Information; // 기본 정보 아이콘
+            niChatAlert.Visible = true;
+            niChatAlert.Text = "채팅 알림";
+
+        }
+
+        private void chatlist_Load(object sender, EventArgs e)
+        {
+            LoadRecentChat();
+
+            //알림 클라이언트 연결
+            ConnectAlertClient();
+        }
+
+
+        // ===== 알림 기능 추가 =====
+
+        // 서버에 알림용 연결 생성
+        private void ConnectAlertClient()
+        {
+            if (alertClient != null && alertClient.Connected) return;
+
+            try
+            {
+                // 1. 기존 연결 정리
+                alertClient?.Close();
+                alertClient = new TcpClient();
+
+                // 2. 새로운 연결 시도
+                alertClient.Connect("127.0.0.1", 8888);
+                //alertClient.Connect("10.201.21.210", 8888);
+
+                alertStream = alertClient.GetStream();
+
+                // 3. 서버에 로그인 ID 등록
+                string loginMsg = $"LOGIN:{currentUserId}:::";
+                byte[] loginData = Encoding.UTF8.GetBytes(loginMsg);
+                alertStream.Write(loginData, 0, loginData.Length);
+
+                // 4. 메시지 수신용 스레드 시작
+                Thread receiveThread = new Thread(ReceiveAlertMessages);
+                receiveThread.IsBackground = true;
+                receiveThread.Start();
+
+                Console.WriteLine("[chatlist] 알림 클라이언트 연결 성공.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[chatlist] 알림 클라이언트 연결 오류: {ex.Message}");
+
+                // 연결 실패 시 재연결 시도 (3초 후)
+                Task.Run(() =>
+                {
+                    Thread.Sleep(3000);
+                    if (!this.IsDisposed)
+                    {
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            ConnectAlertClient(); // 재귀적으로 재연결 시도
+                        });
+                    }
+                });
+            }
+        }
+
+
+        // 서버로 부터 알림 메세지 수신
+        private void ReceiveAlertMessages()
+        {
+            if (alertClient == null || !alertClient.Connected) return;
+
+            byte[] buffer = new byte[1024];
+
+            while (alertClient.Connected)
+            {
+                try
+                {
+                    int bytesRead = alertStream.Read(buffer, 0, buffer.Length);
+                    if (bytesRead == 0) break; // 연결 종료
+
+                    string received = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    string[] parts = received.Split(new char[] { ':' }, 5);
+
+                    if (parts.Length >= 4 && parts[0] == "CHAT")
+                    {
+                        string senderId = parts[1];
+                        string receiverId = parts[2];
+                        string content = parts[3];
+
+                        // 나에게 온 메시지인 경우에만 처리
+                        if (receiverId == currentUserId.ToString())
+                        {
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                if (this.IsDisposed || !this.IsHandleCreated) return;
+                                ShowAlertOnMainForm(senderId, content);
+                            });
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    break; // 오류 발생 시 루프 종료
+                }
+            }
+
+            // 연결 종료 후 복구 로직
+            this.Invoke((MethodInvoker)delegate
+            {
+                if (this.IsDisposed || !this.IsHandleCreated) return;
+
+                alertClient?.Close();
+                alertClient = null;
+
+                // Task를 시작하여 메인 스레드를 블로킹하지 않고 재연결 시도
+                Task.Run(() =>
+                {
+                    Thread.Sleep(3000);
+                    if (!this.IsDisposed)
+                    {
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            ConnectAlertClient();
+                        });
+                    }
+                });
+
+                Console.WriteLine("[chatlist] 알림 클라이언트 재연결 예약.");
+            });
+        }
+
+        // 새메세지 도착 알림
+        private void ShowAlertOnMainForm(string senderId, string content)
+        {
+            // 1. 대화목록을 갱신하여 최신 메시지가 위로 오게 함
+            LoadRecentChat();
+
+            // 2. 작업 표시줄 깜빡임
+            FlashWindow.Flash(this); // FlashWindow 헬퍼 클래스가 필요함
+
+            // 3. NotifyIcon 풍선 알림 (niChatAlert 컨트롤이 필요함)
+            if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
+            {
+                niChatAlert.BalloonTipTitle = $"새 메시지: {senderId}";
+                niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
+                niChatAlert.ShowBalloonTip(5000); // 5초 유지
+            }
+
+            // 4. ListView 항목 강조 (Optional)
+            /*
+            foreach (ListViewItem item in lvRecentChats.Items)
+            {
+                // senderId가 이 항목의 PartnerID라면 
+                if (item.Tag != null && item.Tag.ToString() == senderId)
+                {
+                    item.BackColor = System.Drawing.Color.LightYellow;
+                    break;
+                }
+            }
+            */
+        }
+
+        private void OnFormClosing(object sender, FormClosingEventArgs e)
+        {
+            try
+            {
+                // 폼이 닫힐 때 알림 클라이언트 연결도 해제
+                alertClient?.Close();
+            }
+            catch { }
+
+        }
+
+
+        // ===== 챗리스트 기능 ======
+
+        //RecentChat + 고정정렬
+        private void LoadRecentChat()
+        {
+            lvlist.Items.Clear();
+
+            string sql = $@"
                 SELECT 
                     rc.PartnerUserId,
                     u.Name,
                     u.Nickname,
                     d.DeptName,
-                    rc.LastMessage,        
+                    cm.Content AS LastMessage,       
                     rc.LastMessageAt,
                     rc.is_pinned
                 FROM RecentChat rc
                 JOIN User u ON rc.PartnerUserId = u.UserId
                 JOIN Department d ON u.DeptId = d.DeptId
+            JOIN ChatMessage cm ON rc.LastMessageId = cm.MessageId 
                 WHERE rc.UserId = {currentUserId}
                 ORDER BY rc.is_pinned DESC, rc.LastMessageAt DESC";
 
-			DataTable dt = DBconnector.GetInstance().Query(sql);
+            DataTable dt = DBconnector.GetInstance().Query(sql);
+
 
 			foreach (DataRow row in dt.Rows)
 			{

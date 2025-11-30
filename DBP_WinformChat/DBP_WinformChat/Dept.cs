@@ -133,7 +133,7 @@ namespace DBP_Chat
 			string sql = $@"
                 SELECT u.UserId, u.Name, u.Nickname
                 FROM Favorite f
-                JOIN User u ON f.FavortieUserId = u.UserId
+                JOIN User u ON f.FavoriteUserId = u.UserId
                 WHERE f.UserId = {currentUserId}";
 
 			DataTable dt = DBconnector.GetInstance().Query(sql);
@@ -159,7 +159,7 @@ namespace DBP_Chat
 			string checkSql = $@"
                 SELECT COUNT(*) 
                 FROM Favorite 
-                WHERE UserId = {currentUserId} AND FavortieUserId = {targetUserId}";
+                WHERE UserId = {currentUserId} AND FavoriteUserId = {targetUserId}";
 
 			DataTable dt = DBconnector.GetInstance().Query(checkSql);
 
@@ -170,7 +170,7 @@ namespace DBP_Chat
 			}
 
 			string sql =
-				$"INSERT INTO Favorite (UserId, FavortieUserId) VALUES ({currentUserId}, {targetUserId})";
+				$"INSERT INTO Favorite (UserId, FavoriteUserId) VALUES ({currentUserId}, {targetUserId})";
 
 			DBconnector.GetInstance().NonQuery(sql);
 
@@ -191,7 +191,7 @@ namespace DBP_Chat
 			int targetUserId = Convert.ToInt32(userIdText);
 
 			string sql =
-				$"DELETE FROM Favorite WHERE UserId = {currentUserId} AND FavortieUserId = {targetUserId}";
+				$"DELETE FROM Favorite WHERE UserId = {currentUserId} AND FavoriteUserId = {targetUserId}";
 
 			DBconnector.GetInstance().NonQuery(sql);
 

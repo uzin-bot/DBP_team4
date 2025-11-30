@@ -88,7 +88,7 @@ namespace DBP_Chat
 					string sql = $@"
                         SELECT COUNT(*) 
                         FROM Favorite 
-                        WHERE UserId = {currentUserId} AND FavortieUserId = {targetUserId}";
+                        WHERE UserId = {currentUserId} AND FavoriteUserId = {targetUserId}";
 
 					DataTable dt = DBconnector.GetInstance().Query(sql);
 
@@ -96,7 +96,7 @@ namespace DBP_Chat
 						continue;
 
 					string insertSql = $@"
-                        INSERT INTO Favorite (UserId, FavortieUserId)
+                        INSERT INTO Favorite (UserId, FavoriteUserId)
                         VALUES ({currentUserId}, {targetUserId})";
 
 					DBconnector.GetInstance().NonQuery(insertSql);
