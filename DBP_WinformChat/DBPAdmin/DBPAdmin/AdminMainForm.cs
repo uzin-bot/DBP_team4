@@ -10,13 +10,13 @@ namespace DBPAdmin
 {
     public partial class AdminMainForm : Form
     {
-        private DBconnector db;
+        private DBP_WinformChat.DBconnector db;
 
         public AdminMainForm()
         {
             InitializeComponent();
 
-            db = DBconnector.GetInstance();
+            db = DBP_WinformChat.DBconnector.GetInstance();
 
             if (!db.ConnectionTest())
             {
