@@ -10,6 +10,7 @@ namespace leehaeun
             InitializeComponent();
             LoadDepartments();
         }
+        // 디자인 폼 비밀번호 확인 삭제
 
         // 부서아이디 로드 해오기
         private void LoadDepartments()
@@ -74,37 +75,39 @@ namespace leehaeun
             }
             else if (IsDuplicate.Text == "이미 사용 중인 아이디입니다.")
             {
-                MessageBox.Show("이미 사용 중인 아이디입니다.");
+                // 직접 쓴 문구 -> IsDuplicate.Text
+                MessageBox.Show(IsDuplicate.Text);
             }
             else
             {
+                // 각 쿼리/결과 변수 이름 변경
                 // User 테이블에 정보 저장
                 string pwHash = Sha256.Instance.HashSHA256(pw);
-                string query1 = $@"INSERT INTO
+                string uquery = $@"INSERT INTO
                     User(LoginId, PasswordHash, Name, Nickname, Address, ZipCode, DeptId, Role)
                     VALUES('{id}', '{pwHash}', '{name}', '{nickname}', '{address}', {zipCode}, {deptId}, 'user');";
-                int affected1 = DBconnector.GetInstance().NonQuery(query1);
-                if (affected1 <= 0) MessageBox.Show("회원가입 실패");
+                int uaff = DBconnector.GetInstance().NonQuery(uquery);
+                if (uaff <= 0) MessageBox.Show("회원가입 실패");
 
                 // 방금 가입한 계정의 UserId
-                string query2 = $"SELECT UserId FROM User WHERE LoginId = '{id}';";
-                DataTable dt = DBconnector.GetInstance().Query(query2);
+                string iquery = $"SELECT UserId FROM User WHERE LoginId = '{id}';";
+                DataTable dt = DBconnector.GetInstance().Query(iquery);
                 int UserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
 
                 // 새 프로필 생성
                 string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                string query3 = $@"INSERT INTO
+                string pquery = $@"INSERT INTO
                     Profile(UserId, NickName, IsDefault, CreatedAt)
-                    VALUES('{UserId}', '{nickname}', 1, '{now}');";
-                int affected2 = DBconnector.GetInstance().NonQuery(query3);
-                if (affected2 <= 0) MessageBox.Show("프로필 생성 실패");
+                    VALUES({UserId}, '{nickname}', 1, '{now}');";
+                int paff = DBconnector.GetInstance().NonQuery(pquery);
+                if (paff <= 0) MessageBox.Show("프로필 생성 실패");
 
                 // 프로필 이미지 있으면 업데이트
                 if (!string.IsNullOrEmpty(profileImage))
                 {
-                    string query4 = $"UPDATE Profile SET ProfileImage = '{profileImage}' WHERE UserId = {UserId} AND IsDefault = 1;";
-                    int affected3 = DBconnector.GetInstance().NonQuery(query4);
-                    if (affected3 <= 0) MessageBox.Show("프로필 이미지 업로드 실패");
+                    string mquery = $"UPDATE Profile SET ProfileImage = '{profileImage}' WHERE UserId = {UserId} AND IsDefault = 1;";
+                    int maff = DBconnector.GetInstance().NonQuery(mquery);
+                    if (maff <= 0) MessageBox.Show("프로필 이미지 업로드 실패");
                 }
 
                 MessageBox.Show("회원가입 완료");
@@ -112,6 +115,7 @@ namespace leehaeun
             }
         }
 
+        // 프로필 이미지 변경
         private void ChangeProfileButton_Click(object sender, EventArgs e)
         {
             var FD = new OpenFileDialog();
@@ -134,6 +138,7 @@ namespace leehaeun
             FD.Dispose();
         }
 
+        // 주소 검색
         private void SearchAddressButton_Click(object sender, EventArgs e)
         {
             var searchAddress = new SearchAddressForm();

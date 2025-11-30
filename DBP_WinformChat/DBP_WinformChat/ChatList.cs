@@ -13,8 +13,9 @@ namespace 남예솔
 	public partial class chatlist : Form
 	{
 		//현재 로그인한 사용자 정보(UserInfo에서 가져옴)
-		private int currentUserId = Convert.ToInt32(UserInfo.User.Rows[0]["UserId"]);
-		private string currentUserName = UserInfo.User.Rows[0]["Name"].ToString();
+		//User.Rows[0] -> User
+		private int currentUserId = Convert.ToInt32(UserInfo.User["UserId"]);
+		private string currentUserName = UserInfo.User["Name"].ToString();
 		private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
 
 		public chatlist()

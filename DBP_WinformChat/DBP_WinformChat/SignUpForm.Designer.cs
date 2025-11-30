@@ -53,8 +53,6 @@ namespace leehaeun
             IsDuplicate = new Label();
             openFileDialog = new OpenFileDialog();
             ChangeProfileButton = new Button();
-            CheckPwBox = new TextBox();
-            label5 = new Label();
             ((System.ComponentModel.ISupportInitialize)ProfileImageBox).BeginInit();
             SuspendLayout();
             // 
@@ -88,7 +86,7 @@ namespace leehaeun
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(12, 254);
+            label4.Location = new Point(12, 208);
             label4.Name = "label4";
             label4.Size = new Size(31, 15);
             label4.TabIndex = 2;
@@ -106,7 +104,7 @@ namespace leehaeun
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(12, 300);
+            label7.Location = new Point(12, 254);
             label7.Name = "label7";
             label7.Size = new Size(31, 15);
             label7.TabIndex = 4;
@@ -138,14 +136,14 @@ namespace leehaeun
             // 
             // NameBox
             // 
-            NameBox.Location = new Point(12, 272);
+            NameBox.Location = new Point(12, 226);
             NameBox.Name = "NameBox";
             NameBox.Size = new Size(247, 23);
             NameBox.TabIndex = 9;
             // 
             // AddressBox
             // 
-            AddressBox.Location = new Point(12, 347);
+            AddressBox.Location = new Point(12, 301);
             AddressBox.Name = "AddressBox";
             AddressBox.ReadOnly = true;
             AddressBox.Size = new Size(247, 23);
@@ -153,7 +151,7 @@ namespace leehaeun
             // 
             // ZipCodeBox
             // 
-            ZipCodeBox.Location = new Point(12, 318);
+            ZipCodeBox.Location = new Point(12, 272);
             ZipCodeBox.Name = "ZipCodeBox";
             ZipCodeBox.ReadOnly = true;
             ZipCodeBox.Size = new Size(166, 23);
@@ -171,7 +169,7 @@ namespace leehaeun
             // 
             // SearchAddressButton
             // 
-            SearchAddressButton.Location = new Point(184, 318);
+            SearchAddressButton.Location = new Point(184, 272);
             SearchAddressButton.Name = "SearchAddressButton";
             SearchAddressButton.Size = new Size(75, 23);
             SearchAddressButton.TabIndex = 13;
@@ -199,7 +197,7 @@ namespace leehaeun
             // 
             // SignUpButton
             // 
-            SignUpButton.Location = new Point(97, 376);
+            SignUpButton.Location = new Point(97, 330);
             SignUpButton.Name = "SignUpButton";
             SignUpButton.Size = new Size(75, 23);
             SignUpButton.TabIndex = 17;
@@ -233,30 +231,11 @@ namespace leehaeun
             ChangeProfileButton.UseVisualStyleBackColor = true;
             ChangeProfileButton.Click += ChangeProfileButton_Click;
             // 
-            // CheckPwBox
-            // 
-            CheckPwBox.Location = new Point(12, 226);
-            CheckPwBox.Name = "CheckPwBox";
-            CheckPwBox.PasswordChar = '*';
-            CheckPwBox.Size = new Size(247, 23);
-            CheckPwBox.TabIndex = 21;
-            // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Location = new Point(12, 208);
-            label5.Name = "label5";
-            label5.Size = new Size(83, 15);
-            label5.TabIndex = 20;
-            label5.Text = "비밀번호 확인";
-            // 
             // SignUpForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(271, 417);
-            Controls.Add(CheckPwBox);
-            Controls.Add(label5);
+            ClientSize = new Size(271, 365);
             Controls.Add(ChangeProfileButton);
             Controls.Add(IsDuplicate);
             Controls.Add(SignUpButton);
@@ -305,7 +284,5 @@ namespace leehaeun
         private Label IsDuplicate;
         private OpenFileDialog openFileDialog;
         private Button ChangeProfileButton;
-        private TextBox CheckPwBox;
-        private Label label5;
     }
 }

@@ -103,18 +103,15 @@ namespace DBP_Chat
 		}
 
 		//현재 >> 직원 더블클릭 → "프로필 폼 예정입니다" 메시지 뜸 (채팅 X)
+		//메시지 -> 폼 연결
 		private void tvdept_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
 		{
 			if (e.Node.Level != 2) return;
 
 			int targetUserId = Convert.ToInt32(e.Node.Tag);
 
-			MessageBox.Show(
-				$"프로필 화면이 여기에 열릴 예정입니다.\n유저 ID: {targetUserId}",
-				"프로필",
-				MessageBoxButtons.OK,
-				MessageBoxIcon.Information
-			);
+			var f = new leehaeun.UserInfoForm(targetUserId);
+			f.Show();
 		}
 
 		//검색창 열기(SearchResultForm)
