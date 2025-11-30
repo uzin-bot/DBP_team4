@@ -36,8 +36,7 @@ namespace leehaeun
                     FROM UserProfileMap already
                     WHERE already.OwnerUserId = {LoginForm.UserId}
                     AND already.TargetUserId = u.UserId
-                );
-                ";
+                );";
 
             DataTable dt = DBconnector.GetInstance().Query(query);
 
