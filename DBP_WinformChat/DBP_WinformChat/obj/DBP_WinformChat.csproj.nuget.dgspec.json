@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\user\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj": {}
+    "C:\\Users\\OWNER\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj": {}
   },
   "projects": {
-    "C:\\Users\\user\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj": {
+    "C:\\Users\\OWNER\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
+        "projectUniqueName": "C:\\Users\\OWNER\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
         "projectName": "DBP_WinformChat",
-        "projectPath": "C:\\Users\\user\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\obj\\",
+        "projectPath": "C:\\Users\\OWNER\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
+        "packagesPath": "C:\\Users\\OWNER\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\OWNER\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\OWNER\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -44,7 +44,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0-windows7.0": {
@@ -74,7 +74,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
