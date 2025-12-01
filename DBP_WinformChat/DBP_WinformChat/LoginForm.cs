@@ -44,9 +44,11 @@ namespace leehaeun
 
             if (dt != null && dt.Rows.Count > 0)
             {
-                // 로그인 성공
+                // 수정 사항 - if 문 내부 코드
+                // 로그인
                 UserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
                 UserInfo.GetInfo();
+                AddLog(1);
 
                 // 채팅 리스트 폼
                 FormHide();
@@ -55,7 +57,11 @@ namespace leehaeun
 
                 // 채팅 리스트 폼이 닫혔을 때
                 // 로그아웃인지 프로그램 종료인지 확인
-                if (Logout) FormShow();
+                if (Logout)
+                {
+                    AddLog(0);
+                    FormShow();
+                }
                 else this.Close();
             }
             else
@@ -81,6 +87,20 @@ namespace leehaeun
             PwBox.Text = "";
             Logout = false;
             this.Hide();
+        }
+
+        // 수정 사항 - 메서드 추가
+        // 로그인/로그아웃 로그
+        private void AddLog(int i)
+        {
+            string action = "";
+            string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            if (i == 1) action = "LOGIN";
+            if (i == 0) action = "LOGOUT";
+
+            string query = $"INSERT INTO UserLog(UserId, ActionType, CreatedAt) VALUES({UserId}, '{action}', '{now}');";
+            DBconnector.GetInstance().NonQuery(query);
         }
 
         // 로그인 설정 저장

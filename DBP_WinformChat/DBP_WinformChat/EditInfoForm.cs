@@ -309,6 +309,7 @@ namespace leehaeun
         // 프로필 저장
         private void SaveProfileInfo()
         {
+            // 수정 사항 - 쿼리
             // 닉네임 변경
             if (NicknameBox.Text != CurrProfile["Nickname"].ToString())
             {
