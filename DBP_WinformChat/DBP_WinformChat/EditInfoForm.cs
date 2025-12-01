@@ -312,7 +312,7 @@ namespace leehaeun
             // 닉네임 변경
             if (NicknameBox.Text != CurrProfile["Nickname"].ToString())
             {
-                string query = $"UPDATE Profile SET Name = '{NicknameBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE Profile SET Name = '{NicknameBox.Text}' WHERE UserId = '{LoginForm.UserId}' AND ProfileId = {CurrProfile["ProfileId"]};";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("닉네임 변경 실패");
             }
@@ -320,7 +320,7 @@ namespace leehaeun
             // 상태메시지 변경
             if (StatusBox.Text != CurrProfile["StatusMessage"].ToString())
             {
-                string query = $"UPDATE Profile SET Address = '{StatusBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE Profile SET Address = '{StatusBox.Text}' WHERE UserId = '{LoginForm.UserId}' AND ProfileId = {CurrProfile["ProfileId"]};";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("상태메시지 변경 실패");
             }
@@ -329,7 +329,7 @@ namespace leehaeun
             if (ProfileImagePBox.Tag?.ToString() != CurrProfile["ProfileImage"].ToString() &&
                 string.IsNullOrEmpty(ProfileImagePBox.Tag.ToString()))
             {
-                string query = $"UPDATE Profile SET ProfileImage = '{ProfileImagePBox.Tag?.ToString()}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE Profile SET ProfileImage = '{ProfileImagePBox.Tag?.ToString()}' WHERE UserId = '{LoginForm.UserId}' AND ProfileId = {CurrProfile["ProfileId"]};";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("프로필 이미지 변경 실패");
             }
