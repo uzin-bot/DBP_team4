@@ -12,17 +12,17 @@ namespace DBP_Chat
 	public partial class SearchResultForm : Form
 	{
 		string id, name, dept;
-		int currentUserId;
+		int currentLoginId;
 		Dept parentForm;
 
-		public SearchResultForm(string id, string name, string dept, int userId, Dept parent)
+		public SearchResultForm(string id, string name, string dept, int LoginId, Dept parent)
 		{
 			InitializeComponent();
 
 			this.id = id;
 			this.name = name;
 			this.dept = dept;
-			this.currentUserId = userId;
+			this.currentLoginId = LoginId;
 			this.parentForm = parent;
 
 			//셀 클릭 시 자동 체크되도록 이벤트 연결
@@ -41,19 +41,21 @@ namespace DBP_Chat
 		private void LoadResult()
 		{
 			string sql = @"
-                SELECT u.UserId, u.Name, d.DeptName, u.Nickname
+                SELECT u.LoginId, u.Name, d.DeptName, u.Nickname
                 FROM User u 
                 JOIN Department d ON u.DeptId = d.DeptId
-                WHERE 1=1 ";
+                WHERE 1=1
+                  AND u.IsAdmin = 0";   //검색 결과에서도 관리자 제외 >>> 12월 2일 수정
+			                            //필요없으면 삭제해도 됩니다!
 
 			if (!string.IsNullOrEmpty(id))
-				sql += $"AND u.UserId = {id} ";
+				sql += $" AND u.LoginId = {id} ";
 
 			if (!string.IsNullOrEmpty(name))
-				sql += $"AND u.Name LIKE '%{name}%' ";
+				sql += $" AND u.Name LIKE '%{name}%' ";
 
 			if (!string.IsNullOrEmpty(dept))
-				sql += $"AND d.DeptName = '{dept}' ";
+				sql += $" AND d.DeptName = '{dept}' ";
 
 			DataTable dt = DBconnector.GetInstance().Query(sql);
 
@@ -61,7 +63,7 @@ namespace DBP_Chat
 
 			foreach (DataRow row in dt.Rows)
 			{
-				ListViewItem item = new ListViewItem(row["UserId"].ToString());
+				ListViewItem item = new ListViewItem(row["LoginId"].ToString());
 				item.SubItems.Add(row["Name"].ToString());
 				item.SubItems.Add(row["DeptName"].ToString());
 				item.SubItems.Add(row["Nickname"].ToString());
@@ -73,8 +75,8 @@ namespace DBP_Chat
 		{
 			if (lvResult.SelectedItems.Count == 0) return;
 
-			int targetUserId = Convert.ToInt32(lvResult.SelectedItems[0].Text);
-			new ChatForm(currentUserId, targetUserId).Show();
+			int targetLoginId = Convert.ToInt32(lvResult.SelectedItems[0].Text);
+			new ChatForm(currentLoginId, targetLoginId).Show();
 		}
 
 		private void btnAddFavorite_Click(object sender, EventArgs e)
@@ -83,12 +85,12 @@ namespace DBP_Chat
 			{
 				if (item.Checked)
 				{
-					int targetUserId = Convert.ToInt32(item.Text);
+					int targetLoginId = Convert.ToInt32(item.Text);
 
 					string sql = $@"
                         SELECT COUNT(*) 
                         FROM Favorite 
-                        WHERE UserId = {currentUserId} AND FavoriteUserId = {targetUserId}";
+                        WHERE LoginId = {currentLoginId} AND FavoriteLoginId = {targetLoginId}";
 
 					DataTable dt = DBconnector.GetInstance().Query(sql);
 
@@ -96,8 +98,8 @@ namespace DBP_Chat
 						continue;
 
 					string insertSql = $@"
-                        INSERT INTO Favorite (UserId, FavoriteUserId)
-                        VALUES ({currentUserId}, {targetUserId})";
+                        INSERT INTO Favorite (LoginId, FavoriteLoginId)
+                        VALUES ({currentLoginId}, {targetLoginId})";
 
 					DBconnector.GetInstance().NonQuery(insertSql);
 				}
