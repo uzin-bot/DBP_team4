@@ -40,11 +40,14 @@ namespace 남예솔
             niChatAlert.Visible = true;
             niChatAlert.Text = "채팅 알림";
 
+            this.FormClosing += OnFormClosing;
+
         }
 
         private void chatlist_Load(object sender, EventArgs e)
         {
             LoadRecentChat();
+
 
             //알림 클라이언트 연결
             ConnectAlertClient();
@@ -108,64 +111,146 @@ namespace 남예솔
         {
             if (alertClient == null || !alertClient.Connected) return;
 
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[4096]; // 버퍼 크기 증가
+            StringBuilder messageBuilder = new StringBuilder();
 
-            while (alertClient.Connected)
+            while (alertClient != null && alertClient.Connected)
             {
                 try
                 {
                     int bytesRead = alertStream.Read(buffer, 0, buffer.Length);
-                    if (bytesRead == 0) break; // 연결 종료
+                    if (bytesRead == 0) break;
 
                     string received = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    string[] parts = received.Split(new char[] { ':' }, 5);
+                    Console.WriteLine($"[chatlist] 원본 수신: [{received}]");
 
-                    if (parts.Length >= 4 && parts[0] == "CHAT")
+                    messageBuilder.Append(received);
+                    string fullMessage = messageBuilder.ToString();
+
+                    // null 문자로 메시지 구분
+                    string[] messages = fullMessage.Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    // 마지막 메시지가 완전하지 않을 수 있으므로 체크
+                    bool lastMessageComplete = fullMessage.EndsWith("\0");
+
+                    int messagesToProcess = lastMessageComplete ? messages.Length : messages.Length - 1;
+
+                    for (int i = 0; i < messagesToProcess; i++)
                     {
-                        string senderId = parts[1];
-                        string receiverId = parts[2];
-                        string content = parts[3];
+                        string msg = messages[i].Trim();
+                        if (string.IsNullOrWhiteSpace(msg)) continue;
 
-                        // 나에게 온 메시지인 경우에만 처리
-                        if (receiverId == currentUserId.ToString())
+                        Console.WriteLine($"[chatlist] 처리할 메시지: [{msg}]");
+
+                        // CHAT:senderId:receiverId:content (4개로 분할)
+                        string[] parts = msg.Split(new char[] { ':' }, 4);
+
+                        Console.WriteLine($"[chatlist] parts.Length={parts.Length}");
+
+                        if (parts.Length >= 4)
                         {
-                            this.Invoke((MethodInvoker)delegate
+                            Console.WriteLine($"[chatlist] Type={parts[0]}, Sender={parts[1]}, Receiver={parts[2]}");
+                        }
+
+                        if (parts.Length >= 4 && parts[0] == "CHAT")
+                        {
+                            string senderId = parts[1];
+                            string receiverId = parts[2];
+                            string content = parts[3];
+
+                            Console.WriteLine($"[chatlist] receiverId={receiverId}, currentUserId={currentUserId}");
+
+                            // 나에게 온 메시지인 경우에만 처리
+                            if (receiverId == currentUserId.ToString())
                             {
-                                if (this.IsDisposed || !this.IsHandleCreated) return;
-                                ShowAlertOnMainForm(senderId, content);
-                            });
+                                Console.WriteLine($"[chatlist] 알람 표시 시작!");
+
+                                if (this.InvokeRequired)
+                                {
+                                    this.Invoke((MethodInvoker)delegate
+                                    {
+                                        if (!this.IsDisposed && this.IsHandleCreated)
+                                        {
+                                            ShowAlertOnMainForm(senderId, content);
+                                        }
+                                    });
+                                }
+                                else
+                                {
+                                    ShowAlertOnMainForm(senderId, content);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[chatlist] 다른 사람 메시지");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[chatlist] CHAT 메시지 아님 또는 형식 오류");
                         }
                     }
+
+                    // 미처리 메시지 보관
+                    if (!lastMessageComplete && messages.Length > 0)
+                    {
+                        messageBuilder.Clear();
+                        messageBuilder.Append(messages[messages.Length - 1]);
+                    }
+                    else
+                    {
+                        messageBuilder.Clear();
+                    }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    break; // 오류 발생 시 루프 종료
+                    Console.WriteLine($"[chatlist] 수신 오류: {ex.Message}\n{ex.StackTrace}");
+                    break;
                 }
             }
 
-            // 연결 종료 후 복구 로직
-            this.Invoke((MethodInvoker)delegate
+            // 연결 종료 후 재연결
+            ReconnectAlert();
+        }
+
+        // 재연결 메서드 (새로 추가)
+        private void ReconnectAlert()
+        {
+            try
             {
-                if (this.IsDisposed || !this.IsHandleCreated) return;
-
-                alertClient?.Close();
-                alertClient = null;
-
-                // Task를 시작하여 메인 스레드를 블로킹하지 않고 재연결 시도
-                Task.Run(() =>
+                if (this.InvokeRequired)
                 {
-                    Thread.Sleep(3000);
-                    if (!this.IsDisposed)
+                    this.Invoke((MethodInvoker)delegate
                     {
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            ConnectAlertClient();
-                        });
-                    }
-                });
+                        if (this.IsDisposed || !this.IsHandleCreated) return;
 
-                Console.WriteLine("[chatlist] 알림 클라이언트 재연결 예약.");
-            });
+                        alertClient?.Close();
+                        alertClient = null;
+
+                        Task.Run(() =>
+                        {
+                            Thread.Sleep(3000);
+                            if (!this.IsDisposed)
+                            {
+                                this.Invoke((MethodInvoker)delegate
+                                {
+                                    if (!this.IsDisposed)
+                                    {
+                                        Console.WriteLine("[chatlist] 재연결 시도...");
+                                        ConnectAlertClient();
+                                    }
+                                });
+                            }
+                        });
+
+                        Console.WriteLine("[chatlist] 알림 클라이언트 재연결 예약.");
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[chatlist] 재연결 오류: {ex.Message}");
+            }
         }
 
         // 새메세지 도착 알림
