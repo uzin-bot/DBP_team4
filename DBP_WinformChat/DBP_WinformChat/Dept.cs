@@ -1,6 +1,7 @@
 ﻿using DBP_WinformChat;
 using kyg;
 using leehaeun;
+using Microsoft.VisualBasic.ApplicationServices;
 using MySql.Data.MySqlClient;
 using System;
 using System.Data;
@@ -42,8 +43,7 @@ namespace DBP_Chat
 			//클릭시 채팅 목록
 			btnchatlist.Click += btnchatlist_Click;
 
-			//친구목록 / 즐겨찾기 중복 선택 방지
-			//친구 목록이랑 즐겨찾기 목록에서 동시에 직원 선택 불가하도록 했습니다!
+			//친구목록 / 즐겨찾기 목록 중복 선택 방지
 			tvdept.NodeMouseClick += tvdept_NodeMouseClick;
 			lBlist.SelectedIndexChanged += lBlist_SelectedIndexChanged;
 		}
@@ -84,10 +84,11 @@ namespace DBP_Chat
 
 				//Treeview에서 관리자 제외 >>> 12월 2일 수정
 				string sql = $@"
-					SELECT LoginId, Name, Nickname 
-					FROM User 
-					WHERE DeptId = {dept["DeptId"]}
-					  AND IsAdmin = 0";
+					SELECT u.LoginId, u.Name, u.Nickname
+					FROM User u
+					JOIN users us ON u.LoginId = us.user_id    
+					WHERE u.DeptId = {dept["DeptId"]}
+					  AND us.is_admin = 0";                    
 
 				DataTable dtUser = DBconnector.GetInstance().Query(sql);
 
@@ -110,7 +111,6 @@ namespace DBP_Chat
 
 		private void tvdept_AfterSelect(object sender, TreeViewEventArgs e)
 		{
-
 		}
 
 		private void tvdept_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -141,8 +141,8 @@ namespace DBP_Chat
 			string sql = $@"
                 SELECT u.LoginId, u.Name, u.Nickname
                 FROM Favorite f
-                JOIN User u ON f.FavoriteLoginId = u.LoginId
-                WHERE f.LoginId = {currentLoginId}";
+                JOIN User u ON f.FavoriteUserId = u.LoginId      
+                WHERE f.UserId = {currentLoginId}"; 
 
 			DataTable dt = DBconnector.GetInstance().Query(sql);
 
@@ -165,9 +165,9 @@ namespace DBP_Chat
 			int targetLoginId = int.Parse(LoginId);
 
 			string checkSql = $@"
-                SELECT COUNT(*) 
-                FROM Favorite 
-                WHERE LoginId = {currentLoginId} AND FavoriteLoginId = {targetLoginId}";
+                SELECT COUNT(*)
+                FROM Favorite
+                WHERE UserId = {currentLoginId} AND FavoriteUserId = {targetLoginId}"; 
 
 			DataTable dt = DBconnector.GetInstance().Query(checkSql);
 
@@ -178,7 +178,7 @@ namespace DBP_Chat
 			}
 
 			string sql =
-				$"INSERT INTO Favorite (LoginId, FavoriteLoginId) VALUES ({currentLoginId}, {targetLoginId})";
+				$"INSERT INTO Favorite (UserId, FavoriteUserId) VALUES ({currentLoginId}, {targetLoginId})"; 
 
 			DBconnector.GetInstance().NonQuery(sql);
 
@@ -199,7 +199,7 @@ namespace DBP_Chat
 			int targetLoginId = Convert.ToInt32(LoginIdText);
 
 			string sql =
-				$"DELETE FROM Favorite WHERE LoginId = {currentLoginId} AND FavoriteLoginId = {targetLoginId}";
+				$"DELETE FROM Favorite WHERE UserId = {currentLoginId} AND FavoriteUserId = {targetLoginId}"; 
 
 			DBconnector.GetInstance().NonQuery(sql);
 
@@ -242,7 +242,6 @@ namespace DBP_Chat
 		{
 			// 로그아웃 여부 확인
 			LoginForm.Logout = true;
-			// 현재 폼 닫기
 			this.Close();
 		}
 

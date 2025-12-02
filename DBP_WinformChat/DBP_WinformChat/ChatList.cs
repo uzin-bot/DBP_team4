@@ -32,7 +32,8 @@ namespace 남예솔
         {
             InitializeComponent();
 
-            btndept.Click += btndept_Click; //클릭시 DeptForm으로 이동 
+
+			btndept.Click += btndept_Click; //클릭시 DeptForm으로 이동 
 
             // NotifyIcon 초기화 추가 (수정사항)
             niChatAlert = new NotifyIcon();
@@ -325,7 +326,7 @@ namespace 남예솔
 		//btndept → 친구 목록(DeptForm)으로 이동
 		private void btndept_Click(object sender, EventArgs e)
 		{
-			Dept deptForm = new Dept(currentUserId, currentUserName, currentUserNickname);
+			Dept deptForm = new Dept(LoginForm.LoginId, currentUserName, currentUserNickname);
 			deptForm.Show();
 		}
 	}

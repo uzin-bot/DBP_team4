@@ -37,7 +37,7 @@ namespace DBP_WinformChat
             return dbconnectorObject;
         }
 
-        // read  쿼리
+        //read  쿼리
         public DataTable Query(string sql)
         {
             using (var conn = new MySqlConnection(_connectionStr))

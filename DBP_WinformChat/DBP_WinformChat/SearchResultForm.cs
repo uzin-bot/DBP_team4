@@ -40,13 +40,13 @@ namespace DBP_Chat
 
 		private void LoadResult()
 		{
+			//검색 결과에서도 관리자 제외 >>> 12월 2일 수정
 			string sql = @"
                 SELECT u.LoginId, u.Name, d.DeptName, u.Nickname
-                FROM User u 
+                FROM User u
+				JOIN users us ON u.LoginId = us.user_id        
                 JOIN Department d ON u.DeptId = d.DeptId
-                WHERE 1=1
-                  AND u.IsAdmin = 0";   //검색 결과에서도 관리자 제외 >>> 12월 2일 수정
-			                            //필요없으면 삭제해도 됩니다!
+                WHERE us.is_admin = 0";                        
 
 			if (!string.IsNullOrEmpty(id))
 				sql += $" AND u.LoginId = {id} ";
@@ -90,7 +90,7 @@ namespace DBP_Chat
 					string sql = $@"
                         SELECT COUNT(*) 
                         FROM Favorite 
-                        WHERE LoginId = {currentLoginId} AND FavoriteLoginId = {targetLoginId}";
+                        WHERE UserId = {currentLoginId} AND FavoriteUserId = {targetLoginId}";   
 
 					DataTable dt = DBconnector.GetInstance().Query(sql);
 
@@ -98,8 +98,8 @@ namespace DBP_Chat
 						continue;
 
 					string insertSql = $@"
-                        INSERT INTO Favorite (LoginId, FavoriteLoginId)
-                        VALUES ({currentLoginId}, {targetLoginId})";
+                        INSERT INTO Favorite (UserId, FavoriteUserId)
+                        VALUES ({currentLoginId}, {targetLoginId})";  
 
 					DBconnector.GetInstance().NonQuery(insertSql);
 				}
