@@ -25,6 +25,7 @@ namespace kyg
         private int myId;           // string → int 변경
         private int partnerId;      // string → int 변경
         private bool isSending = false; // 중복 전송 방지 플래그
+        private DateTime lastEmojiSendTime = DateTime.MinValue; // 이모지 마지막 전송 시간
 
         private ResourceManager formResourceManager; // 폼 리소스 접근용
         private Dictionary<string, Image> emojiMap = new Dictionary<string, Image>(); // 5-E: 이모티콘 맵
@@ -157,7 +158,21 @@ namespace kyg
         // 5-E: 공통 이모지 전송 로직
         private void SendEmoji(string emojiCode)
         {
+            // 중복 전송 방지 플래그 체크 (기존 로직)
             if (isSending) return;
+
+            // 쿨다운(Delay) 시간 체크 (새로운 로직)
+            // 마지막 전송 시간과 현재 시간의 차이가 2초 미만이면 전송을 막고 경고 메시지 표시
+            TimeSpan elapsed = DateTime.Now - lastEmojiSendTime;
+            if (elapsed.TotalSeconds < 2)
+            {
+                // 쿨다운 남은 시간 계산 (소수점 첫째 자리까지만 표시)
+                double remaining = 2.0 - elapsed.TotalSeconds;
+                MessageBox.Show($"이모지는 2초에 한 번만 전송할 수 있습니다. {remaining:F1}초 후 다시 시도해 주세요.",
+                                "전송 제한", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return; // 전송 중단
+            }
+
             isSending = true;
 
             try
@@ -171,7 +186,7 @@ namespace kyg
 
                 if (client == null || !client.Connected) throw new Exception("서버에 연결되지 않았습니다.");
 
-                // 2. 서버로 메시지 전송
+                // 2. 서버로 메시지 전송 (기존 로직)
                 string contentToSend = $"EMOJI:{emojiCode}"; // Content 필드에 들어갈 내용
                 string chatMsg = $"CHAT:{myId}:{partnerId}:{contentToSend}";
 
@@ -179,10 +194,12 @@ namespace kyg
                 stream.Write(data, 0, data.Length);
                 stream.Flush();
 
-                // 3. 내 화면에 표시 (로컬 출력)
-                // 시간 표시 통합
+                // 3. 내 화면에 표시 (로컬 출력) (기존 로직)
                 string currentTime = DateTime.Now.ToString("tt hh:mm");
                 DisplayEmoji(myId, emojiCode, currentTime);
+
+                // 4. 전송 성공 시 마지막 전송 시간 업데이트
+                lastEmojiSendTime = DateTime.Now;
             }
             catch (Exception ex)
             {

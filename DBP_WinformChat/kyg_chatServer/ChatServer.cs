@@ -17,7 +17,7 @@ public class kyg
     private static Dictionary<string, TcpClient> clients = new Dictionary<string, TcpClient>();
     private const int PORT = 12345;
     // 서버 측 파일 저장 디렉토리 (4주차 5-F 검정)
-    private const string FILE_STORAGE_PATH = "C:\\Users\\Public\\DBP_ChatFiles\\";
+    private const string FILE_STORAGE_PATH = "C:\\DBP_ChatFiles\\";
 
     public static void StartServer()
     {
