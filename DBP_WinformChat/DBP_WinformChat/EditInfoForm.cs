@@ -175,7 +175,7 @@ namespace leehaeun
         // 멀티 프로필 매핑 정보
         private void GetMulProfileMember()
         {
-            // 현재 프로필의 멀티 프로필 멤버 정보
+            // 현재 프로필의 멀티 프로필 멤버 정보 (상대방이 나한테 설정한 멀프 가지고오는거임 이게없으면 기본)
             string query = $@"
                 SELECT
                     u.UserId,

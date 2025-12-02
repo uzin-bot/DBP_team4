@@ -84,8 +84,8 @@ namespace leehaeun
                 // User 테이블에 정보 저장
                 string pwHash = Sha256.Instance.HashSHA256(pw);
                 string uquery = $@"INSERT INTO
-                    User(LoginId, PasswordHash, Name, Nickname, Address, ZipCode, DeptId, Role)
-                    VALUES('{id}', '{pwHash}', '{name}', '{nickname}', '{address}', {zipCode}, {deptId}, 'user');";
+                    User(LoginId, PasswordHash, Name, Address, ZipCode, DeptId, Role)
+                    VALUES('{id}', '{pwHash}', '{name}', '{address}', {zipCode}, {deptId}, 'user');";
                 int uaff = DBconnector.GetInstance().NonQuery(uquery);
                 if (uaff <= 0) MessageBox.Show("회원가입 실패");
 

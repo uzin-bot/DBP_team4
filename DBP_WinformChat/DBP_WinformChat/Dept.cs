@@ -1,7 +1,7 @@
 ﻿using DBP_WinformChat;
 using kyg;
 using leehaeun;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using System;
 using System.Data;
 using System.Data.Common;

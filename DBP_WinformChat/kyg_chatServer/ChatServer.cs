@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Net;
 using System;
 using System.IO;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using kyg_chatServer;
 using System.Data;
 using System.Data.Common;
@@ -15,10 +15,9 @@ public class kyg
     private static TcpListener listener;
     // [UserID, TcpClient 객체] 맵: 로그인한 사용자 ID와 해당 클라이언트 연결 매핑
     private static Dictionary<string, TcpClient> clients = new Dictionary<string, TcpClient>();
-    private const int PORT = 8888;
-    private static DBHelper dbHelper = new DBHelper(); // DBHelper 클래스 존재 가정
+    private const int PORT = 12345;
     // 서버 측 파일 저장 디렉토리 (4주차 5-F 검정)
-    private const string FILE_STORAGE_PATH = "C:\\DBP_ChatFiles\\";
+    private const string FILE_STORAGE_PATH = "C:\\Users\\Public\\DBP_ChatFiles\\";
 
     public static void StartServer()
     {
@@ -252,19 +251,17 @@ public class kyg
         // 2주차 5-A: 메시지 DB 저장 로직 (비즈니스 로직)
         try
         {
-            // 1. ChatMessage INSERT (3주차 5-C 대화 내용 유지 기반)
             string filePathValue = filePath != null ? $"'{filePath}'" : "NULL";
-            string chatQuery = $@"
-                INSERT INTO ChatMessage (FromUserId, ToUserId, Content, SentAt, IsRead, IsFile, FilePath)
-                VALUES ({senderId}, {receiverId}, '{content}', NOW(), 0, {(isFile ? 1 : 0)}, {filePathValue})";
 
-            DBconnector.GetInstance().NonQuery(chatQuery);
+            // INSERT하고 바로 ID 가져오기 (한 번에!)
+            string query = $@"
+            INSERT INTO ChatMessage (FromUserId, ToUserId, Content, SentAt, IsRead, IsFile, FilePath)
+            VALUES ({senderId}, {receiverId}, '{content}', NOW(), 0, {(isFile ? 1 : 0)}, {filePathValue});
+            SELECT LAST_INSERT_ID();";
 
-
-            // 방금 삽입한 MessageId 가져오기
-            string getIdQuery = "SELECT LAST_INSERT_ID()";
-            DataTable dt = DBconnector.GetInstance().Query(getIdQuery);
-            long messageId = Convert.ToInt64(dt.Rows[0][0]);
+            // Query()로 실행하면 SELECT 결과를 받을 수 있음
+            DataTable dt = DBconnector.GetInstance().Query(query);
+            int messageId = Convert.ToInt32(dt.Rows[0][0]);
 
 
             // 2. RecentChat UPDATE (2주차 6-A 대화 목록 갱신 기반)
@@ -278,7 +275,7 @@ public class kyg
         }
     }
 
-    private static void UpdateRecentChat(string userId, string partnerId, long lastMessageId)
+    private static void UpdateRecentChat(string userId, string partnerId, int lastMessageId)
     {
         // 2주차 6-A: 대화 목록 시간 갱신 로직
         try

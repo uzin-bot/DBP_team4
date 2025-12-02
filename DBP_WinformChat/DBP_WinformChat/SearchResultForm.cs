@@ -1,6 +1,6 @@
 ﻿using DBP_WinformChat;
 using kyg;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using System;
 using System.Data;
 using System.Data.Common;

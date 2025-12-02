@@ -1,5 +1,7 @@
 ﻿using DBP_WinformChat;
 using System.Data;
+using System.Windows.Forms;           
+using MySqlConnector;
 
 namespace leehaeun
 {

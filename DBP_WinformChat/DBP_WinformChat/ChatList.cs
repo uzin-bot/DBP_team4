@@ -2,7 +2,7 @@
 using DBP_WinformChat;
 using kyg;
 using leehaeun;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using System;
 using System.Data;
 using System.Data.Common;
@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;      
 using System.Text;              
 using System.Threading;         
-using System.Threading.Tasks;   
+using System.Threading.Tasks;
 
 namespace 남예솔
 {
@@ -65,7 +65,8 @@ namespace 남예솔
                 alertClient = new TcpClient();
 
                 // 2. 새로운 연결 시도
-                alertClient.Connect("127.0.0.1", 8888);
+                //alertClient.Connect("127.0.0.1", 8888);
+                alertClient.Connect("51.21.27.234", 12345);
                 //alertClient.Connect("10.201.21.210", 8888);
 
                 alertStream = alertClient.GetStream();
@@ -217,6 +218,7 @@ namespace 남예솔
         {
             lvlist.Items.Clear();
 
+
             string sql = $@"
                 SELECT 
                     rc.PartnerUserId,
@@ -229,35 +231,47 @@ namespace 남예솔
                 FROM RecentChat rc
                 JOIN User u ON rc.PartnerUserId = u.UserId
                 JOIN Department d ON u.DeptId = d.DeptId
-            JOIN ChatMessage cm ON rc.LastMessageId = cm.MessageId 
+                JOIN ChatMessage cm ON rc.LastMessageId = cm.MessageId 
                 WHERE rc.UserId = {currentUserId}
                 ORDER BY rc.is_pinned DESC, rc.LastMessageAt DESC";
 
-            DataTable dt = DBconnector.GetInstance().Query(sql);
+            try
+            {
+                DataTable dt = DBconnector.GetInstance().Query(sql);
 
+                if (dt == null || dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("채팅 목록이 비어있습니다.");
+                    return;
+                }
 
-			foreach (DataRow row in dt.Rows)
-			{
-				bool isPinned = Convert.ToInt32(row["is_pinned"]) == 1;
+                foreach (DataRow row in dt.Rows)
+                {
+                    bool isPinned = Convert.ToInt32(row["is_pinned"]) == 1;
 
-				ListViewItem item = new ListViewItem();
-				item.ImageIndex = isPinned ? 0 : -1;
+                    ListViewItem item = new ListViewItem();
+                    item.ImageIndex = isPinned ? 0 : -1;
 
-				item.SubItems.Add(row["PartnerUserId"].ToString());
-				item.SubItems.Add(row["Name"].ToString());
-				item.SubItems.Add(row["DeptName"].ToString());
+                    item.SubItems.Add(row["PartnerUserId"].ToString());
+                    item.SubItems.Add(row["Name"].ToString());
+                    item.SubItems.Add(row["DeptName"].ToString());
 
-				//최근 메시지 길면 ...으로 잘림 (20제한 >> UI 변경시 늘리거나 해도 O)
-				string msg = row["LastMessage"].ToString();
-				if (msg.Length > 20)
-					msg = msg.Substring(0, 20) + "…";
-				item.SubItems.Add(msg);
+                    //최근 메시지 길면 ...으로 잘림 (20제한 >> UI 변경시 늘리거나 해도 O)
+                    string msg = row["LastMessage"].ToString();
+                    if (msg.Length > 20)
+                        msg = msg.Substring(0, 20) + "…";
+                    item.SubItems.Add(msg);
 
-				item.SubItems.Add(row["LastMessageAt"].ToString());
+                    item.SubItems.Add(row["LastMessageAt"].ToString());
 
-				lvlist.Items.Add(item);
-			}
-		}
+                    lvlist.Items.Add(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"채팅 목록 로드 실패: {ex.Message}\n\n{ex.StackTrace}");
+            }
+        }
 
 		//우클릭 자동 선택
 		private void lvlist_MouseDown(object sender, MouseEventArgs e)
