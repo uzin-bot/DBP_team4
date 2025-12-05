@@ -52,8 +52,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="UIHelpers\" />
-  </ItemGroup>
-
 </Project>

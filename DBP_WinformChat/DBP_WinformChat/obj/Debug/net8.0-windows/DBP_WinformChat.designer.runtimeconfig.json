@@ -12,8 +12,8 @@
       }
     ],
     "additionalProbingPaths": [
-      "C:\\Users\\reada\\.dotnet\\store\\|arch|\\|tfm|",
-      "C:\\Users\\reada\\.nuget\\packages",
+      "C:\\Users\\yoleggk\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\yoleggk\\.nuget\\packages",
       "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
     ],
     "configProperties": {

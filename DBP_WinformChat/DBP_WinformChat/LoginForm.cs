@@ -1,6 +1,7 @@
 ﻿using DBP_WinformChat;
-using System.Data;
 using DBPAdmin;
+using leehaeun.UIHelpers;
+using System.Data;
 
 namespace leehaeun
 {
@@ -9,6 +10,7 @@ namespace leehaeun
         public LoginForm()
         {
             InitializeComponent();
+            LoginFormUIHelper.ApplyStyles(this);
             if (LoadConfig()) Login();
         }
 
@@ -100,9 +102,9 @@ namespace leehaeun
         // 로그인 설정 저장
         public void SaveConfig()
         {
-            DBP_WinformChat.Properties.Settings.Default.RememberMe = RememberMe.Checked;
-            DBP_WinformChat.Properties.Settings.Default.SaveInfo = SaveInfo.Checked;
-            if (RememberMe.Checked || SaveInfo.Checked)
+            DBP_WinformChat.Properties.Settings.Default.RememberMe = RememberMeCheckBox.Checked;
+            DBP_WinformChat.Properties.Settings.Default.SaveInfo = SaveInfoCheckBox.Checked;
+            if (RememberMeCheckBox.Checked || SaveInfoCheckBox.Checked)
             {
                 DBP_WinformChat.Properties.Settings.Default.SaveId = IdBox.Text;
                 DBP_WinformChat.Properties.Settings.Default.SavePw = PwBox.Text;
@@ -113,15 +115,15 @@ namespace leehaeun
         // 로그인 설정 불러오기
         public bool LoadConfig()
         {
-            RememberMe.Checked = DBP_WinformChat.Properties.Settings.Default.RememberMe;
-            SaveInfo.Checked = DBP_WinformChat.Properties.Settings.Default.SaveInfo;
-            if (RememberMe.Checked || SaveInfo.Checked)
+            RememberMeCheckBox.Checked = DBP_WinformChat.Properties.Settings.Default.RememberMe;
+            SaveInfoCheckBox.Checked = DBP_WinformChat.Properties.Settings.Default.SaveInfo;
+            if (RememberMeCheckBox.Checked || SaveInfoCheckBox.Checked)
             {
                 IdBox.Text = DBP_WinformChat.Properties.Settings.Default.SaveId;
                 PwBox.Text = DBP_WinformChat.Properties.Settings.Default.SavePw;
             }
 
-            if (RememberMe.Checked) return true;
+            if (RememberMeCheckBox.Checked) return true;
             else return false;
         }
     }
