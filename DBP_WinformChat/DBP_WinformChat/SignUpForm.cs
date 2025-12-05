@@ -1,4 +1,5 @@
 ﻿using DBP_WinformChat;
+using leehaeun.UIHelpers;
 using System.Data;
 
 namespace leehaeun
@@ -8,6 +9,7 @@ namespace leehaeun
         public SignUpForm()
         {
             InitializeComponent();
+            SignUpFormUIHelper.ApplyStyles(this);
             LoadDepartments();
         }
         // 디자인 폼 비밀번호 확인 삭제

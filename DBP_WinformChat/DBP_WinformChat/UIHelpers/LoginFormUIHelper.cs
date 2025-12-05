@@ -71,6 +71,7 @@ namespace leehaeun.UIHelpers
             };
             closeButton.FlatAppearance.BorderSize = 0;
             closeButton.FlatAppearance.MouseOverBackColor = ColorSchemes.Ivory;
+            closeButton.FlatAppearance.MouseDownBackColor = ColorSchemes.Ivory;
             closeButton.Click += (s, e) => form.Close();
 
             closeButton.MouseEnter += (s, e) => closeButton.ForeColor = ColorSchemes.DarkOlive;
@@ -78,6 +79,7 @@ namespace leehaeun.UIHelpers
 
             titleBar.Controls.Add(closeButton);
 
+            // 타이틀바 드래그
             bool isDragging = false;
             Point dragStart = Point.Empty;
 
