@@ -14,13 +14,16 @@ public class kyg
 {
     private static TcpListener listener;
     // [UserID, TcpClient 객체] 맵: 로그인한 사용자 ID와 해당 클라이언트 연결 매핑
-    private static Dictionary<string, TcpClient> clients = new Dictionary<string, TcpClient>();
+    private static Dictionary<string, List<TcpClient>> clients = new Dictionary<string, List<TcpClient>>();
     private const int PORT = 12345;
     // 서버 측 파일 저장 디렉토리 (4주차 5-F 검정)
     private const string FILE_STORAGE_PATH = "C:\\Users\\Public\\DBP_ChatFiles\\";
 
     public static void StartServer()
     {
+        // ✅ 콘솔 인코딩 설정 추가
+        Console.OutputEncoding = Encoding.UTF8;
+
         // 파일 저장 경로가 없으면 생성
         if (!Directory.Exists(FILE_STORAGE_PATH))
         {
@@ -153,8 +156,15 @@ public class kyg
                         // 클라이언트 ID 등록
                         //userId = parts[1];
                         userId = parts.Length > 1 ? parts[1] : string.Empty;
-                        lock (clients) { clients[userId] = tcpClient; }
-                        Console.WriteLine($"[Server] User logged in: {userId}");
+                        lock (clients)
+                        {
+                            if (!clients.ContainsKey(userId))
+                            {
+                                clients[userId] = new List<TcpClient>();
+                            }
+                            clients[userId].Add(tcpClient);
+                            Console.WriteLine($"[Server] User logged in: {userId} (총 연결 수: {clients[userId].Count})");
+                        }
                     }
                     else if (type == "CHAT" && parts.Length >= 4)
                     {
@@ -163,6 +173,8 @@ public class kyg
                         receiverId = parts[2];
                         // parts[3]에는 content 전체(예: "EMOJI:EMO1" 또는 "plain text: with colon")가 들어옵니다
                         string content = parts[3];
+
+                        System.Threading.Thread.Sleep(1000);
 
                         // 중계 및 DB 저장
                         //SenderID와 ReceiverID가 다를 때만 전송(나와의 채팅 시 중복 방지)
@@ -173,6 +185,23 @@ public class kyg
                         SaveChatMessageAndRecentChat(senderId, receiverId, content);
                         Console.WriteLine($"[Chat] {senderId} -> {receiverId}: {content}");
                     }
+                    // 읽음 관련 처리
+                    else if (type == "READ_CONFIRM" && parts.Length >= 3)
+                    {
+                        // 읽음 확인 처리
+                        string readerId = parts[1];   // 읽은 사람
+                        string originalSenderId = parts[2];   // 원래 보낸 사람
+
+                        System.Threading.Thread.Sleep(1000);
+
+                        Console.WriteLine($"[Server] 읽음 확인: {readerId}가 {originalSenderId}의 메시지 읽음");
+
+                        // 원래 보낸 사람에게 읽음 확인 전달
+                        string confirmMsg = $"READ_CONFIRM:{readerId}::";
+                        SendMessageToClient(originalSenderId, confirmMsg);
+
+                        Console.WriteLine($"[Server] {originalSenderId}에게 읽음 확인 전달 완료");
+                    }
                 }
             }
         }
@@ -182,13 +211,27 @@ public class kyg
         }
         finally
         {
-            fileStream?.Dispose(); // 스트림이 열려있다면 닫기
-            // 연결 해제 시 클라이언트 맵에서 제거
+            fileStream?.Dispose();
+
             if (!string.IsNullOrEmpty(userId))
             {
-                lock (clients) { clients.Remove(userId); }
-                Console.WriteLine($"[Server] User logged out: {userId}");
+                lock (clients)
+                {
+                    if (clients.ContainsKey(userId))
+                    {
+                        clients[userId].Remove(tcpClient);
+                        int remainingConnections = clients[userId].Count;
+
+                        if (remainingConnections == 0)
+                        {
+                            clients.Remove(userId);
+                        }
+
+                        Console.WriteLine($"[Server] User logged out: {userId} (남은 연결 수: {remainingConnections})");
+                    }
+                }
             }
+
             tcpClient?.Close();
         }
     }
@@ -209,38 +252,54 @@ public class kyg
 
     private static void SendMessageToClient(string receiverId, string message)
     {
-        // 1:1 메시지 중계 로직
-        if (clients.ContainsKey(receiverId))
+        lock (clients)
         {
-            TcpClient receiverClient = clients[receiverId];
-
-            try
+            if (!clients.ContainsKey(receiverId))
             {
-                // 연결이 실제로 살아있는지 확인
-                if (!receiverClient.Connected)
-                {
-                    // 연결이 끊겨있으면 딕셔너리에서 제거
-                    lock (clients)
-                    {
-                        clients.Remove(receiverId);
-                    }
-                    Console.WriteLine($"[Server] Dead connection removed: {receiverId}");
-                    return;
-                }
-
-                NetworkStream receiverStream = receiverClient.GetStream();
-                byte[] data = Encoding.UTF8.GetBytes(message);
-
-                receiverStream.Write(data, 0, data.Length);
+                Console.WriteLine($"[Server] No client found for receiverId: {receiverId}");
+                return;
             }
-            catch (Exception ex)
+
+            List<TcpClient> userClients = clients[receiverId];
+            List<TcpClient> deadClients = new List<TcpClient>();
+
+            Console.WriteLine($"[Server] Sending to {receiverId} ({userClients.Count} connections)");
+
+            foreach (TcpClient receiverClient in userClients)
             {
-                // 예외 발생 시 연결 제거
-                lock (clients)
+                try
                 {
-                    clients.Remove(receiverId);
+                    if (!receiverClient.Connected)
+                    {
+                        deadClients.Add(receiverClient);
+                        Console.WriteLine($"[Server] Dead connection detected for {receiverId}");
+                        continue;
+                    }
+
+                    NetworkStream receiverStream = receiverClient.GetStream();
+                    byte[] data = Encoding.UTF8.GetBytes(message + "\0");
+                    receiverStream.Write(data, 0, data.Length);
+                    receiverStream.Flush(); // ✅ Flush 추가
+
+                    Console.WriteLine($"[Server] Message sent successfully to {receiverId}: {message}");
                 }
-                Console.WriteLine($"[Server] Failed to send message to {receiverId} => removed from list. Error: {ex.Message}");
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Server] Failed to send to {receiverId}: {ex.Message}");
+                    deadClients.Add(receiverClient);
+                }
+            }
+
+            foreach (TcpClient deadClient in deadClients)
+            {
+                userClients.Remove(deadClient);
+                try { deadClient?.Close(); } catch { }
+            }
+
+            if (userClients.Count == 0)
+            {
+                clients.Remove(receiverId);
+                Console.WriteLine($"[Server] All connections closed for {receiverId}, removed from dictionary");
             }
         }
     }
@@ -265,9 +324,10 @@ public class kyg
 
 
             // 2. RecentChat UPDATE (2주차 6-A 대화 목록 갱신 기반)
-            UpdateRecentChat(senderId, receiverId, messageId);
-            UpdateRecentChat(receiverId, senderId, messageId);
-
+            // 보낸 사람: UnreadCount 증가 안 함 (읽었으니까)
+            UpdateRecentChat(senderId, receiverId, messageId, incrementUnread: false);
+            //받은 사람: UnreadCount 증가 (안 읽었으니까)
+            UpdateRecentChat(receiverId, senderId, messageId, incrementUnread: true);
         }
         catch (Exception dbEx)
         {
@@ -275,7 +335,7 @@ public class kyg
         }
     }
 
-    private static void UpdateRecentChat(string userId, string partnerId, int lastMessageId)
+    private static void UpdateRecentChat(string userId, string partnerId, int lastMessageId, bool incrementUnread)
     {
         // 2주차 6-A: 대화 목록 시간 갱신 로직
         try
@@ -291,20 +351,26 @@ public class kyg
             string query;
             if (count > 0)
             {
+                // UPDATE(incrementUnread가 true일 때만 + 1)
+                string unreadUpdate = incrementUnread ? "UnreadCount = UnreadCount + 1" : "UnreadCount = UnreadCount";
+
                 // UPDATE (있으면 업데이트)
                 query =
                     "UPDATE RecentChat " +
                     "SET LastMessageId = " + lastMessageId + ", " +
                         "LastMessageAt = NOW(), " +
-                        "UnreadCount = UnreadCount + 1 " +
+                        unreadUpdate + " " +
                     "WHERE UserId = " + userId + " AND PartnerUserId = " + partnerId;
             }
             else
             {
+                // INSERT (incrementUnread가 true면 1, false면 0)
+                int initialUnread = incrementUnread ? 1 : 0;
+
                 // INSERT (없으면 인서트)
                 query =
                     "INSERT INTO RecentChat (UserId, PartnerUserId, LastMessageId, LastMessageAt, is_pinned, UnreadCount) " +
-                    "VALUES (" + userId + ", " + partnerId + ", " + lastMessageId + ", NOW(), 0, 1)";
+                    "VALUES (" + userId + ", " + partnerId + ", " + lastMessageId + ", NOW(), 0, " + initialUnread +" )";
             }
 
             DBconnector.GetInstance().NonQuery(query);

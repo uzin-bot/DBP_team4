@@ -82,15 +82,24 @@ namespace DBP_Chat
                 deptNode.Tag = dept["DeptId"];
                 companyNode.Nodes.Add(deptNode);
 
-                string sql = $"SELECT UserId, Name, Nickname FROM User WHERE DeptId = {dept["DeptId"]}";
+                // 관리자 안보이도록 수정
+                // 닉네임 관련 쿼리 수정
+                string sql = $@"
+                    SELECT u.UserId, u.LoginId, u.Name, p.Nickname
+                    FROM User u
+                    JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1
+                    WHERE u.DeptId = {dept["DeptId"]}
+                    AND u.Role != 'admin'";
+
+
                 DataTable dtUser = DBconnector.GetInstance().Query(sql);
 
                 foreach (DataRow user in dtUser.Rows)
                 {
-                    string text = $"({user["UserId"]}) {user["Name"]} ({user["Nickname"]})";
+                    string text = $"({user["LoginId"]}) {user["Name"]} ({user["Nickname"]})";
 
                     TreeNode userNode = new TreeNode(text);
-                    userNode.Tag = user["UserId"];
+                    userNode.Tag = user["UserId"]; // 태그에는 유저 아이디 저장
                     deptNode.Nodes.Add(userNode);
                 }
             }
@@ -131,10 +140,12 @@ namespace DBP_Chat
         {
             lBlist.Items.Clear();
 
+            // 닉네임 관련 쿼리 수정
             string sql = $@"
-                SELECT u.UserId, u.Name, u.Nickname
+                SELECT u.UserId, u.Name, p.Nickname
                 FROM Favorite f
                 JOIN User u ON f.FavoriteUserId = u.UserId
+                JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1
                 WHERE f.UserId = {currentUserId}";
 
             DataTable dt = DBconnector.GetInstance().Query(sql);

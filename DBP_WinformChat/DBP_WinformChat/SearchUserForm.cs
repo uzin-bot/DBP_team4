@@ -18,27 +18,50 @@ namespace leehaeun
         // 멀티프로필 매핑 안된 유저 검색(쿼리 수정)
         private void SearchUser()
         {
+            //string query = $@"
+            //    SELECT 
+            //        u.UserId, 
+            //        u.Name, 
+            //        p.Nickname, 
+            //        p.ProfileId, 
+            //        d.DeptName
+            //    FROM User u
+            //    LEFT JOIN UserProfileMap upm
+            //        ON upm.OwnerUserId = u.UserId
+            //        AND upm.TargetUserId = {LoginForm.UserId}
+            //    LEFT JOIN Profile p
+            //        ON p.ProfileId = upm.ProfileId
+            //    LEFT JOIN Department d
+            //        ON d.DeptId = u.DeptId
+            //    WHERE NOT EXISTS (
+            //        SELECT 1
+            //        FROM UserProfileMap already
+            //        WHERE already.OwnerUserId = {LoginForm.UserId}
+            //        AND already.TargetUserId = u.UserId
+            //    );";
+
             string query = $@"
                 SELECT 
                     u.UserId, 
                     u.Name, 
-                    p.Nickname, 
-                    p.ProfileId, 
+                    COALESCE(mp.Nickname, dp.Nickname) AS Nickname,
                     d.DeptName
                 FROM User u
+                -- 기본 프로필 (항상 있음)
+                LEFT JOIN Profile dp 
+                    ON dp.UserId = u.UserId 
+                    AND dp.IsDefault = 1
+                -- 내가 해당 유저에게 설정한 멀티프로필 매핑
                 LEFT JOIN UserProfileMap upm
-                    ON upm.OwnerUserId = u.UserId
-                    AND upm.TargetUserId = {LoginForm.UserId}
-                LEFT JOIN Profile p
-                    ON p.ProfileId = upm.ProfileId
+                    ON upm.OwnerUserId = {LoginForm.UserId}
+                    AND upm.TargetUserId = u.UserId
+                -- 매핑된 멀티프로필
+                LEFT JOIN Profile mp
+                    ON mp.ProfileId = upm.ProfileId
                 LEFT JOIN Department d
                     ON d.DeptId = u.DeptId
-                WHERE NOT EXISTS (
-                    SELECT 1
-                    FROM UserProfileMap already
-                    WHERE already.OwnerUserId = {LoginForm.UserId}
-                    AND already.TargetUserId = u.UserId
-                );";
+                WHERE u.UserId != {LoginForm.UserId}
+                AND u.Role != 'admin';";
 
             DataTable dt = DBconnector.GetInstance().Query(query);
 

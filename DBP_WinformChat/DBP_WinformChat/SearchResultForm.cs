@@ -40,19 +40,23 @@ namespace DBP_Chat
 
 		private void LoadResult()
 		{
-			string sql = @"
-                SELECT u.UserId, u.Name, d.DeptName, u.Nickname
-                FROM User u 
-                JOIN Department d ON u.DeptId = d.DeptId
-                WHERE 1=1 ";
+            // 로그인 추가 관리자 제외
+			// 닉네임관련 쿼리 수정
+            string sql = @"
+			SELECT u.UserId, u.LoginId, u.Name, d.DeptName, p.Nickname
+			FROM User u 
+			JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1
+			JOIN Department d ON u.DeptId = d.DeptId
+			WHERE u.Role != 'admin' ";
 
-			if (!string.IsNullOrEmpty(id))
-				sql += $"AND u.UserId = {id} ";
+            if (!string.IsNullOrEmpty(id))
+				sql += $"AND u.LoginId LIKE '%{id}%'";
 
 			if (!string.IsNullOrEmpty(name))
 				sql += $"AND u.Name LIKE '%{name}%' ";
 
 			if (!string.IsNullOrEmpty(dept))
+				// 부분 검색 바꿀까요?
 				sql += $"AND d.DeptName = '{dept}' ";
 
 			DataTable dt = DBconnector.GetInstance().Query(sql);
@@ -61,11 +65,15 @@ namespace DBP_Chat
 
 			foreach (DataRow row in dt.Rows)
 			{
-				ListViewItem item = new ListViewItem(row["UserId"].ToString());
+				ListViewItem item = new ListViewItem(row["LoginId"].ToString());
 				item.SubItems.Add(row["Name"].ToString());
 				item.SubItems.Add(row["DeptName"].ToString());
 				item.SubItems.Add(row["Nickname"].ToString());
-				lvResult.Items.Add(item);
+
+                // Tag에 실제 UserId 저장
+                item.Tag = row["UserId"].ToString();
+
+                lvResult.Items.Add(item);
 			}
 		}
 
@@ -73,7 +81,10 @@ namespace DBP_Chat
 		{
 			if (lvResult.SelectedItems.Count == 0) return;
 
-			int targetUserId = Convert.ToInt32(lvResult.SelectedItems[0].Text);
+            // Tag에서 UserId 가져오기
+            int targetUserId = Convert.ToInt32(lvResult.SelectedItems[0].Tag);
+
+          
 			new ChatForm(currentUserId, targetUserId).Show();
 		}
 
@@ -83,7 +94,9 @@ namespace DBP_Chat
 			{
 				if (item.Checked)
 				{
-					int targetUserId = Convert.ToInt32(item.Text);
+
+                    // Tag에서 UserId 가져오기
+                    int targetUserId = Convert.ToInt32(item.Tag);
 
 					string sql = $@"
                         SELECT COUNT(*) 
