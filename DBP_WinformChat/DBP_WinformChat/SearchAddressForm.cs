@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using leehaeun.UIHelpers;
+using System.Text.Json;
 
 
 namespace leehaeun
@@ -8,6 +9,7 @@ namespace leehaeun
         public SearchAddressForm()
         {
             InitializeComponent();
+            SearchAddressFormUIHelper.ApplyStyles(this);
             ResultBox.DoubleClick += ResultBox_DoubleClick;
         }
 
