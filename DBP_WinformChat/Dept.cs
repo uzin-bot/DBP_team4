@@ -1,5 +1,7 @@
 ﻿using DBP_WinformChat;
 using kyg;
+using leehaeun;
+using Microsoft.VisualBasic.ApplicationServices;
 using MySql.Data.MySqlClient;
 using System;
 using System.Data;
@@ -9,234 +11,283 @@ using 남예솔;
 
 namespace DBP_Chat
 {
-	public partial class Dept : Form
-	{
-		private int currentUserId;
-		private string currentUserName;
-		private string currentUserNickname;
+    public partial class Dept : Form
+    {
+        private int currentLoginId;
+        private string currentUserName;
+        private string currentUserNickname;
+        private PermissionManager permissionManager; // 추가
 
-		public Dept(int userId, string name, string nickname)
-		{
-			InitializeComponent();
+        public Dept(int LoginId, string name, string nickname)
+        {
+            InitializeComponent();
 
-			this.currentUserId = userId;
-			this.currentUserName = name;
-			this.currentUserNickname = nickname;
+            this.currentLoginId = LoginId;
+            this.currentUserName = name;
+            this.currentUserNickname = nickname;
+            this.permissionManager = new PermissionManager(); // 추가
 
-			this.Load += Dept_Load;
+            this.Load += Dept_Load;
+            tvdept.NodeMouseDoubleClick += tvdept_NodeMouseDoubleClick;
+            tvdept.AfterSelect += tvdept_AfterSelect;
 
-			//TreeView 직원 더블클릭 → 프로필 폼(현재 임시로 메시지만 뜸)
-			//추후 메시지는 없애고 폼 연결하면 됩니다!
-			tvdept.NodeMouseDoubleClick += tvdept_NodeMouseDoubleClick;
+            btnsearch.Click += btnsearch_Click;
+            btnadd.Click += btnadd_Click;
+            btndelete.Click += btndelete_Click;
+            btnChat.Click += btnChat_Click;
+            btnchatlist.Click += btnchatlist_Click;
 
-			tvdept.AfterSelect += tvdept_AfterSelect;
+            tvdept.NodeMouseClick += tvdept_NodeMouseClick;
+            lBlist.SelectedIndexChanged += lBlist_SelectedIndexChanged;
+        }
 
-			btnsearch.Click += btnsearch_Click;
-			btnadd.Click += btnadd_Click;
-			btndelete.Click += btndelete_Click;
+        private void Dept_Load(object sender, EventArgs e)
+        {
+            LoadTreeView();
+            LoadFavoriteList();
+        }
 
-			//채팅하기 버튼 (즐겨찾기 선택,  친구 목록 선택)
-			btnChat.Click += btnChat_Click;
+        private void btnchatlist_Click(object sender, EventArgs e)
+        {
+            new chatlist().Show();
+        }
 
-			//클릭시 채팅 목록
-			btnchatlist.Click += btnchatlist_Click;
+        public void RefreshFavorites()
+        {
+            LoadFavoriteList();
+        }
 
-			//친구목록 / 즐겨찾기 중복 선택 방지
-			//친구 목록이랑 즐겨찾기 목록에서 동시에 직원 선택 불가하도록 했습니다!
-			tvdept.NodeMouseClick += tvdept_NodeMouseClick;
-			lBlist.SelectedIndexChanged += lBlist_SelectedIndexChanged;
-		}
+        // ★ 수정: 권한 기반 TreeView 로딩
+        private void LoadTreeView()
+        {
+            tvdept.Nodes.Clear();
+            TreeNode companyNode = new TreeNode("회사");
+            tvdept.Nodes.Add(companyNode);
 
-		private void Dept_Load(object sender, EventArgs e)
-		{
-			LoadTreeView();
-			LoadFavoriteList();
-		}
+            // 1. 현재 사용자가 볼 수 있는 부서 목록 가져오기
+            DataTable visibleDepts = permissionManager.GetVisibleDepartments(currentLoginId);
 
-		//채팅 리스트 (chatlist) 폼 열기
-		private void btnchatlist_Click(object sender, EventArgs e)
-		{
-			new chatlist().Show();
-		}
+            // 권한 있는 부서가 없으면 기본 메시지 표시
+            if (visibleDepts == null || visibleDepts.Rows.Count == 0)
+            {
+                TreeNode noDeptNode = new TreeNode("(볼 수 있는 부서가 없습니다)");
+                companyNode.Nodes.Add(noDeptNode);
+                tvdept.ExpandAll();
+                return;
+            }
 
-		//SearchResultForm 에서 호출
-		public void RefreshFavorites()
-		{
-			LoadFavoriteList();
-		}
+            foreach (DataRow dept in visibleDepts.Rows)
+            {
+                // DeptPath 사용 (상위부서 > 하위부서 형태)
+                string deptDisplayName = dept["DeptPath"] != DBNull.Value
+                    ? dept["DeptPath"].ToString()
+                    : dept["DeptName"].ToString();
 
-		//회사 → 부서 → 직원 TreeView 로딩
-		private void LoadTreeView()
-		{
-			tvdept.Nodes.Clear();
-			TreeNode companyNode = new TreeNode("회사");
-			tvdept.Nodes.Add(companyNode);
+                TreeNode deptNode = new TreeNode($"{deptDisplayName} ({dept["UserCount"]}명)");
+                deptNode.Tag = dept["DeptId"];
+                companyNode.Nodes.Add(deptNode);
 
-			string sqlDept = "SELECT DeptId, DeptName FROM Department";
-			DataTable dtDept = DBconnector.GetInstance().Query(sqlDept);
+                // 2. 해당 부서의 사용자 중 볼 수 있는 사용자만 표시
+                DataTable deptUsers = permissionManager.GetUsersByDepartment(Convert.ToInt32(dept["DeptId"]));
 
-			foreach (DataRow dept in dtDept.Rows)
-			{
-				TreeNode deptNode = new TreeNode(dept["DeptName"].ToString());
-				deptNode.Tag = dept["DeptId"];
-				companyNode.Nodes.Add(deptNode);
+                foreach (DataRow user in deptUsers.Rows)
+                {
+                    int userId = Convert.ToInt32(user["UserId"]);
 
-				string sql = $"SELECT UserId, Name, Nickname FROM User WHERE DeptId = {dept["DeptId"]}";
-				DataTable dtUser = DBconnector.GetInstance().Query(sql);
+                    // 본인은 항상 표시, 다른 사용자는 권한 체크
+                    if (userId != currentLoginId && !permissionManager.CanViewUser(currentLoginId, userId))
+                        continue;
 
-				foreach (DataRow user in dtUser.Rows)
-				{
-					string text = $"({user["UserId"]}) {user["Name"]} ({user["Nickname"]})";
+                    string text = $"({user["LoginId"]}) {user["Name"]} ({user["Nickname"]})";
 
-					TreeNode userNode = new TreeNode(text);
-					userNode.Tag = user["UserId"];
-					deptNode.Nodes.Add(userNode);
-				}
-			}
+                    if (userId == currentLoginId)
+                        text += " (나)";
 
-			tvdept.ExpandAll();
-		}
+                    // 대화 차단된 사용자 표시
+                    if (userId != currentLoginId && !permissionManager.CanChat(currentLoginId, userId))
+                        text += " 🚫";
 
-		private void tvdept_AfterSelect(object sender, TreeViewEventArgs e)
-		{
+                    TreeNode userNode = new TreeNode(text);
+                    userNode.Tag = user["UserId"]; // UserId로 통일
 
-		}
+                    // 온라인 상태 표시
+                    if (user["IsOnline"] != DBNull.Value && Convert.ToInt32(user["IsOnline"]) == 1)
+                        userNode.ForeColor = System.Drawing.Color.Green;
 
-		//현재 >> 직원 더블클릭 → "프로필 폼 예정입니다" 메시지 뜸 (채팅 X)
-		private void tvdept_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
-		{
-			if (e.Node.Level != 2) return;
+                    deptNode.Nodes.Add(userNode);
+                }
+            }
 
-			int targetUserId = Convert.ToInt32(e.Node.Tag);
+            tvdept.ExpandAll();
+        }
 
-			MessageBox.Show(
-				$"프로필 화면이 여기에 열릴 예정입니다.\n유저 ID: {targetUserId}",
-				"프로필",
-				MessageBoxButtons.OK,
-				MessageBoxIcon.Information
-			);
-		}
+        private void tvdept_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+        }
 
-		//검색창 열기(SearchResultForm)
-		private void btnsearch_Click(object sender, EventArgs e)
-		{
-			string id = txtID.Text.Trim();
-			string name = txtname.Text.Trim();
-			string dept = txtdept.Text.Trim();
+        private void tvdept_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Node.Level != 2) return;
 
-			SearchResultForm s = new SearchResultForm(id, name, dept, currentUserId, this);
-			s.Show();
-		}
+            int targetUserId = Convert.ToInt32(e.Node.Tag);
 
-		//즐겨찾기 로딩
-		private void LoadFavoriteList()
-		{
-			lBlist.Items.Clear();
+            var f = new leehaeun.UserInfoForm(targetUserId);
+            f.Show();
+        }
 
-			string sql = $@"
-                SELECT u.UserId, u.Name, u.Nickname
+        private void btnsearch_Click(object sender, EventArgs e)
+        {
+            string id = txtID.Text.Trim();
+            string name = txtname.Text.Trim();
+            string dept = txtdept.Text.Trim();
+
+            SearchResultForm s = new SearchResultForm(id, name, dept, currentLoginId, this);
+            s.Show();
+        }
+
+        // ★ 수정: 즐겨찾기도 권한 체크
+        private void LoadFavoriteList()
+        {
+            lBlist.Items.Clear();
+
+            string sql = $@"
+                SELECT u.UserId, u.LoginId, u.Name, u.Nickname
                 FROM Favorite f
-                JOIN User u ON f.FavortieUserId = u.UserId
-                WHERE f.UserId = {currentUserId}";
+                JOIN User u ON f.FavoriteUserId = u.UserId      
+                WHERE f.UserId = {currentLoginId}";
 
-			DataTable dt = DBconnector.GetInstance().Query(sql);
+            DataTable dt = DBconnector.GetInstance().Query(sql);
 
-			foreach (DataRow row in dt.Rows)
-			{
-				lBlist.Items.Add($"{row["UserId"]} - {row["Name"]} ({row["Nickname"]})");
-			}
-		}
+            foreach (DataRow row in dt.Rows)
+            {
+                int userId = Convert.ToInt32(row["UserId"]);
 
-		//즐겨찾기 추가
-		private void btnadd_Click(object sender, EventArgs e)
-		{
-			string userId = txtID.Text.Trim();
-			if (userId == "")
-			{
-				MessageBox.Show("직원을 선택하세요!");
-				return;
-			}
+                // 권한 있는 사용자만 표시
+                if (!permissionManager.CanViewUser(currentLoginId, userId))
+                    continue;
 
-			int targetUserId = int.Parse(userId);
+                string displayText = $"{row["UserId"]} - {row["Name"]} ({row["Nickname"]})";
 
-			string checkSql = $@"
-                SELECT COUNT(*) 
-                FROM Favorite 
-                WHERE UserId = {currentUserId} AND FavortieUserId = {targetUserId}";
+                // 대화 차단 표시
+                if (!permissionManager.CanChat(currentLoginId, userId))
+                    displayText += " 🚫";
 
-			DataTable dt = DBconnector.GetInstance().Query(checkSql);
+                lBlist.Items.Add(displayText);
+            }
+        }
 
-			if (Convert.ToInt32(dt.Rows[0][0]) > 0)
-			{
-				MessageBox.Show("이미 즐겨찾기에 등록되어 있습니다!");
-				return;
-			}
+        // ★ 수정: 즐겨찾기 추가 시 권한 체크
+        private void btnadd_Click(object sender, EventArgs e)
+        {
+            string userIdText = txtID.Text.Trim();
+            if (userIdText == "")
+            {
+                MessageBox.Show("직원을 선택하세요!");
+                return;
+            }
 
-			string sql =
-				$"INSERT INTO Favorite (UserId, FavortieUserId) VALUES ({currentUserId}, {targetUserId})";
+            int targetUserId = int.Parse(userIdText);
 
-			DBconnector.GetInstance().NonQuery(sql);
+            // 권한 체크 추가
+            if (!permissionManager.CanViewUser(currentLoginId, targetUserId))
+            {
+                MessageBox.Show("해당 사용자를 볼 수 있는 권한이 없습니다.");
+                return;
+            }
 
-			MessageBox.Show("즐겨찾기에 추가되었습니다!");
-			LoadFavoriteList();
-		}
+            string checkSql = $@"
+                SELECT COUNT(*)
+                FROM Favorite
+                WHERE UserId = {currentLoginId} AND FavoriteUserId = {targetUserId}";
 
-		//즐겨찾기 삭제
-		private void btndelete_Click(object sender, EventArgs e)
-		{
-			if (lBlist.SelectedItem == null)
-			{
-				MessageBox.Show("삭제할 대상을 선택하세요!");
-				return;
-			}
+            DataTable dt = DBconnector.GetInstance().Query(checkSql);
 
-			string userIdText = lBlist.SelectedItem.ToString().Split('-')[0].Trim();
-			int targetUserId = Convert.ToInt32(userIdText);
+            if (Convert.ToInt32(dt.Rows[0][0]) > 0)
+            {
+                MessageBox.Show("이미 즐겨찾기에 등록되어 있습니다!");
+                return;
+            }
 
-			string sql =
-				$"DELETE FROM Favorite WHERE UserId = {currentUserId} AND FavortieUserId = {targetUserId}";
+            string sql =
+                $"INSERT INTO Favorite (UserId, FavoriteUserId) VALUES ({currentLoginId}, {targetUserId})";
 
-			DBconnector.GetInstance().NonQuery(sql);
+            DBconnector.GetInstance().NonQuery(sql);
 
-			MessageBox.Show("삭제되었습니다!");
-			LoadFavoriteList();
-		}
+            MessageBox.Show("즐겨찾기에 추가되었습니다!");
+            LoadFavoriteList();
+        }
 
-		//즐겨찾기 OR TreeView 직원 선택 → 채팅하기
-		private void btnChat_Click(object sender, EventArgs e)
-		{
-			//즐겨찾기 선택
-			if (lBlist.SelectedItem != null)
-			{
-				string userIdText = lBlist.SelectedItem.ToString().Split('-')[0].Trim();
-				int targetUserId = Convert.ToInt32(userIdText);
+        private void btndelete_Click(object sender, EventArgs e)
+        {
+            if (lBlist.SelectedItem == null)
+            {
+                MessageBox.Show("삭제할 대상을 선택하세요!");
+                return;
+            }
 
-				new ChatForm(currentUserId, targetUserId).Show();
-				return;
-			}
+            string userIdText = lBlist.SelectedItem.ToString().Split('-')[0].Trim();
+            int targetUserId = Convert.ToInt32(userIdText);
 
-			//TreeView에서 직원 선택한 경우
-			if (tvdept.SelectedNode != null && tvdept.SelectedNode.Level == 2)
-			{
-				int targetUserId = Convert.ToInt32(tvdept.SelectedNode.Tag);
-				new ChatForm(currentUserId, targetUserId).Show();
-				return;
-			}
+            string sql =
+                $"DELETE FROM Favorite WHERE UserId = {currentLoginId} AND FavoriteUserId = {targetUserId}";
 
-			MessageBox.Show("대화할 직원을 선택하세요!");
-		}
+            DBconnector.GetInstance().NonQuery(sql);
 
+            MessageBox.Show("삭제되었습니다!");
+            LoadFavoriteList();
+        }
 
-		//TreeView에서 직원 선택 시 즐겨찾기에서는 선택 해제
-		private void tvdept_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-		{
-			lBlist.ClearSelected();
-		}
+        // ★ 수정: 채팅 시작 전 권한 체크
+        private void btnChat_Click(object sender, EventArgs e)
+        {
+            int targetUserId = -1;
 
-		//즐겨찾기에서 직원 선택 시 TreeView 에서는 선택 해제
-		private void lBlist_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			tvdept.SelectedNode = null;
-		}
-	}
+            if (lBlist.SelectedItem != null)
+            {
+                string userIdText = lBlist.SelectedItem.ToString().Split('-')[0].Trim();
+                targetUserId = Convert.ToInt32(userIdText);
+            }
+            else if (tvdept.SelectedNode != null && tvdept.SelectedNode.Level == 2)
+            {
+                targetUserId = Convert.ToInt32(tvdept.SelectedNode.Tag);
+            }
+            else
+            {
+                MessageBox.Show("대화할 직원을 선택하세요!");
+                return;
+            }
+
+            // ★ 권한 체크 추가
+            var result = permissionManager.CanSendMessage(currentLoginId, targetUserId);
+            if (!result.CanSend)
+            {
+                MessageBox.Show(result.Reason, "채팅 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            new ChatForm(currentLoginId, targetUserId).Show();
+        }
+
+        private void tvdept_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            lBlist.ClearSelected();
+        }
+
+        private void lBlist_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            tvdept.SelectedNode = null;
+        }
+
+        private void logout_button_Click(object sender, EventArgs e)
+        {
+            LoginForm.Logout = true;
+            this.Close();
+        }
+
+        private void change_profile_button_Click(object sender, EventArgs e)
+        {
+            EditInfoForm editForm = new EditInfoForm();
+            editForm.ShowDialog();
+        }
+    }
 }
