@@ -20,6 +20,8 @@ namespace DBP_Chat
         {
             InitializeComponent();
 
+            DBP_WinformChat.DeptUIHelper.Apply(this);
+
             this.currentUserId = userId;
             this.currentUserName = name;
             this.currentUserNickname = nickname;
@@ -85,17 +87,31 @@ namespace DBP_Chat
                 string sql = $"SELECT UserId, Name, Nickname FROM User WHERE DeptId = {dept["DeptId"]}";
                 DataTable dtUser = DBconnector.GetInstance().Query(sql);
 
-                foreach (DataRow user in dtUser.Rows)
-                {
-                    string text = $"({user["UserId"]}) {user["Name"]} ({user["Nickname"]})";
+				foreach (DataRow user in dtUser.Rows)
+				{
+					int uid = Convert.ToInt32(user["UserId"]);
+					string uname = user["Name"].ToString();
+					string nick = user["Nickname"].ToString();
 
-                    TreeNode userNode = new TreeNode(text);
-                    userNode.Tag = user["UserId"];
-                    deptNode.Nodes.Add(userNode);
-                }
-            }
+					string text = $"({uid}) {uname} ({nick})";
 
-            tvdept.ExpandAll();
+					TreeNode userNode = new TreeNode(text);
+					userNode.Tag = uid;
+
+					//로그인한 본인 표시
+					if (uid == currentUserId)
+					{
+						userNode.Text = $"{text}  - 나";
+						userNode.NodeFont = new Font("맑은 고딕", 10, FontStyle.Bold);
+						userNode.ForeColor = Color.FromArgb(119, 136, 115); 
+					}
+
+					deptNode.Nodes.Add(userNode);
+				}
+
+			}
+
+			tvdept.ExpandAll();
         }
 
         private void tvdept_AfterSelect(object sender, TreeViewEventArgs e)
@@ -144,43 +160,47 @@ namespace DBP_Chat
                 lBlist.Items.Add($"{row["UserId"]} - {row["Name"]} ({row["Nickname"]})");
             }
         }
+		// 즐겨찾기 추가
+		private void btnadd_Click(object sender, EventArgs e)
+		{
+			//TreeView에서 직원 선택 확인
+			if (tvdept.SelectedNode == null || tvdept.SelectedNode.Level != 2)
+			{
+				MessageBox.Show("직원을 선택하세요!");
+				return;
+			}
 
-        //즐겨찾기 추가
-        private void btnadd_Click(object sender, EventArgs e)
-        {
-            string userId = txtID.Text.Trim();
-            if (userId == "")
-            {
-                MessageBox.Show("직원을 선택하세요!");
-                return;
-            }
+			//TreeView에서 선택된 직원 ID 가져오기
+			int targetUserId = Convert.ToInt32(tvdept.SelectedNode.Tag);
 
-            int targetUserId = int.Parse(userId);
-
-            string checkSql = $@"
+			//DB에 이미 있는지 확인
+			string checkSql = $@"
                 SELECT COUNT(*) 
                 FROM Favorite 
                 WHERE UserId = {currentUserId} AND FavoriteUserId = {targetUserId}";
 
-            DataTable dt = DBconnector.GetInstance().Query(checkSql);
+			DataTable dt = DBconnector.GetInstance().Query(checkSql);
 
-            if (Convert.ToInt32(dt.Rows[0][0]) > 0)
-            {
-                MessageBox.Show("이미 즐겨찾기에 등록되어 있습니다!");
-                return;
-            }
+			if (Convert.ToInt32(dt.Rows[0][0]) > 0)
+			{
+				MessageBox.Show("이미 즐겨찾기에 등록되어 있습니다!");
+				return;
+			}
 
-            string sql =
-                $"INSERT INTO Favorite (UserId, FavoriteUserId) VALUES ({currentUserId}, {targetUserId})";
+			//DB Insert
+			string sql =
+				$"INSERT INTO Favorite (UserId, FavoriteUserId) VALUES ({currentUserId}, {targetUserId})";
 
-            DBconnector.GetInstance().NonQuery(sql);
+			DBconnector.GetInstance().NonQuery(sql);
 
-            MessageBox.Show("즐겨찾기에 추가되었습니다!");
-            LoadFavoriteList();
-        }
+			MessageBox.Show("즐겨찾기에 추가되었습니다!");
 
-        //즐겨찾기 삭제
-        private void btndelete_Click(object sender, EventArgs e)
+			//ListBox 갱신
+			LoadFavoriteList();
+		}
+
+		//즐겨찾기 삭제
+		private void btndelete_Click(object sender, EventArgs e)
         {
             if (lBlist.SelectedItem == null)
             {

@@ -17,7 +17,17 @@ namespace DBP_Chat
 
 		public SearchResultForm(string id, string name, string dept, int userId, Dept parent)
 		{
+
+			this.AutoScaleMode = AutoScaleMode.None;     
+			this.DoubleBuffered = true;
+
+			this.SetStyle(ControlStyles.AllPaintingInWmPaint |
+			  ControlStyles.OptimizedDoubleBuffer |
+			  ControlStyles.UserPaint, true);
+
 			InitializeComponent();
+
+			DBP_WinformChat.SearchResultUIHelper.Apply(this);
 
 			this.id = id;
 			this.name = name;
