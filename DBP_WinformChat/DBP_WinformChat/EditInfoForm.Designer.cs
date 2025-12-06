@@ -44,37 +44,29 @@
             label6 = new Label();
             label8 = new Label();
             MulProfilePage = new TabPage();
-            panel = new Panel();
-            ProfileImageMBox = new PictureBox();
             EditButton = new Button();
+            ProfileImageMBox = new PictureBox();
             NicknameLabel = new Label();
-            panel3 = new Panel();
             AddMulProfileButton = new Button();
             label7 = new Label();
             ProfileFLP = new FlowLayoutPanel();
             DefaultProfilePage = new TabPage();
-            panel1 = new Panel();
+            CancelPButton = new Button();
+            SavePButton = new Button();
             EditMButton = new Button();
             label2 = new Label();
             label1 = new Label();
             MemberFLP = new FlowLayoutPanel();
             StatusBox = new TextBox();
             NicknameBox = new TextBox();
-            panel2 = new Panel();
-            CancelPButton = new Button();
-            SavePButton = new Button();
             ChangeProfileImageButton = new Button();
             ProfileImagePBox = new PictureBox();
             DeptLabel = new Label();
             tabControl = new TabControl();
             UserInfoPage.SuspendLayout();
             MulProfilePage.SuspendLayout();
-            panel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ProfileImageMBox).BeginInit();
-            panel3.SuspendLayout();
             DefaultProfilePage.SuspendLayout();
-            panel1.SuspendLayout();
-            panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ProfileImagePBox).BeginInit();
             tabControl.SuspendLayout();
             SuspendLayout();
@@ -226,8 +218,11 @@
             // 
             // MulProfilePage
             // 
-            MulProfilePage.Controls.Add(panel);
-            MulProfilePage.Controls.Add(panel3);
+            MulProfilePage.Controls.Add(EditButton);
+            MulProfilePage.Controls.Add(ProfileImageMBox);
+            MulProfilePage.Controls.Add(NicknameLabel);
+            MulProfilePage.Controls.Add(AddMulProfileButton);
+            MulProfilePage.Controls.Add(label7);
             MulProfilePage.Controls.Add(ProfileFLP);
             MulProfilePage.Location = new Point(4, 24);
             MulProfilePage.Margin = new Padding(2);
@@ -238,30 +233,9 @@
             MulProfilePage.Text = "멀티프로필";
             MulProfilePage.UseVisualStyleBackColor = true;
             // 
-            // panel
-            // 
-            panel.Controls.Add(ProfileImageMBox);
-            panel.Controls.Add(EditButton);
-            panel.Controls.Add(NicknameLabel);
-            panel.Location = new Point(19, 55);
-            panel.Margin = new Padding(2);
-            panel.Name = "panel";
-            panel.Size = new Size(218, 35);
-            panel.TabIndex = 7;
-            // 
-            // ProfileImageMBox
-            // 
-            ProfileImageMBox.Image = DBP_WinformChat.Properties.Resources._default;
-            ProfileImageMBox.Location = new Point(3, 3);
-            ProfileImageMBox.Name = "ProfileImageMBox";
-            ProfileImageMBox.Size = new Size(30, 29);
-            ProfileImageMBox.SizeMode = PictureBoxSizeMode.StretchImage;
-            ProfileImageMBox.TabIndex = 4;
-            ProfileImageMBox.TabStop = false;
-            // 
             // EditButton
             // 
-            EditButton.Location = new Point(170, 6);
+            EditButton.Location = new Point(189, 67);
             EditButton.Margin = new Padding(2);
             EditButton.Name = "EditButton";
             EditButton.Size = new Size(39, 22);
@@ -270,29 +244,29 @@
             EditButton.UseVisualStyleBackColor = true;
             EditButton.Click += EditButton_Click;
             // 
+            // ProfileImageMBox
+            // 
+            ProfileImageMBox.Image = DBP_WinformChat.Properties.Resources._default;
+            ProfileImageMBox.Location = new Point(22, 60);
+            ProfileImageMBox.Name = "ProfileImageMBox";
+            ProfileImageMBox.Size = new Size(30, 29);
+            ProfileImageMBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            ProfileImageMBox.TabIndex = 4;
+            ProfileImageMBox.TabStop = false;
+            // 
             // NicknameLabel
             // 
             NicknameLabel.AutoSize = true;
-            NicknameLabel.Location = new Point(38, 10);
+            NicknameLabel.Location = new Point(57, 69);
             NicknameLabel.Margin = new Padding(2, 0, 2, 0);
             NicknameLabel.Name = "NicknameLabel";
             NicknameLabel.Size = new Size(31, 15);
             NicknameLabel.TabIndex = 0;
             NicknameLabel.Text = "별명";
             // 
-            // panel3
-            // 
-            panel3.Controls.Add(AddMulProfileButton);
-            panel3.Controls.Add(label7);
-            panel3.Location = new Point(19, 18);
-            panel3.Margin = new Padding(2);
-            panel3.Name = "panel3";
-            panel3.Size = new Size(218, 33);
-            panel3.TabIndex = 6;
-            // 
             // AddMulProfileButton
             // 
-            AddMulProfileButton.Location = new Point(170, 5);
+            AddMulProfileButton.Location = new Point(189, 22);
             AddMulProfileButton.Margin = new Padding(2);
             AddMulProfileButton.Name = "AddMulProfileButton";
             AddMulProfileButton.Size = new Size(39, 22);
@@ -304,7 +278,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(3, 9);
+            label7.Location = new Point(22, 22);
             label7.Margin = new Padding(2, 0, 2, 0);
             label7.Name = "label7";
             label7.Size = new Size(95, 15);
@@ -320,12 +294,14 @@
             // 
             // DefaultProfilePage
             // 
-            DefaultProfilePage.Controls.Add(panel1);
+            DefaultProfilePage.Controls.Add(CancelPButton);
+            DefaultProfilePage.Controls.Add(SavePButton);
+            DefaultProfilePage.Controls.Add(EditMButton);
+            DefaultProfilePage.Controls.Add(label2);
             DefaultProfilePage.Controls.Add(label1);
             DefaultProfilePage.Controls.Add(MemberFLP);
             DefaultProfilePage.Controls.Add(StatusBox);
             DefaultProfilePage.Controls.Add(NicknameBox);
-            DefaultProfilePage.Controls.Add(panel2);
             DefaultProfilePage.Controls.Add(ChangeProfileImageButton);
             DefaultProfilePage.Controls.Add(ProfileImagePBox);
             DefaultProfilePage.Controls.Add(DeptLabel);
@@ -338,19 +314,31 @@
             DefaultProfilePage.Text = "프로필";
             DefaultProfilePage.UseVisualStyleBackColor = true;
             // 
-            // panel1
+            // CancelPButton
             // 
-            panel1.Controls.Add(EditMButton);
-            panel1.Controls.Add(label2);
-            panel1.Location = new Point(16, 149);
-            panel1.Margin = new Padding(2);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(219, 33);
-            panel1.TabIndex = 7;
+            CancelPButton.Location = new Point(184, 291);
+            CancelPButton.Margin = new Padding(2);
+            CancelPButton.Name = "CancelPButton";
+            CancelPButton.Size = new Size(51, 22);
+            CancelPButton.TabIndex = 1;
+            CancelPButton.Text = "취소";
+            CancelPButton.UseVisualStyleBackColor = true;
+            CancelPButton.Click += CancelPButton_Click;
+            // 
+            // SavePButton
+            // 
+            SavePButton.Location = new Point(16, 291);
+            SavePButton.Margin = new Padding(2);
+            SavePButton.Name = "SavePButton";
+            SavePButton.Size = new Size(160, 22);
+            SavePButton.TabIndex = 0;
+            SavePButton.Text = "저장하기";
+            SavePButton.UseVisualStyleBackColor = true;
+            SavePButton.Click += SavePButton_Click;
             // 
             // EditMButton
             // 
-            EditMButton.Location = new Point(170, 5);
+            EditMButton.Location = new Point(196, 152);
             EditMButton.Margin = new Padding(2);
             EditMButton.Name = "EditMButton";
             EditMButton.Size = new Size(39, 22);
@@ -362,7 +350,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(3, 9);
+            label2.Location = new Point(18, 156);
             label2.Margin = new Padding(2, 0, 2, 0);
             label2.Name = "label2";
             label2.Size = new Size(59, 15);
@@ -381,9 +369,9 @@
             // 
             // MemberFLP
             // 
-            MemberFLP.Location = new Point(16, 187);
+            MemberFLP.Location = new Point(16, 179);
             MemberFLP.Name = "MemberFLP";
-            MemberFLP.Size = new Size(219, 99);
+            MemberFLP.Size = new Size(219, 107);
             MemberFLP.TabIndex = 19;
             // 
             // StatusBox
@@ -402,39 +390,6 @@
             NicknameBox.Name = "NicknameBox";
             NicknameBox.Size = new Size(165, 23);
             NicknameBox.TabIndex = 22;
-            // 
-            // panel2
-            // 
-            panel2.Controls.Add(CancelPButton);
-            panel2.Controls.Add(SavePButton);
-            panel2.Dock = DockStyle.Bottom;
-            panel2.Location = new Point(2, 291);
-            panel2.Margin = new Padding(2);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(248, 30);
-            panel2.TabIndex = 17;
-            // 
-            // CancelPButton
-            // 
-            CancelPButton.Location = new Point(182, 4);
-            CancelPButton.Margin = new Padding(2);
-            CancelPButton.Name = "CancelPButton";
-            CancelPButton.Size = new Size(51, 22);
-            CancelPButton.TabIndex = 1;
-            CancelPButton.Text = "취소";
-            CancelPButton.UseVisualStyleBackColor = true;
-            CancelPButton.Click += CancelPButton_Click;
-            // 
-            // SavePButton
-            // 
-            SavePButton.Location = new Point(14, 4);
-            SavePButton.Margin = new Padding(2);
-            SavePButton.Name = "SavePButton";
-            SavePButton.Size = new Size(160, 22);
-            SavePButton.TabIndex = 0;
-            SavePButton.Text = "저장하기";
-            SavePButton.UseVisualStyleBackColor = true;
-            SavePButton.Click += SavePButton_Click;
             // 
             // ChangeProfileImageButton
             // 
@@ -497,16 +452,10 @@
             UserInfoPage.ResumeLayout(false);
             UserInfoPage.PerformLayout();
             MulProfilePage.ResumeLayout(false);
-            panel.ResumeLayout(false);
-            panel.PerformLayout();
+            MulProfilePage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)ProfileImageMBox).EndInit();
-            panel3.ResumeLayout(false);
-            panel3.PerformLayout();
             DefaultProfilePage.ResumeLayout(false);
             DefaultProfilePage.PerformLayout();
-            panel1.ResumeLayout(false);
-            panel1.PerformLayout();
-            panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ProfileImagePBox).EndInit();
             tabControl.ResumeLayout(false);
             ResumeLayout(false);
@@ -530,11 +479,9 @@
         private Label label6;
         private Label label8;
         private TabPage MulProfilePage;
-        private Panel panel3;
         private Button AddMulProfileButton;
         private Label label7;
         private FlowLayoutPanel ProfileFLP;
-        private Panel panel;
         private PictureBox ProfileImageMBox;
         private Button EditButton;
         private Label NicknameLabel;
@@ -543,14 +490,12 @@
         private FlowLayoutPanel MemberFLP;
         private TextBox StatusBox;
         private TextBox NicknameBox;
-        private Panel panel2;
         private Button CancelPButton;
         private Button SavePButton;
         private Button ChangeProfileImageButton;
         private PictureBox ProfileImagePBox;
         private Label DeptLabel;
         private TabControl tabControl;
-        private Panel panel1;
         private Button EditMButton;
         private Label label2;
     }

@@ -1,4 +1,5 @@
 ﻿using DBP_WinformChat;
+using leehaeun.UIHelpers;
 using System.Data;
 
 namespace leehaeun
@@ -14,6 +15,7 @@ namespace leehaeun
         public EditInfoForm()
         {
             InitializeComponent();
+            EditInfoFormUIHelper.ApplyStyles(this);
             LoadUserInfo();
             LoadProfileInfo();
             LoadMulProfileList();
@@ -68,23 +70,29 @@ namespace leehaeun
                     ProfileImageMBox.Image = DBP_WinformChat.Properties.Resources._default;
                 }
 
+                // 수정 사항 - 패널 보이기/안보이기 추가
                 // 멀티프로필 멤버 관리 창 끄기
                 label2.Visible = false;
                 EditMButton.Visible = false;
                 MemberFLP.Visible = false;
+                EditInfoFormUIHelper.SetMemberPanelVisible(this, false);
             }
             else
             {
                 // 멀티프로필 멤버 관리 창 켜기
+                // 수정 사항 - 패널 보이기/안보이기 추가
                 label2.Visible = true;
                 EditMButton.Visible = true;
                 MemberFLP.Visible = true;
-
-                // 멀티 프로필 멤버 리스트 로딩
-                LoadMulProfileMemberList();
+                EditInfoFormUIHelper.SetMemberPanelVisible(this, true);
             }
 
-            tabControl.SelectedIndex = 0;
+            // 수정 사항 - 탭 이동 수정(커스텀)
+            EditInfoFormUIHelper.SwitchToTab(0);
+
+            // 수정 사항 - 오류 때문에 위치 이동
+            // 멀티 프로필 멤버 리스트 로딩
+            LoadMulProfileMemberList();
         }
 
         // 멀티 프로필 리스트 로딩
