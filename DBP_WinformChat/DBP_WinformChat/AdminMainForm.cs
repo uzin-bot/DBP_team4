@@ -1055,27 +1055,29 @@ namespace DBPAdmin
 
             dgv.Rows.Clear();
 
+            // 날짜 비교를 CreatedAt 전체 범위로 바꾸고, 삭제된 사용자 로그도 보이도록 LEFT JOIN 사용
             string sql = $@"
-                SELECT u.Name AS UserName, u.Role, ul.ActionType, ul.CreatedAt
-                FROM UserLog ul
-                INNER JOIN User u ON ul.UserId = u.UserId
-                WHERE DATE(ul.CreatedAt) BETWEEN '{startDate:yyyy-MM-dd}' AND '{endDate:yyyy-MM-dd} 23:59:59'";
+        SELECT ul.UserId, u.Name AS UserName, u.Role, ul.ActionType, ul.CreatedAt
+        FROM UserLog ul
+        LEFT JOIN `User` u ON ul.UserId = u.UserId
+        WHERE ul.CreatedAt BETWEEN '{startDate:yyyy-MM-dd} 00:00:00' AND '{endDate:yyyy-MM-dd} 23:59:59'";
 
             if (!string.IsNullOrEmpty(userId) && userId != "0")
             {
                 sql += $" AND ul.UserId = {userId}";
             }
 
-            sql += " ORDER BY ul.CreatedAt DESC LIMIT 500";
+            sql += " ORDER BY ul.CreatedAt DESC";
 
             try
             {
                 var dt = db.Query(sql);
                 foreach (DataRow row in dt.Rows)
                 {
-                    string roleDisplay = row["Role"].ToString() == "admin" ? "관리자" : "일반";
+                    string userName = row["UserName"] == DBNull.Value ? $"ID:{row["UserId"]}" : row["UserName"].ToString();
+                    string roleDisplay = row["Role"] == DBNull.Value ? "-" : (row["Role"].ToString() == "admin" ? "관리자" : "일반");
                     dgv.Rows.Add(
-                        row["UserName"],
+                        userName,
                         roleDisplay,
                         row["ActionType"],
                         Convert.ToDateTime(row["CreatedAt"]).ToString("yyyy-MM-dd HH:mm:ss")
