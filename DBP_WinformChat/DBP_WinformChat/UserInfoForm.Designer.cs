@@ -2,15 +2,8 @@
 {
     partial class UserInfoForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -22,66 +15,60 @@
 
         #region Windows Form Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
-            StatusBox = new TextBox();
-            NicknameBox = new TextBox();
             ProfileImageBox = new PictureBox();
+            NicknameLabel = new Label();
+            StatusMessageLabel = new Label();
+            DeptLabel = new Label();
             ((System.ComponentModel.ISupportInitialize)ProfileImageBox).BeginInit();
             SuspendLayout();
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(13, 74);
-            label1.Margin = new Padding(2, 0, 2, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(67, 15);
-            label1.TabIndex = 27;
-            label1.Text = "상태메시지";
-            // 
-            // StatusBox
-            // 
-            StatusBox.Location = new Point(11, 91);
-            StatusBox.Margin = new Padding(2);
-            StatusBox.Multiline = true;
-            StatusBox.Name = "StatusBox";
-            StatusBox.Size = new Size(219, 51);
-            StatusBox.TabIndex = 29;
-            // 
-            // NicknameBox
-            // 
-            NicknameBox.Location = new Point(65, 11);
-            NicknameBox.Margin = new Padding(2);
-            NicknameBox.Name = "NicknameBox";
-            NicknameBox.Size = new Size(165, 23);
-            NicknameBox.TabIndex = 28;
             // 
             // ProfileImageBox
             // 
             ProfileImageBox.Image = DBP_WinformChat.Properties.Resources._default;
-            ProfileImageBox.Location = new Point(11, 11);
-            ProfileImageBox.Margin = new Padding(2);
+            ProfileImageBox.Location = new Point(30, 30);
             ProfileImageBox.Name = "ProfileImageBox";
-            ProfileImageBox.Size = new Size(50, 48);
+            ProfileImageBox.Size = new Size(80, 80);
             ProfileImageBox.SizeMode = PictureBoxSizeMode.Zoom;
-            ProfileImageBox.TabIndex = 24;
+            ProfileImageBox.TabIndex = 0;
             ProfileImageBox.TabStop = false;
-            ProfileImageBox.Tag = "";
+            // 
+            // NicknameLabel
+            // 
+            NicknameLabel.AutoSize = true;
+            NicknameLabel.Location = new Point(130, 40);
+            NicknameLabel.Name = "NicknameLabel";
+            NicknameLabel.Size = new Size(43, 15);
+            NicknameLabel.TabIndex = 1;
+            NicknameLabel.Text = "닉네임";
+            // 
+            // StatusMessageLabel
+            // 
+            StatusMessageLabel.AutoSize = true;
+            StatusMessageLabel.Location = new Point(30, 130);
+            StatusMessageLabel.Name = "StatusMessageLabel";
+            StatusMessageLabel.Size = new Size(71, 15);
+            StatusMessageLabel.TabIndex = 3;
+            StatusMessageLabel.Text = "상태 메시지";
+            // 
+            // DeptLabel
+            // 
+            DeptLabel.AutoSize = true;
+            DeptLabel.Location = new Point(130, 70);
+            DeptLabel.Name = "DeptLabel";
+            DeptLabel.Size = new Size(59, 15);
+            DeptLabel.TabIndex = 2;
+            DeptLabel.Text = "소속 부서";
             // 
             // UserInfoForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(245, 151);
-            Controls.Add(label1);
-            Controls.Add(StatusBox);
-            Controls.Add(NicknameBox);
+            ClientSize = new Size(350, 254);
+            Controls.Add(StatusMessageLabel);
+            Controls.Add(DeptLabel);
+            Controls.Add(NicknameLabel);
             Controls.Add(ProfileImageBox);
             Name = "UserInfoForm";
             Text = "UserInfoForm";
@@ -92,9 +79,9 @@
 
         #endregion
 
-        private Label label1;
-        private TextBox StatusBox;
-        private TextBox NicknameBox;
         private PictureBox ProfileImageBox;
+        private Label NicknameLabel;
+        private Label StatusMessageLabel;
+        private Label DeptLabel;
     }
 }

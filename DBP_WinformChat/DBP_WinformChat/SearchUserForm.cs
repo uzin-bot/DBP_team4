@@ -1,7 +1,9 @@
 ﻿using DBP_WinformChat;
-using System.Data;
-using System.Windows.Forms;           
+using leehaeun.UIHelpers;
 using MySqlConnector;
+using System.Data;
+using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace leehaeun
 {
@@ -12,6 +14,7 @@ namespace leehaeun
         public SearchUserForm()
         {
             InitializeComponent();
+            SearchUserFormUIHelper.ApplyStyles(this);
             SearchUser();
         }
 
@@ -42,32 +45,80 @@ namespace leehaeun
 
             DataTable dt = DBconnector.GetInstance().Query(query);
 
-            UserListView.Columns.Clear();
-            UserListView.Columns.Add("UserId", 100);
-            UserListView.Columns.Add("Name", 150);
-            UserListView.Columns.Add("Nickname", 150);
-            UserListView.Columns.Add("DeptName", 150);
+            // 데이터를 리스트로 변환
+            List<(int, string, string, string)> users = new List<(int, string, string, string)>();
 
             foreach (DataRow row in dt.Rows)
             {
-                ListViewItem item = new ListViewItem(row["UserId"].ToString());
-                item.SubItems.Add(row["Name"].ToString());
-                item.SubItems.Add(row["Nickname"].ToString());
-                item.SubItems.Add(row["DeptName"].ToString());
+                int userId = int.Parse(row["UserId"].ToString());
+                string name = row["Name"].ToString();
+                string nickname = row["Nickname"].ToString();
+                string deptName = row["DeptName"].ToString();
 
-                UserListView.Items.Add(item);
+                users.Add((userId, name, nickname, deptName));
             }
+
+            // 커스텀 패널에 로드
+            SearchUserFormUIHelper.LoadUsers(this, users);
         }
 
         // 선택된 유저의 UserId 리스트 생성
         private void AddButton_Click(object sender, EventArgs e)
         {
-            foreach (ListViewItem item in UserListView.CheckedItems)
+            // 체크된 사용자 가져오기
+            Panel scrollPanel = null;
+
+            foreach (Control control in this.Controls)
             {
-                selectedUserIds.Add(int.Parse(item.SubItems[0].Text));
+                if (control is Panel wrapper && wrapper.Tag != null && wrapper.Tag.ToString() == "UserScrollPanelWrapper")
+                {
+                    foreach (Control child in wrapper.Controls)
+                    {
+                        if (child is Panel panel && panel.Name == "UserScrollPanel")
+                        {
+                            scrollPanel = panel;
+                            break;
+                        }
+                    }
+                    break;
+                }
             }
 
-            int[] selectedUserIdArray = selectedUserIds.ToArray();
+            if (scrollPanel != null)
+            {
+                foreach (Control item in scrollPanel.Controls)
+                {
+                    if (item is Panel itemPanel)
+                    {
+                        foreach (Control itemControl in itemPanel.Controls)
+                        {
+                            if (itemControl is PictureBox checkBox && checkBox.Tag is object tagObj)
+                            {
+                                var tagType = tagObj.GetType();
+                                var userIdProp = tagType.GetProperty("UserId");
+                                var checkedProp = tagType.GetProperty("Checked");
+
+                                if (userIdProp != null && checkedProp != null)
+                                {
+                                    bool isChecked = (bool)checkedProp.GetValue(tagObj);
+                                    if (isChecked)
+                                    {
+                                        int userId = (int)userIdProp.GetValue(tagObj);
+                                        selectedUserIds.Add(userId);
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (selectedUserIds.Count == 0)
+            {
+                MessageBox.Show("선택된 사용자가 없습니다.");
+                return;
+            }
 
             this.DialogResult = DialogResult.OK;
             this.Close();
