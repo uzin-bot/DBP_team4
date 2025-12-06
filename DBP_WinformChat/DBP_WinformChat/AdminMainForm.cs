@@ -1048,47 +1048,47 @@ namespace DBPAdmin
             LoadLoginLogData(userId, startDate, endDate);
         }
 
-        private void LoadLoginLogData(string userId, DateTime startDate, DateTime endDate)
-        {
-            var dgv = pnlContent.Controls.Find("dgvLoginLog", true).FirstOrDefault() as DataGridView;
-            if (dgv == null) return;
+       private void LoadLoginLogData(string userId, DateTime startDate, DateTime endDate)
+{
+    var dgv = pnlContent.Controls.Find("dgvLoginLog", true).FirstOrDefault() as DataGridView;
+    if (dgv == null) return;
 
-            dgv.Rows.Clear();
+    dgv.Rows.Clear();
 
-            // 날짜 비교를 CreatedAt 전체 범위로 바꾸고, 삭제된 사용자 로그도 보이도록 LEFT JOIN 사용
-            string sql = $@"
+    // 날짜 비교를 CreatedAt 전체 범위로 바꾸고, 삭제된 사용자 로그도 보이도록 LEFT JOIN 사용
+    string sql = $@"
         SELECT ul.UserId, u.Name AS UserName, u.Role, ul.ActionType, ul.CreatedAt
         FROM UserLog ul
         LEFT JOIN `User` u ON ul.UserId = u.UserId
         WHERE ul.CreatedAt BETWEEN '{startDate:yyyy-MM-dd} 00:00:00' AND '{endDate:yyyy-MM-dd} 23:59:59'";
 
-            if (!string.IsNullOrEmpty(userId) && userId != "0")
-            {
-                sql += $" AND ul.UserId = {userId}";
-            }
+    if (!string.IsNullOrEmpty(userId) && userId != "0")
+    {
+        sql += $" AND ul.UserId = {userId}";
+    }
 
-            sql += " ORDER BY ul.CreatedAt DESC";
+    sql += " ORDER BY ul.CreatedAt DESC";
 
-            try
-            {
-                var dt = db.Query(sql);
-                foreach (DataRow row in dt.Rows)
-                {
-                    string userName = row["UserName"] == DBNull.Value ? $"ID:{row["UserId"]}" : row["UserName"].ToString();
-                    string roleDisplay = row["Role"] == DBNull.Value ? "-" : (row["Role"].ToString() == "admin" ? "관리자" : "일반");
-                    dgv.Rows.Add(
-                        userName,
-                        roleDisplay,
-                        row["ActionType"],
-                        Convert.ToDateTime(row["CreatedAt"]).ToString("yyyy-MM-dd HH:mm:ss")
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"로그인 기록 로드 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+    try
+    {
+        var dt = db.Query(sql);
+        foreach (DataRow row in dt.Rows)
+        {
+            string userName = row["UserName"] == DBNull.Value ? $"ID:{row["UserId"]}" : row["UserName"].ToString();
+            string roleDisplay = row["Role"] == DBNull.Value ? "-" : (row["Role"].ToString() == "admin" ? "관리자" : "일반");
+            dgv.Rows.Add(
+                userName,
+                roleDisplay,
+                row["ActionType"],
+                Convert.ToDateTime(row["CreatedAt"]).ToString("yyyy-MM-dd HH:mm:ss")
+            );
         }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"로그인 기록 로드 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
 
         // ==================== F. 권한 관리 (완전 구현) ====================
         private void ShowPermissionManage()

@@ -15,7 +15,7 @@ namespace leehaeun
 		// UserId 저장
 		public static int UserId { get; private set; } = 0;
 
-		// ★ 추가: LoginId 저장 (Dept에서 사용)
+		//추가: LoginId 저장 (Dept에서 사용)
 		public static int LoginId { get; private set; } = 0;   // <<< 추가됨
 
 		// 로그아웃 확인
@@ -48,17 +48,18 @@ namespace leehaeun
 
 			if (dt != null && dt.Rows.Count > 0)
 			{
-				// 로그인 성공
-				UserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
+                // 로그인 성공
+                UserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
 
-				//로그인한 LoginId  저장
-				LoginId = Convert.ToInt32(id);    
+                // DB에 로그인 기록 저장
+                string logQuery = $"INSERT INTO UserLog (UserId, ActionType, CreatedAt) VALUES ({UserId}, 'LOGIN', NOW())";
+                DBconnector.GetInstance().Query(logQuery);
 
-				string role = dt.Rows[0]["Role"].ToString();
-				UserInfo.GetInfo();
+                string role = dt.Rows[0]["Role"].ToString();
+                UserInfo.GetInfo();
 
-				// 채팅 리스트 폼
-				FormHide();
+                // 채팅 리스트 폼
+                FormHide();
 
 				// Role에 따라 다른 폼 표시
 				if (role.Equals("admin"))

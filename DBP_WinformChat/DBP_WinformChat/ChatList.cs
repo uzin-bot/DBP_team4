@@ -37,19 +37,20 @@ namespace 남예솔
             lvlist.Items.Clear();
 
             string sql = $@"
-                SELECT 
-                    rc.PartnerUserId,
-                    u.Name,
-                    u.Nickname,
-                    d.DeptName,
-                    rc.LastMessage,        
-                    rc.LastMessageAt,
-                    rc.is_pinned
-                FROM RecentChat rc
-                JOIN User u ON rc.PartnerUserId = u.UserId
-                JOIN Department d ON u.DeptId = d.DeptId
-                WHERE rc.UserId = {currentUserId}
-                ORDER BY rc.is_pinned DESC, rc.LastMessageAt DESC";
+        SELECT 
+            rc.PartnerUserId,
+            u.Name,
+            u.Nickname,
+            d.DeptName,
+            cm.Content AS LastMessage,
+            rc.LastMessageAt,
+            rc.is_pinned
+        FROM RecentChat rc
+        JOIN User u ON rc.PartnerUserId = u.UserId
+        JOIN Department d ON u.DeptId = d.DeptId
+        LEFT JOIN ChatMessage cm ON rc.LastMessageId = cm.MessageId
+        WHERE rc.UserId = {currentUserId}
+        ORDER BY rc.is_pinned DESC, rc.LastMessageAt DESC";
 
             DataTable dt = DBconnector.GetInstance().Query(sql);
 

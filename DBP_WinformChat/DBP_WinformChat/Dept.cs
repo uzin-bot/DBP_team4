@@ -110,9 +110,6 @@ namespace DBP_Chat
                     TreeNode userNode = new TreeNode(text);
                     userNode.Tag = user["UserId"]; // UserId로 통일
 
-                    // 온라인 상태 표시
-                    if (user["IsOnline"] != DBNull.Value && Convert.ToInt32(user["IsOnline"]) == 1)
-                        userNode.ForeColor = System.Drawing.Color.Green;
 
                     deptNode.Nodes.Add(userNode);
                 }

@@ -116,7 +116,6 @@ namespace DBP_WinformChat
                     u.DeptId, 
                     p.DeptName AS ParentDeptName,
                     d.DeptName AS DeptName,
-                    u.IsOnline,
                     u.LastLoginAt
                 FROM User u
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
@@ -136,7 +135,7 @@ namespace DBP_WinformChat
                         WHERE OwnerUserId = {ownerUserId}
                     )
                 )
-                ORDER BY u.IsOnline DESC, u.Name";
+                ORDER BY u.Name";
 
                 var dt = db.Query(sql);
                 AddDeptPathColumn(dt, "ParentDeptName", "DeptName");
@@ -162,8 +161,7 @@ namespace DBP_WinformChat
                     u.Name, 
                     u.Nickname,
                     p.DeptName AS ParentDeptName,
-                    d.DeptName AS DeptName,
-                    u.IsOnline
+                    d.DeptName AS DeptName
                 FROM User u
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
@@ -182,7 +180,7 @@ namespace DBP_WinformChat
                     WHERE (UserAId = {userId} OR UserBId = {userId})
                     AND IsBlocked = 1
                 )
-                ORDER BY u.IsOnline DESC, u.Name";
+                ORDER BY u.Name";
 
                 var dt = db.Query(sql);
                 AddDeptPathColumn(dt, "ParentDeptName", "DeptName");
@@ -203,14 +201,14 @@ namespace DBP_WinformChat
             try
             {
                 string sql = $@"
-                SELECT u.UserId, u.Name, u.Nickname, u.LoginId, u.IsOnline,
+                SELECT u.UserId, u.Name, u.Nickname, u.LoginId,
                        p.DeptName AS ParentDeptName,
                        d.DeptName AS DeptName
                 FROM User u
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
                 WHERE u.DeptId = {deptId} AND u.Role = 'user'
-                ORDER BY u.IsOnline DESC, u.Name";
+                ORDER BY u.Name";
 
                 var dt = db.Query(sql);
                 AddDeptPathColumn(dt, "ParentDeptName", "DeptName");
@@ -241,7 +239,6 @@ namespace DBP_WinformChat
                 )";
 
                 var dt = db.Query(sql);
-                // DeptPath 기준으로 정렬이 필요하므로 C#에서 DeptPath를 만들고 정렬
                 AddDeptPathColumn(dt, "ParentDeptName", "DeptName", sortByDeptPath: true);
                 return dt;
             }
@@ -302,8 +299,7 @@ namespace DBP_WinformChat
                     u.Nickname, 
                     u.LoginId,
                     p.DeptName AS ParentDeptName,
-                    d.DeptName AS DeptName,
-                    u.IsOnline
+                    d.DeptName AS DeptName
                 FROM User u
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
@@ -314,7 +310,7 @@ namespace DBP_WinformChat
                     u.UserId IN (SELECT VisibleUserId FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId})
                     OR u.DeptId IN (SELECT DeptId FROM UserVisibleDept WHERE OwnerUserId = {ownerUserId})
                 )
-                ORDER BY u.IsOnline DESC, u.Name
+                ORDER BY u.Name
                 LIMIT 50";
 
                 var dt = db.Query(sql);
@@ -327,53 +323,7 @@ namespace DBP_WinformChat
             }
         }
 
-        // ==================== 9. 온라인 사용자만 가져오기 ====================
-        /// <summary>
-        /// 권한이 있는 온라인 사용자만 조회
-        /// </summary>
-        public DataTable GetOnlineVisibleUsers(int userId)
-        {
-            try
-            {
-                string sql = $@"
-                SELECT DISTINCT 
-                    u.UserId, 
-                    u.Name, 
-                    u.Nickname,
-                    p.DeptName AS ParentDeptName,
-                    d.DeptName AS DeptName
-                FROM User u
-                LEFT JOIN Department d ON u.DeptId = d.DeptId
-                LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
-                WHERE u.Role = 'user' 
-                AND u.UserId != {userId}
-                AND u.IsOnline = 1
-                AND (
-                    u.UserId IN (SELECT VisibleUserId FROM UserVisibleUser WHERE OwnerUserId = {userId})
-                    OR u.DeptId IN (SELECT DeptId FROM UserVisibleDept WHERE OwnerUserId = {userId})
-                )
-                AND u.UserId NOT IN (
-                    SELECT CASE 
-                        WHEN UserAId = {userId} THEN UserBId 
-                        ELSE UserAId 
-                    END
-                    FROM ChatPermission
-                    WHERE (UserAId = {userId} OR UserBId = {userId})
-                    AND IsBlocked = 1
-                )
-                ORDER BY u.Name";
-
-                var dt = db.Query(sql);
-                AddDeptPathColumn(dt, "ParentDeptName", "DeptName");
-                return dt;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"온라인 사용자 조회 실패: {ex.Message}");
-            }
-        }
-
-        // ==================== 10. 사용자 권한 상세 정보 ====================
+        // ==================== 9. 사용자 권한 상세 정보 ====================
         /// <summary>
         /// 특정 사용자의 권한 상세 정보 조회
         /// </summary>
@@ -406,7 +356,7 @@ namespace DBP_WinformChat
             }
         }
 
-        // ==================== 11. 메시지 전송 가능 여부 확인 ====================
+        // ==================== 10. 메시지 전송 가능 여부 확인 ====================
         /// <summary>
         /// 메시지 전송 전 종합 권한 체크
         /// </summary>
