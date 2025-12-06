@@ -4,9 +4,9 @@ using System.Windows.Forms;
 using System;
 using System.Threading;
 using System.Data;
-using MySql.Data.MySqlClient; 
-using System.IO; 
-using System.Drawing; 
+using MySql.Data.MySqlClient;
+using System.IO;
+using System.Drawing;
 using System.Resources;
 using System.Collections.Generic;
 using System.IO.Compression;
@@ -26,6 +26,7 @@ namespace kyg
         private int partnerId;      // string → int 변경
         private bool isSending = false; // 중복 전송 방지 플래그
 
+        private PermissionManager permissionManager;
         private ResourceManager formResourceManager; // 폼 리소스 접근용
         private Dictionary<string, Image> emojiMap = new Dictionary<string, Image>(); // 5-E: 이모티콘 맵
 
@@ -34,6 +35,17 @@ namespace kyg
             InitializeComponent();
             this.myId = myId;
             this.partnerId = partnerId;
+            this.permissionManager = new PermissionManager(); // 추가
+
+
+            //채팅창 열기 전 권한 체크
+            var result = permissionManager.CanSendMessage(myId, partnerId);
+            if (!result.CanSend)
+            {
+                MessageBox.Show(result.Reason, "채팅 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Load += (s, e) => this.Close(); // 폼 로드 후 바로 닫기
+                return;
+            }
 
             // 상대방 이름 가져오기 (수정)
             string partnerName = GetUserName(partnerId);
@@ -111,7 +123,6 @@ namespace kyg
             SendEmoji("EMO3"); // heart 코드 전송
         }
 
-        // 5-E: 공통 이모지 전송 로직
         private void SendEmoji(string emojiCode)
         {
             if (isSending) return;
@@ -119,6 +130,14 @@ namespace kyg
 
             try
             {
+                // ★ 전송 전 권한 체크 추가
+                var result = permissionManager.CanSendMessage(myId, partnerId);
+                if (!result.CanSend)
+                {
+                    MessageBox.Show(result.Reason, "전송 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 // 1. 이미지 존재 여부 확인 (로드 실패 방지)
                 if (!emojiMap.ContainsKey(emojiCode) || emojiMap[emojiCode] == null)
                 {
@@ -214,7 +233,6 @@ namespace kyg
 
         private void btnSend_Click(object sender, EventArgs e)
         {
-            // 2주차 5-A: 일반 텍스트 메시지 전송
             if (isSending) return;
             isSending = true;
 
@@ -222,6 +240,14 @@ namespace kyg
             {
                 string content = txtInput.Text;
                 if (string.IsNullOrWhiteSpace(content)) return;
+
+                // ★ 전송 전 권한 체크 추가
+                var result = permissionManager.CanSendMessage(myId, partnerId);
+                if (!result.CanSend)
+                {
+                    MessageBox.Show(result.Reason, "전송 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
                 if (client == null || !client.Connected) { return; }
 
@@ -419,6 +445,15 @@ namespace kyg
         private void btnSendFile_Click(object sender, EventArgs e)
         {
             if (isSending) return;
+
+            //전송 전 권한 체크 추가
+            var result = permissionManager.CanSendMessage(myId, partnerId);
+            if (!result.CanSend)
+            {
+                MessageBox.Show(result.Reason, "파일 전송 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             isSending = true;
 
             OpenFileDialog ofd = new OpenFileDialog();

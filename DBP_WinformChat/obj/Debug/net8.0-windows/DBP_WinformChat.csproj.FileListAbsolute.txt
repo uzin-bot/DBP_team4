@@ -79,3 +79,6 @@ C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debu
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.SearchAddressForm.resources
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.EditInfoForm.resources
 C:\Users\yoleggk\Source\Repos\DBP_team4\DBP_WinformChat\DBP_WinformChat\obj\Debug\net8.0-windows\leehaeun.EditInfoFormaaa.resources
+C:\Users\dlgkd\source\repos\DBP_team4\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.dll
+C:\Users\dlgkd\source\repos\DBP_team4\DBP_WinformChat\obj\Debug\net8.0-windows\refint\DBP_WinformChat.dll
+C:\Users\dlgkd\source\repos\DBP_team4\DBP_WinformChat\obj\Debug\net8.0-windows\DBP_WinformChat.pdb
