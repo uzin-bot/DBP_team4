@@ -79,6 +79,7 @@ namespace leehaeun
                 // 로그아웃인지 프로그램 종료인지 확인
                 if (Logout) FormShow();
                 else this.Close();
+                
             }
             else
             {

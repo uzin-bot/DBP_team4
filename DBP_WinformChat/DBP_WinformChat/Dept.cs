@@ -282,6 +282,7 @@ namespace DBP_Chat
                 return;
             }
 
+            this.Close();
             new ChatForm(currentUserId, targetUserId).Show();
         }
 

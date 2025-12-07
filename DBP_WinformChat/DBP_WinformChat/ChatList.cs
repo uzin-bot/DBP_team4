@@ -28,6 +28,10 @@ namespace 남예솔
 
         private NotifyIcon niChatAlert;
         private System.Windows.Forms.Timer refreshTimer;
+
+        // ✅ 추가: 마지막 메시지 보낸 사람 ID
+        private int lastMessageSenderId = 0;
+
         public chatlist()
         {
             InitializeComponent();
@@ -38,16 +42,28 @@ namespace 남예솔
             lvlist.DrawColumnHeader += LvList_DrawColumnHeader;
             lvlist.DrawSubItem += LvList_DrawSubItem;
 
-            // NotifyIcon 초기화 추가 (수정사항)
+            // ✅ NotifyIcon 초기화 먼저!
             niChatAlert = new NotifyIcon();
-            niChatAlert.Icon = SystemIcons.Information; // 기본 정보 아이콘
+            niChatAlert.Icon = SystemIcons.Information;
             niChatAlert.Visible = true;
             niChatAlert.Text = "채팅 알림";
+
+            // ✅ BalloonTip 클릭 이벤트 (풍선 알림 클릭)
+            niChatAlert.BalloonTipClicked += NiChatAlert_BalloonTipClicked;
+
 
             refreshTimer = new System.Windows.Forms.Timer();
             refreshTimer.Interval = 3000;
             refreshTimer.Tick += (s, e) => LoadRecentChat();
 
+            LoadRecentChat();
+            this.Activated += chatlist_Activated;
+
+        }
+
+        private void chatlist_Activated(object sender, EventArgs e)
+        {
+            LoadRecentChat();
         }
 
         private void chatlist_Load(object sender, EventArgs e)
@@ -132,6 +148,7 @@ namespace 남예솔
 
 
         // 서버로 부터 알림 메세지 수신
+        // ChatList.cs 파일의 ReceiveAlertMessages() 함수
         private void ReceiveAlertMessages()
         {
             if (alertClient == null || !alertClient.Connected) return;
@@ -161,8 +178,10 @@ namespace 남예솔
                         string msg = messages[i].Trim();
                         if (string.IsNullOrWhiteSpace(msg)) continue;
 
+                        // 5개로 Split해야 CHAT:senderId:receiverId:content를 올바르게 분리 가능
                         string[] parts = msg.Split(new char[] { ':' }, 5);
 
+                        // CHAT 메시지 형식 확인 및 처리
                         if (parts.Length >= 4 && parts[0] == "CHAT")
                         {
                             string senderId = parts[1];
@@ -171,44 +190,49 @@ namespace 남예솔
 
                             if (receiverId == currentUserId.ToString())
                             {
-                                try
+
+                                // ✅ 마지막 메시지 보낸 사람 저장
+                                lastMessageSenderId = int.Parse(senderId);
+
+                                // 💡 수정된 부분: 3초 대기 후 UI 업데이트를 요청하는 Task 생성
+                                Task.Delay(3000).ContinueWith(_ =>
                                 {
-                                    // ✅ BeginInvoke로 비동기 처리
-                                    this.BeginInvoke((MethodInvoker)delegate
+                                    try
                                     {
-                                        if (this.IsDisposed) return;
-
-                                        // ✅ 1초 대기 (DB 저장 완료 보장)
-                                        System.Threading.Thread.Sleep(3000);
-
-                                        // 1. 새로고침
-                                        LoadRecentChat();
-
-                                        // 2. 깜빡임
-                                        try
+                                        // UI 스레드에 업데이트 요청
+                                        this.BeginInvoke((MethodInvoker)delegate
                                         {
-                                            FlashWindow.Flash(this);
-                                        }
-                                        catch { }
+                                            if (this.IsDisposed) return;
 
-                                        // 3. 알람
-                                        try
-                                        {
-                                            if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
+                                            // 1. 새로고침 (지연 후 실행)
+                                            LoadRecentChat();
+
+                                            // 2. 깜빡임 및 알람 (Thread.Sleep 없이 실행)
+                                            try
                                             {
-                                                niChatAlert.BalloonTipTitle = $"새 메시지: {senderId}";
-                                                niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
-                                                niChatAlert.ShowBalloonTip(5000);
+                                                FlashWindow.Flash(this);
                                             }
-                                        }
-                                        catch { }
-                                    });
-                                }
-                                catch { }
+                                            catch { }
+
+                                            try
+                                            {
+                                                if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
+                                                {
+                                                    niChatAlert.BalloonTipTitle = $"새 메시지: {senderId}";
+                                                    niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
+                                                    niChatAlert.ShowBalloonTip(5000);
+                                                }
+                                            }
+                                            catch { }
+                                        });
+                                    }
+                                    catch { }
+                                });
                             }
                         }
                     }
 
+                    // 메시지 버퍼링 처리 (기존 로직 유지)
                     if (!lastMessageComplete && messages.Length > 0)
                     {
                         messageBuilder.Clear();
@@ -226,7 +250,7 @@ namespace 남예솔
                 catch { }
             }
 
-            // 재연결
+            // 재연결 (기존 로직 유지)
             Task.Run(() =>
             {
                 Thread.Sleep(3000);
@@ -244,9 +268,8 @@ namespace 남예솔
                 }
                 catch { }
             });
-
-           
         }
+
 
         // 새메세지 도착 알림
         private void ShowAlertOnMainForm(string senderId, string content)
@@ -457,9 +480,11 @@ namespace 남예솔
 		//btndept → 친구 목록(DeptForm)으로 이동
 		private void btndept_Click(object sender, EventArgs e)
 		{
+            
 			Dept deptForm = new Dept(currentUserId, currentUserName, currentUserNickname);
-			deptForm.Show();
-		}
+            deptForm.Show(); // ✅ 먼저 Dept 열고
+            
+        }
 
         // 컬럼 헤더는 기본 방식으로
         private void LvList_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
@@ -505,6 +530,13 @@ namespace 남예솔
             }
         }
 
+        // ✅ 풍선 알림 클릭 시 채팅창 열기
+        private void NiChatAlert_BalloonTipClicked(object sender, EventArgs e)
+        {
 
+             new ChatForm(currentUserId, lastMessageSenderId).Show();
+             this.Show(); // chatlist도 보여주기
+            
+        }
     }
 }
