@@ -1298,7 +1298,7 @@ private void LoadDeptPermissionData(string userId)
             int teamCount = Convert.ToInt32(row["TeamCount"]);
             
             dgv.Rows.Add(
-                row["OwnerUerId"],
+                row["OwnerUserId"],
                 row["DeptId"],
                 "🏢 " + row["DeptName"].ToString(),
                 teamCount + "개",
