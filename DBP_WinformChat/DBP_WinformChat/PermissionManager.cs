@@ -143,8 +143,7 @@ namespace DBP_WinformChat
                 string sql = $@"
                 SELECT DISTINCT 
                     u.UserId, 
-                    u.Name, 
-                    u.Nickname, 
+                    u.Name,
                     u.LoginId, 
                     u.DeptId, 
                     p.DeptName AS ParentDeptName,
@@ -192,8 +191,7 @@ namespace DBP_WinformChat
                 string sql = $@"
                 SELECT DISTINCT 
                     u.UserId, 
-                    u.Name, 
-                    u.Nickname,
+                    u.Name,
                     p.DeptName AS ParentDeptName,
                     d.DeptName AS DeptName
                 FROM User u
@@ -239,7 +237,7 @@ namespace DBP_WinformChat
             try
             {
                 string sql = $@"
-                SELECT u.UserId, u.Name, u.Nickname, u.LoginId,
+                SELECT u.UserId, u.Name, u.LoginId,
                        p.DeptName AS ParentDeptName,
                        d.DeptName AS DeptName
                 FROM User u
@@ -302,7 +300,7 @@ namespace DBP_WinformChat
             try
             {
                 string sql = $@"
-                SELECT u.UserId, u.Name, u.Nickname,
+                SELECT u.UserId, u.Name,
                        p.DeptName AS ParentDeptName,
                        d.DeptName AS DeptName
                 FROM User u
@@ -342,8 +340,7 @@ namespace DBP_WinformChat
                 string sql = $@"
                 SELECT DISTINCT 
                     u.UserId, 
-                    u.Name, 
-                    u.Nickname, 
+                    u.Name,
                     u.LoginId,
                     p.DeptName AS ParentDeptName,
                     d.DeptName AS DeptName
@@ -352,7 +349,7 @@ namespace DBP_WinformChat
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
                 WHERE u.Role = 'user' 
                   AND u.UserId != {ownerUserId}
-                  AND (u.Name LIKE '%{safeKeyword}%' OR u.Nickname LIKE '%{safeKeyword}%' OR u.LoginId LIKE '%{safeKeyword}%')
+                  AND (u.Name LIKE '%{safeKeyword}%' OR u.LoginId LIKE '%{safeKeyword}%')
                   -- 부서 권한 체크
                   AND NOT EXISTS (
                     SELECT 1 FROM UserVisibleDept uvd
