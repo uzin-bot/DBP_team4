@@ -597,17 +597,19 @@ namespace DBPAdmin
 
             dgv.Rows.Clear();
 
+            // 닉네임을 User 테이블이 아닌 Profile 테이블에서 가져오도록 LEFT JOIN 추가
             string sql = $@"
-                SELECT u.UserId, u.Name, u.LoginId, u.Nickname, u.DeptId,
-                       CASE 
-                           WHEN u.DeptId IS NULL THEN '미배정'
-                           WHEN d.ParentDeptId IS NULL THEN d.DeptName
-                           ELSE CONCAT(p.DeptName, ' > ', d.DeptName)
-                       END AS DeptPath
-                FROM User u
-                LEFT JOIN Department d ON u.DeptId = d.DeptId
-                LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
-                WHERE u.Role = 'user' AND (u.Name LIKE '%{searchKeyword}%' OR u.LoginId LIKE '%{searchKeyword}%')";
+        SELECT u.UserId, u.Name, u.LoginId, pf.Nickname AS Nickname, u.DeptId,
+               CASE 
+                   WHEN u.DeptId IS NULL THEN '미배정'
+                   WHEN d.ParentDeptId IS NULL THEN d.DeptName
+                   ELSE CONCAT(p.DeptName, ' > ', d.DeptName)
+               END AS DeptPath
+        FROM `User` u
+        LEFT JOIN Profile pf ON pf.UserId = u.UserId
+        LEFT JOIN Department d ON u.DeptId = d.DeptId
+        LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
+        WHERE u.Role = 'user' AND (u.Name LIKE '%{searchKeyword}%' OR u.LoginId LIKE '%{searchKeyword}%')";
 
             if (!string.IsNullOrEmpty(deptId) && deptId != "0")
             {
@@ -1174,12 +1176,17 @@ namespace DBPAdmin
             dgv.Columns["DeptId"].Visible = false;
             dgv.Columns.Add("UserName", "사용자");
             dgv.Columns["UserName"].Width = 200;
-            dgv.Columns.Add("DeptPath", "볼 수 있는 부서/팀");
+            dgv.Columns.Add("DeptPath", "부서/팀");
             dgv.Columns["DeptPath"].Width = 300;
+            
+            // "상태" 컬럼 추가
+            dgv.Columns.Add("Status", "상태");
+            dgv.Columns["Status"].Width = 100;
+            
             dgv.Columns.Add(new DataGridViewButtonColumn
             {
-                Text = "삭제",
-                UseColumnTextForButtonValue = true,
+                Text = "제한/해제",
+                UseColumnTextForButtonValue = false, // 동적으로 변경
                 Width = 100,
                 Name = "Delete"
             });
@@ -1199,20 +1206,27 @@ namespace DBPAdmin
             dgv.Rows.Clear();
 
             string sql = $@"
-                SELECT uvd.OwnerUserId, uvd.DeptId, u.Name AS UserName,
-                       CASE 
-                           WHEN d.ParentDeptId IS NULL THEN d.DeptName
-                           ELSE CONCAT(p.DeptName, ' > ', d.DeptName)
-                       END AS DeptPath
-                FROM UserVisibleDept uvd
-                INNER JOIN User u ON uvd.OwnerUserId = u.UserId
-                INNER JOIN Department d ON uvd.DeptId = d.DeptId
-                LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
-                WHERE 1=1";
+        SELECT 
+            u.UserId AS OwnerUserId,
+            d.DeptId,
+            u.Name AS UserName,
+            CASE 
+                WHEN d.ParentDeptId IS NULL THEN d.DeptName
+                ELSE CONCAT(p.DeptName, ' > ', d.DeptName)
+            END AS DeptPath,
+            CASE 
+                WHEN uvd.DeptId IS NOT NULL THEN 1 
+                ELSE 0 
+            END AS IsRestricted
+        FROM `User` u
+        CROSS JOIN Department d
+        LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
+        LEFT JOIN UserVisibleDept uvd ON uvd.OwnerUserId = u.UserId AND uvd.DeptId = d.DeptId
+        WHERE u.Role = 'user'";
 
             if (!string.IsNullOrEmpty(userId) && userId != "0")
             {
-                sql += $" AND uvd.OwnerUserId = {userId}";
+                sql += $" AND u.UserId = {userId}";
             }
 
             sql += " ORDER BY u.Name, DeptPath";
@@ -1222,7 +1236,27 @@ namespace DBPAdmin
                 var dt = db.Query(sql);
                 foreach (DataRow row in dt.Rows)
                 {
-                    dgv.Rows.Add(row["OwnerUserId"], row["DeptId"], row["UserName"], row["DeptPath"]);
+                    bool isRestricted = Convert.ToInt32(row["IsRestricted"]) == 1;
+                    
+                    int rowIndex = dgv.Rows.Add(
+                        row["OwnerUserId"],
+                        row["DeptId"],
+                        row["UserName"],
+                        row["DeptPath"],
+                        isRestricted ? "🚫 제한됨" : "✅ 보임"
+                    );
+
+                    // 제한된 부서는 빨간색, 보이는 부서는 초록색
+                    if (isRestricted)
+                    {
+                        dgv.Rows[rowIndex].DefaultCellStyle.BackColor = Color.MistyRose;
+                        dgv.Rows[rowIndex].Cells["Delete"].Value = "해제";
+                    }
+                    else
+                    {
+                        dgv.Rows[rowIndex].DefaultCellStyle.BackColor = Color.Honeydew;
+                        dgv.Rows[rowIndex].Cells["Delete"].Value = "제한";
+                    }
                 }
             }
             catch (Exception ex)
