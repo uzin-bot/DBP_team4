@@ -305,12 +305,12 @@ namespace 남예솔
 
         // ===== 챗리스트 기능 ======
 
-        //RecentChat + 고정정렬
+        //RecentChat + 고정정렬 + 부서 권한 적용
         private void LoadRecentChat()
         {
             lvlist.Items.Clear();
 
-            // 닉네임 관련 쿼리 수정
+            // 부서 권한 및 사용자별 권한, 차단 체크 포함
             string sql = $@"
                 SELECT 
                     rc.PartnerUserId,
@@ -324,10 +324,33 @@ namespace 남예솔
                     rc.UnreadCount
                 FROM RecentChat rc
                 JOIN User u ON rc.PartnerUserId = u.UserId
-                JOIN Department d ON u.DeptId = d.DeptId
-                JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1  
-                JOIN ChatMessage cm ON rc.LastMessageId = cm.MessageId 
+                LEFT JOIN Department d ON u.DeptId = d.DeptId
+                LEFT JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1  
+                LEFT JOIN ChatMessage cm ON rc.LastMessageId = cm.MessageId 
                 WHERE rc.UserId = {currentUserId}
+                  AND u.Role = 'user'
+                  -- 부서 권한 체크: 제한된 부서의 사용자 제외
+                  AND NOT EXISTS (
+                    SELECT 1 FROM UserVisibleDept uvd
+                    LEFT JOIN Department d2 ON u.DeptId = d2.DeptId
+                    WHERE uvd.OwnerUserId = {currentUserId}
+                      AND (
+                        uvd.DeptId = u.DeptId  -- 직접 제한된 팀
+                        OR uvd.DeptId = d2.ParentDeptId  -- 상위 부서가 제한됨
+                      )
+                  )
+                  -- 사용자별 권한 체크
+                  AND (
+                    NOT EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {currentUserId})
+                    OR EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {currentUserId} AND VisibleUserId = u.UserId)
+                  )
+                  -- 대화 차단 체크
+                  AND NOT EXISTS (
+                    SELECT 1 FROM ChatPermission 
+                    WHERE ((UserAId = {currentUserId} AND UserBId = u.UserId) 
+                       OR (UserAId = u.UserId AND UserBId = {currentUserId}))
+                      AND IsBlocked = 1
+                  )
                 ORDER BY rc.is_pinned DESC, rc.LastMessageAt DESC";
 
             try
@@ -348,21 +371,22 @@ namespace 남예솔
                     string indicator = unreadCount > 0 ? "●" : "";
                     ListViewItem item = new ListViewItem(indicator);
 
-
                     item.ImageIndex = isPinned ? 0 : -1;
                      
-                    item.SubItems.Add(row["LoginId"].ToString()); // 로그인 아이디로 수정
+                    item.SubItems.Add(row["LoginId"].ToString()); // 로그인 아이디
                     item.SubItems.Add(row["Name"].ToString());
-                    item.SubItems.Add(row["DeptName"].ToString());
+                    
+                    // 부서명이 NULL일 수 있으므로 체크
+                    string deptName = row["DeptName"] == DBNull.Value ? "미배정" : row["DeptName"].ToString();
+                    item.SubItems.Add(deptName);
 
-                    //최근 메시지 길면 ...으로 잘림 (20제한 >> UI 변경시 늘리거나 해도 O)
-                    string msg = row["LastMessage"].ToString();
+                    //최근 메시지 길면 ...으로 잘림 (20제한)
+                    string msg = row["LastMessage"] == DBNull.Value ? "" : row["LastMessage"].ToString();
                     if (msg.Length > 20)
                         msg = msg.Substring(0, 20) + "…";
                     item.SubItems.Add(msg);
 
                     item.SubItems.Add(row["LastMessageAt"].ToString());
-
 
                     // Tag에 실제 UserId 저장 (더블클릭 시 사용)
                     item.Tag = row["PartnerUserId"].ToString();
@@ -372,7 +396,7 @@ namespace 남예솔
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine($"[chatlist] LoadRecentChat 오류: {ex.Message}");
             }
         }
 

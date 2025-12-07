@@ -1136,7 +1136,7 @@ namespace DBPAdmin
             btnTab3.BackColor = Color.Gray;
         }
 
-        // ==================== Tab1: 부서별 보기 권한 ====================
+        // ==================== Tab1: 부서별 보기 권한 (부서만 관리) ====================
         private void ShowPermissionTab1()
         {
             var existing = pnlContent.Controls.Find("pnlPermTab", true).FirstOrDefault();
@@ -1154,18 +1154,18 @@ namespace DBPAdmin
             int cardX = UIHelper.CalculateCenterX(tabPanel.Width, cardWidth);
 
             var searchCard = UIHelper.CreateCard(cardX - 15, 10, cardWidth, 60);
-            searchCard.Controls.Add(UIHelper.CreateLabel("사용자", 20, 18, 9, Color.Black, true));
-            var cboUser = UIHelper.CreateComboBox(80, 15, 250, 25, "cboPermUser");
+            searchCard.Controls.Add(UIHelper.CreateLabel("사용자 선택", 20, 18, 9, Color.Black, true));
+            var cboUser = UIHelper.CreateComboBox(110, 15, 300, 25, "cboPermUser");
             LoadUserComboForSearchAll(cboUser);
             searchCard.Controls.Add(cboUser);
 
-            var btnSearch = UIHelper.CreateBlueButton("조회", 350, 13, 80, 35);
+            var btnSearch = UIHelper.CreateBlueButton("조회", 430, 13, 100, 35);
             btnSearch.Click += (s, e) => LoadDeptPermissionData((cboUser.SelectedItem as ComboBoxItem)?.Value);
             searchCard.Controls.Add(btnSearch);
 
-            var btnAdd = UIHelper.CreateBlueButton("+ 권한 추가", 980, 13, 100, 35);
-            btnAdd.Click += (s, e) => ShowAddDeptPermission();
-            searchCard.Controls.Add(btnAdd);
+            var lblInfo = UIHelper.CreateLabel("💡 부서를 제한하면 해당 부서의 모든 팀도 함께 제한됩니다.", 
+        560, 20, 9, Color.Gray);
+    searchCard.Controls.Add(lblInfo);
 
             tabPanel.Controls.Add(searchCard);
 
@@ -1174,225 +1174,175 @@ namespace DBPAdmin
             dgv.Columns["OwnerUserId"].Visible = false;
             dgv.Columns.Add("DeptId", "DeptId");
             dgv.Columns["DeptId"].Visible = false;
-            dgv.Columns.Add("UserName", "사용자");
-            dgv.Columns["UserName"].Width = 200;
-            dgv.Columns.Add("DeptPath", "부서/팀");
-            dgv.Columns["DeptPath"].Width = 300;
+            dgv.Columns.Add("DeptName", "부서명");
+            dgv.Columns["DeptName"].Width = 300;
             
-            // "상태" 컬럼 추가
+            dgv.Columns.Add("TeamCount", "하위 팀 수");
+            dgv.Columns["TeamCount"].Width = 100;
+            
             dgv.Columns.Add("Status", "상태");
-            dgv.Columns["Status"].Width = 100;
+            dgv.Columns["Status"].Width = 150;
             
             dgv.Columns.Add(new DataGridViewButtonColumn
             {
-                Text = "제한/해제",
-                UseColumnTextForButtonValue = false, // 동적으로 변경
-                Width = 100,
-                Name = "Delete"
+                Text = "제한",
+                UseColumnTextForButtonValue = false,
+                Width = 120,
+                Name = "Toggle"
             });
 
             dgv.CellClick += DgvDeptPerm_CellClick;
+            dgv.CellFormatting += DgvDeptPerm_CellFormatting;
             tabPanel.Controls.Add(dgv);
 
             pnlContent.Controls.Add(tabPanel);
-            LoadDeptPermissionData(null);
         }
 
-        private void LoadDeptPermissionData(string userId)
+private void DgvDeptPerm_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+{
+    var dgv = sender as DataGridView;
+    if (dgv == null || e.RowIndex < 0) return;
+
+    if (dgv.Columns[e.ColumnIndex].Name == "Status" || dgv.Columns[e.ColumnIndex].Name == "Toggle")
+    {
+        string status = dgv.Rows[e.RowIndex].Cells["Status"].Value?.ToString();
+        bool isRestricted = status != null && status.Contains("제한됨");
+
+        if (isRestricted)
         {
-            var dgv = pnlContent.Controls.Find("dgvDeptPerm", true).FirstOrDefault() as DataGridView;
-            if (dgv == null) return;
+            dgv.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.MistyRose;
+            dgv.Rows[e.RowIndex].Cells["Toggle"].Value = "제한 해제";
+        }
+        else
+        {
+            dgv.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.Honeydew;
+            dgv.Rows[e.RowIndex].Cells["Toggle"].Value = "제한";
+        }
+    }
+}
 
-            dgv.Rows.Clear();
+private void LoadDeptPermissionData(string userId)
+{
+    var dgv = pnlContent.Controls.Find("dgvDeptPerm", true).FirstOrDefault() as DataGridView;
+    if (dgv == null) return;
 
-            string sql = $@"
+    dgv.Rows.Clear();
+
+    if (string.IsNullOrEmpty(userId) || userId == "0")
+    {
+        MessageBox.Show("사용자를 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        return;
+    }
+
+    // 부서(최상위)만 표시
+    string sql = $@"
         SELECT 
-            u.UserId AS OwnerUserId,
+            {userId} AS OwnerUserId,
             d.DeptId,
-            u.Name AS UserName,
-            CASE 
-                WHEN d.ParentDeptId IS NULL THEN d.DeptName
-                ELSE CONCAT(p.DeptName, ' > ', d.DeptName)
-            END AS DeptPath,
+            d.DeptName,
+            (SELECT COUNT(*) FROM Department WHERE ParentDeptId = d.DeptId) AS TeamCount,
             CASE 
                 WHEN uvd.DeptId IS NOT NULL THEN 1 
                 ELSE 0 
             END AS IsRestricted
-        FROM `User` u
-        CROSS JOIN Department d
-        LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
-        LEFT JOIN UserVisibleDept uvd ON uvd.OwnerUserId = u.UserId AND uvd.DeptId = d.DeptId
-        WHERE u.Role = 'user'";
+        FROM Department d
+        LEFT JOIN UserVisibleDept uvd ON uvd.OwnerUserId = {userId} AND uvd.DeptId = d.DeptId
+        WHERE d.ParentDeptId IS NULL
+        ORDER BY d.DeptName";
 
-            if (!string.IsNullOrEmpty(userId) && userId != "0")
-            {
-                sql += $" AND u.UserId = {userId}";
-            }
-
-            sql += " ORDER BY u.Name, DeptPath";
-
-            try
-            {
-                var dt = db.Query(sql);
-                foreach (DataRow row in dt.Rows)
-                {
-                    bool isRestricted = Convert.ToInt32(row["IsRestricted"]) == 1;
-                    
-                    int rowIndex = dgv.Rows.Add(
-                        row["OwnerUserId"],
-                        row["DeptId"],
-                        row["UserName"],
-                        row["DeptPath"],
-                        isRestricted ? "🚫 제한됨" : "✅ 보임"
-                    );
-
-                    // 제한된 부서는 빨간색, 보이는 부서는 초록색
-                    if (isRestricted)
-                    {
-                        dgv.Rows[rowIndex].DefaultCellStyle.BackColor = Color.MistyRose;
-                        dgv.Rows[rowIndex].Cells["Delete"].Value = "해제";
-                    }
-                    else
-                    {
-                        dgv.Rows[rowIndex].DefaultCellStyle.BackColor = Color.Honeydew;
-                        dgv.Rows[rowIndex].Cells["Delete"].Value = "제한";
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"부서 권한 로드 실패: {ex.Message}", "오류");
-            }
-        }
-
-        private void DgvDeptPerm_CellClick(object sender, DataGridViewCellEventArgs e)
+    try
+    {
+        var dt = db.Query(sql);
+        foreach (DataRow row in dt.Rows)
         {
-            if (e.RowIndex < 0) return;
-
-            var dgv = sender as DataGridView;
-            if (dgv.Columns[e.ColumnIndex].Name == "Delete")
-            {
-                int ownerUserId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["OwnerUserId"].Value);
-                int deptId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["DeptId"].Value);
-                string userName = dgv.Rows[e.RowIndex].Cells["UserName"].Value.ToString();
-                string deptPath = dgv.Rows[e.RowIndex].Cells["DeptPath"].Value.ToString();
-
-                if (MessageBox.Show($"'{userName}' 사용자의 '{deptPath}' 보기 권한을 삭제하시겠습니까?",
-                    "삭제 확인", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-                {
-                    DeleteDeptPermission(ownerUserId, deptId);
-                }
-            }
+            bool isRestricted = Convert.ToInt32(row["IsRestricted"]) == 1;
+            int teamCount = Convert.ToInt32(row["TeamCount"]);
+            
+            dgv.Rows.Add(
+                row["OwnerUserId"],
+                row["DeptId"],
+                "🏢 " + row["DeptName"].ToString(),
+                teamCount + "개",
+                isRestricted ? "🚫 제한됨 (하위 팀 포함)" : "✅ 보임"
+            );
         }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"부서 권한 로드 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
 
-        private void DeleteDeptPermission(int ownerUserId, int deptId)
+private void DgvDeptPerm_CellClick(object sender, DataGridViewCellEventArgs e)
+{
+    if (e.RowIndex < 0) return;
+
+    var dgv = sender as DataGridView;
+    if (dgv.Columns[e.ColumnIndex].Name == "Toggle")
+    {
+        int ownerUserId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["OwnerUserId"].Value);
+        int deptId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["DeptId"].Value);
+        string deptName = dgv.Rows[e.RowIndex].Cells["DeptName"].Value.ToString().Replace("🏢 ", "");
+        string status = dgv.Rows[e.RowIndex].Cells["Status"].Value.ToString();
+        bool isRestricted = status.Contains("제한됨");
+
+        if (isRestricted)
         {
-            try
+            if (MessageBox.Show($"'{deptName}' 부서와 하위 팀의 보기 제한을 해제하시겠습니까?",
+                "제한 해제", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                db.NonQuery($"DELETE FROM UserVisibleDept WHERE OwnerUserId = {ownerUserId} AND DeptId = {deptId}");
-                LoadDeptPermissionData(null);
-                MessageBox.Show("부서 보기 권한이 삭제되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"삭제 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                DeleteDeptPermission(ownerUserId, deptId);
             }
         }
-
-        private void ShowAddDeptPermission()
+        else
         {
-            pnlContent.Visible = false;
-
-            var editPanel = new Panel
+            if (MessageBox.Show($"'{deptName}' 부서와 하위 팀의 보기를 제한하시겠습니까?",
+                "제한 추가", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
-                Name = "pnlAddDeptPerm",
-                Location = pnlContent.Location,
-                Size = pnlContent.Size,
-                BackColor = pnlContent.BackColor,
-                Padding = new Padding(15),
-                AutoScroll = true
-            };
-            this.Controls.Add(editPanel);
-            editPanel.BringToFront();
-
-            var title = UIHelper.CreateTitle("부서별 보기 권한 추가");
-            title.Location = new Point(15, 15);
-            editPanel.Controls.Add(title);
-
-            int cardWidth = 600, cardHeight = 300;
-            int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
-            int cardY = UIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
-
-            var inputCard = UIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
-
-            int yPos = 30;
-
-            inputCard.Controls.Add(UIHelper.CreateLabel("사용자 선택", 30, yPos, 10, Color.Black, true));
-            var cboUser = UIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboAddUser");
-            LoadUserComboForSearchAll(cboUser);
-            inputCard.Controls.Add(cboUser);
-            yPos += 80;
-
-            inputCard.Controls.Add(UIHelper.CreateLabel("볼 수 있는 부서/팀", 30, yPos, 10, Color.Black, true));
-            var cboDept = UIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboAddDept");
-            LoadAllDepartmentComboWithHierarchy(cboDept);
-            inputCard.Controls.Add(cboDept);
-            yPos += 80;
-
-            var btnSave = UIHelper.CreateBlueButton("추가", 30, yPos, 260, 40);
-            btnSave.Click += (s, e) => SaveDeptPermission(cboUser, cboDept, editPanel);
-            inputCard.Controls.Add(btnSave);
-
-            var btnCancel = UIHelper.CreateBlueButton("취소", 300, yPos, 270, 40);
-            btnCancel.BackColor = Color.Gray;
-            btnCancel.Click += (s, e) => CloseAddDeptPermPanel(editPanel);
-            inputCard.Controls.Add(btnCancel);
-
-            editPanel.Controls.Add(inputCard);
+                AddDeptPermission(ownerUserId, deptId);
+            }
         }
+    }
+}
 
-        private void SaveDeptPermission(ComboBox cboUser, ComboBox cboDept, Panel editPanel)
+private void AddDeptPermission(int ownerUserId, int deptId)
+{
+    try
+    {
+        // 중복 체크
+        var dtCheck = db.Query($"SELECT COUNT(*) FROM UserVisibleDept WHERE OwnerUserId = {ownerUserId} AND DeptId = {deptId}");
+        if (dtCheck.Rows.Count > 0 && Convert.ToInt32(dtCheck.Rows[0][0]) > 0)
         {
-            if (!(cboUser.SelectedItem is ComboBoxItem userItem) || string.IsNullOrEmpty(userItem.Value) || userItem.Value == "0")
-            {
-                MessageBox.Show("사용자를 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (!(cboDept.SelectedItem is ComboBoxItem deptItem) || string.IsNullOrEmpty(deptItem.Value))
-            {
-                MessageBox.Show("부서/팀을 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            try
-            {
-                // 중복 체크
-                var dtCheck = db.Query($"SELECT COUNT(*) FROM UserVisibleDept WHERE OwnerUserId = {userItem.Value} AND DeptId = {deptItem.Value}");
-                if (dtCheck.Rows.Count > 0 && Convert.ToInt32(dtCheck.Rows[0][0]) > 0)
-                {
-                    MessageBox.Show("이미 동일한 권한이 존재합니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                db.NonQuery($"INSERT INTO UserVisibleDept (OwnerUserId, DeptId) VALUES ({userItem.Value}, {deptItem.Value})");
-                MessageBox.Show("부서 보기 권한이 추가되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                CloseAddDeptPermPanel(editPanel);
-                ShowPermissionManage();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"추가 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            MessageBox.Show("이미 제한된 부서입니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
         }
 
-        private void CloseAddDeptPermPanel(Panel editPanel)
-        {
-            this.Controls.Remove(editPanel);
-            editPanel.Dispose();
-            pnlContent.Visible = true;
-        }
+        // 부서만 제한 (하위 팀은 자동으로 적용됨)
+        db.NonQuery($"INSERT INTO UserVisibleDept (OwnerUserId, DeptId) VALUES ({ownerUserId}, {deptId})");
+        
+        LoadDeptPermissionData(ownerUserId.ToString());
+        MessageBox.Show("부서 보기가 제한되었습니다. (하위 팀 포함)", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"제한 추가 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
+
+private void DeleteDeptPermission(int ownerUserId, int deptId)
+{
+    try
+    {
+        db.NonQuery($"DELETE FROM UserVisibleDept WHERE OwnerUserId = {ownerUserId} AND DeptId = {deptId}");
+        
+        LoadDeptPermissionData(ownerUserId.ToString());
+        MessageBox.Show("부서 보기 제한이 해제되었습니다. (하위 팀 포함)", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"제한 해제 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
 
         // ==================== Tab2: 사용자별 보기 권한 ====================
         private void ShowPermissionTab2()
