@@ -320,7 +320,7 @@ namespace leehaeun
             // 닉네임 변경
             if (NicknameBox.Text != CurrProfile["Nickname"].ToString())
             {
-                string query = $"UPDATE Profile SET Name = '{NicknameBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE Profile SET Nickname = '{NicknameBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("닉네임 변경 실패");
             }
@@ -328,7 +328,7 @@ namespace leehaeun
             // 상태메시지 변경
             if (StatusBox.Text != CurrProfile["StatusMessage"].ToString())
             {
-                string query = $"UPDATE Profile SET Address = '{StatusBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE Profile SET StatusMessage = '{StatusBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("상태메시지 변경 실패");
             }
