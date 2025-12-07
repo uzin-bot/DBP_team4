@@ -58,7 +58,7 @@ namespace kyg
                 MessageBox.Show("이모티콘 리소스 로드 중 오류 발생. resx 파일 확인 필요: " + ex.Message, "리소징 오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             */
-            if (niChatAlert != null) niChatAlert.Visible = true;
+            //if (niChatAlert != null) niChatAlert.Visible = true;
 
 
             // 3주차 5-C: 대화 기록 로드
@@ -76,6 +76,28 @@ namespace kyg
             this.btnEmojiCrying.Click += btnEmojiCrying_Click;
             this.btnEmojiHeart.Click += btnEmojiHeart_Click;
             this.FormClosing += ChatForm_FormClosing;
+
+            // 폼이 로드되어 모든 컨트롤의 크기가 확정된 후, 둥근 모서리 적용
+            this.Load += ChatForm_Load;
+        }
+
+        private void ChatForm_Load(object sender, EventArgs e)
+        {
+            // 둥근 모서리만 수동으로 적용합니다. (반지름: 15)
+            const int radius = 15;
+
+            // RichTextBox 및 TextBox 모서리 적용
+            ChatFormUIHelper.ApplyRoundCorners(rtbChatLog, radius);
+            ChatFormUIHelper.ApplyRoundCorners(txtInput, radius);
+            ChatFormUIHelper.ApplyRoundCorners(txtSearch, radius);
+
+            // 버튼 모서리 적용
+            ChatFormUIHelper.ApplyRoundCorners(btnSend, radius);
+            ChatFormUIHelper.ApplyRoundCorners(btnSearch, radius);
+            ChatFormUIHelper.ApplyRoundCorners(btnSendFile, radius);
+            ChatFormUIHelper.ApplyRoundCorners(btnEmojiSmiley, radius);
+            ChatFormUIHelper.ApplyRoundCorners(btnEmojiCrying, radius);
+            ChatFormUIHelper.ApplyRoundCorners(btnEmojiHeart, radius);
         }
 
         private void LoadEmojisFromDirectory()
