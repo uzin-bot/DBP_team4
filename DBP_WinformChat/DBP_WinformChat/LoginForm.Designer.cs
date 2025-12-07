@@ -111,6 +111,7 @@ namespace leehaeun
             ResumeLayout(false);
             PerformLayout();
         }
+       
 
         #endregion
         private TextBox PwBox;

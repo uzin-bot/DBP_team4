@@ -11,6 +11,12 @@ namespace leehaeun
         {
             InitializeComponent();
             LoginFormUIHelper.ApplyStyles(this);
+            this.Load += LoginForm_Load;
+        }
+
+        // Form Load 이벤트 핸들러 - 자동 로그인 처리
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
             if (LoadConfig()) Login();
         }
 

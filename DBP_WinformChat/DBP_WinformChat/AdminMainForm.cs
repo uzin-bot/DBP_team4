@@ -503,19 +503,25 @@ namespace DBPAdmin
             int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
 
             var searchCard = AdminUIHelper.CreateCard(cardX, 70, cardWidth, 60);
-            var txtSearch = AdminUIHelper.CreateTextBox(15, 18, 400, 25, "txtUserSearch", "이름 또는 ID 검색...");
-            var cboDept = AdminUIHelper.CreateComboBox(430, 18, 200, 25, "cboDeptFilter");
-            LoadDepartmentComboForFilter(cboDept);
+            var txtSearch = AdminUIHelper.CreateTextBox(15, 18, 840, 25, "txtUserSearch", "이름 또는 ID 검색...");
 
-            var btnSearch = AdminUIHelper.CreateBlueButton("검색", 650, 13, 80, 35);
+            var btnSearch = AdminUIHelper.CreateBlueButton("검색", 870, 13, 80, 35);
             btnSearch.Click += (s, e) =>
             {
-                string deptId = (cboDept.SelectedItem as ComboBoxItem)?.Value;
-                LoadUserData(txtSearch.Text, deptId);
+                LoadUserData(txtSearch.Text, null);
+            };
+            
+            // 검색어 입력 시 엔터키로 검색
+            txtSearch.KeyPress += (s, e) =>
+            {
+                if (e.KeyChar == (char)Keys.Enter)
+                {
+                    LoadUserData(txtSearch.Text, null);
+                    e.Handled = true;
+                }
             };
 
             searchCard.Controls.Add(txtSearch);
-            searchCard.Controls.Add(cboDept);
             searchCard.Controls.Add(btnSearch);
             pnlContent.Controls.Add(searchCard);
 
@@ -555,47 +561,14 @@ namespace DBPAdmin
             LoadUserData("", null);
         }
 
-        private void LoadDepartmentComboForFilter(ComboBox cbo)
-        {
-            cbo.Items.Clear();
-            cbo.Items.Add(new ComboBoxItem { Text = "전체 부서/팀", Value = "0" });
-
-            try
-            {
-                // 계층 구조 표시
-                string sql = @"
-                    SELECT d.DeptId, 
-                           CASE 
-                               WHEN d.ParentDeptId IS NULL THEN d.DeptName
-                               ELSE CONCAT(p.DeptName, ' > ', d.DeptName)
-                           END AS FullPath
-                    FROM Department d
-                    LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
-                    ORDER BY IFNULL(p.DeptId, d.DeptId), d.ParentDeptId IS NULL DESC, d.DeptName";
-
-                var dt = db.Query(sql);
-                foreach (DataRow row in dt.Rows)
-                {
-                    cbo.Items.Add(new ComboBoxItem
-                    {
-                        Text = row["FullPath"].ToString(),
-                        Value = row["DeptId"].ToString()
-                    });
-                }
-
-                cbo.DisplayMember = "Text";
-                cbo.ValueMember = "Value";
-                cbo.SelectedIndex = 0;
-            }
-            catch { }
-        }
-
         private void LoadUserData(string searchKeyword, string deptId)
         {
             var dgv = pnlContent.Controls.Find("dgvUsers", true).FirstOrDefault() as DataGridView;
             if (dgv == null) return;
 
             dgv.Rows.Clear();
+
+            Console.WriteLine($"[사용자 관리] LoadUserData 호출 - 검색어: '{searchKeyword}', 부서ID: '{deptId ?? "전체"}'");
 
             // 닉네임을 User 테이블이 아닌 Profile 테이블에서 가져오도록 LEFT JOIN 추가
             string sql = $@"
@@ -611,9 +584,15 @@ namespace DBPAdmin
         LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
         WHERE u.Role = 'user' AND (u.Name LIKE '%{searchKeyword}%' OR u.LoginId LIKE '%{searchKeyword}%')";
 
+            // deptId 필터링 추가
             if (!string.IsNullOrEmpty(deptId) && deptId != "0")
             {
                 sql += $" AND u.DeptId = {deptId}";
+                Console.WriteLine($"[사용자 관리] 부서 필터 적용: DeptId = {deptId}");
+            }
+            else
+            {
+                Console.WriteLine("[사용자 관리] 부서 필터 없음 (전체 표시)");
             }
 
             sql += " ORDER BY u.Name";
@@ -621,6 +600,8 @@ namespace DBPAdmin
             try
             {
                 var dt = db.Query(sql);
+                Console.WriteLine($"[사용자 관리] 조회된 사용자 수: {dt.Rows.Count}명");
+                
                 foreach (DataRow row in dt.Rows)
                 {
                     dgv.Rows.Add(
@@ -632,9 +613,12 @@ namespace DBPAdmin
                         row["DeptId"] == DBNull.Value ? null : row["DeptId"]
                     );
                 }
+                
+                Console.WriteLine($"[사용자 관리] DataGridView에 {dgv.Rows.Count}개 행 추가됨");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[사용자 관리 ERROR] {ex.Message}");
                 MessageBox.Show($"사용자 목록 로드 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
