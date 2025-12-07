@@ -165,7 +165,7 @@ namespace leehaeun.UIHelpers
             }
 
             bool isReadOnly = textBox.Name == "ZipCodeBox" || textBox.Name == "AddressBox";
-            textBox.BackColor = isReadOnly ? ColorSchemes.LightOlive : Color.White;
+            textBox.BackColor = isReadOnly ? ColorSchemes.LightOlive : ColorSchemes.White;
             textBox.ReadOnly = isReadOnly;
             textBox.Cursor = isReadOnly ? Cursors.Default : Cursors.IBeam;
             textBox.TabStop = !isReadOnly;
@@ -188,7 +188,7 @@ namespace leehaeun.UIHelpers
             {
                 Size = new Size(targetWidth, 38),
                 Location = textBox.Location,
-                BackColor = isReadOnly ? ColorSchemes.LightOlive : Color.White,
+                BackColor = isReadOnly ? ColorSchemes.LightOlive : ColorSchemes.White,
                 Tag = textBox.Name,
                 Cursor = isReadOnly ? Cursors.Default : Cursors.IBeam
             };
@@ -261,7 +261,7 @@ namespace leehaeun.UIHelpers
             {
                 Size = new Size(210, 38), // 220 → 210
                 Location = comboBox.Location,
-                BackColor = Color.White,
+                BackColor = ColorSchemes.White,
                 Tag = comboBox.Name,
                 Cursor = Cursors.Hand
             };
@@ -317,7 +317,7 @@ namespace leehaeun.UIHelpers
             EventHandler showMenu = (s, e) =>
             {
                 ContextMenuStrip menu = new ContextMenuStrip();
-                menu.BackColor = Color.White;
+                menu.BackColor = ColorSchemes.White;
                 menu.Font = new Font("맑은 고딕", 10F);
                 menu.Renderer = new CustomMenuRenderer();
                 menu.ShowImageMargin = false;
@@ -407,7 +407,7 @@ namespace leehaeun.UIHelpers
                 else
                 {
                     // 기본 배경
-                    using (SolidBrush brush = new SolidBrush(Color.White))
+                    using (SolidBrush brush = new SolidBrush(ColorSchemes.White))
                     {
                         e.Graphics.FillRectangle(brush, new Rectangle(0, 0, e.Item.Width, e.Item.Height));
                     }
@@ -458,10 +458,10 @@ namespace leehaeun.UIHelpers
             public override Color MenuItemSelectedGradientEnd => ColorSchemes.LightOlive;
             public override Color MenuItemBorder => Color.Transparent;
             public override Color MenuBorder => ColorSchemes.SageGreen;
-            public override Color ImageMarginGradientBegin => Color.White;
-            public override Color ImageMarginGradientMiddle => Color.White;
-            public override Color ImageMarginGradientEnd => Color.White;
-            public override Color ToolStripDropDownBackground => Color.White;
+            public override Color ImageMarginGradientBegin => ColorSchemes.White;
+            public override Color ImageMarginGradientMiddle => ColorSchemes.White;
+            public override Color ImageMarginGradientEnd => ColorSchemes.White;
+            public override Color ToolStripDropDownBackground => ColorSchemes.White;
         }
 
         /// <summary>
@@ -470,7 +470,7 @@ namespace leehaeun.UIHelpers
         private static void StyleButton(Button button)
         {
             button.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
-            button.ForeColor = Color.White;
+            button.ForeColor = ColorSchemes.White;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
             button.FlatAppearance.MouseDownBackColor = ColorSchemes.DarkOlive; // 클릭 시 색상
@@ -548,7 +548,7 @@ namespace leehaeun.UIHelpers
                 {
                     Size = new Size(100, 100),
                     Location = pictureBox.Location,
-                    BackColor = Color.White,
+                    BackColor = ColorSchemes.White,
                     Tag = "ProfileBg"
                 };
 
@@ -588,7 +588,7 @@ namespace leehaeun.UIHelpers
         {
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
-            button.BackColor = Color.White;
+            button.BackColor = ColorSchemes.White;
             button.Cursor = Cursors.Hand;
             button.Size = new Size(36, 36);
 

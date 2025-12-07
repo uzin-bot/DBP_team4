@@ -153,7 +153,7 @@ namespace leehaeun.UIHelpers
                     bgPath.AddLine(w, 0, 1, 0);
                     bgPath.CloseFigure();
 
-                    using (SolidBrush bgBrush = new SolidBrush(Color.White))
+                    using (SolidBrush bgBrush = new SolidBrush(ColorSchemes.White))
                     {
                         g.FillPath(bgBrush, bgPath);
                     }
@@ -179,7 +179,7 @@ namespace leehaeun.UIHelpers
                     Name = "customPage" + i,
                     Location = new Point(20, 20),
                     Size = new Size(contentBox.Width - 40, contentBox.Height - 40),
-                    BackColor = Color.White,
+                    BackColor = ColorSchemes.White,
                     Visible = (i == 0),
                     AutoScroll = false
                 };
@@ -254,7 +254,7 @@ namespace leehaeun.UIHelpers
                         bgPath.AddLine(1, btn.Height, 1, r + 1);
                         bgPath.CloseFigure();
 
-                        using (SolidBrush brush = new SolidBrush(isSelected ? Color.White : ColorSchemes.Ivory))
+                        using (SolidBrush brush = new SolidBrush(isSelected ? ColorSchemes.White : ColorSchemes.Ivory))
                         {
                             g.FillPath(brush, bgPath);
                         }
@@ -490,7 +490,7 @@ namespace leehaeun.UIHelpers
             }
 
             bool isReadOnly = textBox.ReadOnly;
-            textBox.BackColor = isReadOnly ? ColorSchemes.LightOlive : Color.White;
+            textBox.BackColor = isReadOnly ? ColorSchemes.LightOlive : ColorSchemes.White;
             textBox.Cursor = isReadOnly ? Cursors.Default : Cursors.IBeam;
             textBox.TabStop = !isReadOnly;
 
@@ -604,7 +604,7 @@ namespace leehaeun.UIHelpers
             else
             {
                 button.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
-                button.ForeColor = Color.White;
+                button.ForeColor = ColorSchemes.White;
                 button.FlatStyle = FlatStyle.Flat;
                 button.FlatAppearance.BorderSize = 0;
                 button.FlatAppearance.MouseDownBackColor = ColorSchemes.DarkOlive;
@@ -657,7 +657,7 @@ namespace leehaeun.UIHelpers
                 {
                     Size = new Size(100, 100),
                     Location = pictureBox.Location,
-                    BackColor = Color.White,
+                    BackColor = ColorSchemes.White,
                     Tag = "ProfileBg"
                 };
 
@@ -712,7 +712,7 @@ namespace leehaeun.UIHelpers
         {
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
-            button.BackColor = Color.White;
+            button.BackColor = ColorSchemes.White;
             button.Cursor = Cursors.Hand;
             button.Size = new Size(36, 36);
 
@@ -764,8 +764,8 @@ namespace leehaeun.UIHelpers
                 }
             };
 
-            button.MouseEnter += (s, e) => button.BackColor = Color.White;
-            button.MouseLeave += (s, e) => button.BackColor = Color.White;
+            button.MouseEnter += (s, e) => button.BackColor = ColorSchemes.White;
+            button.MouseLeave += (s, e) => button.BackColor = ColorSchemes.White;
         }
 
         private static void AdjustLayout(Form form)
@@ -884,7 +884,7 @@ namespace leehaeun.UIHelpers
                     {
                         Location = new Point(centerX, startY + 275),
                         Size = new Size(320, 130),
-                        BackColor = Color.White,
+                        BackColor = ColorSchemes.White,
                         Name = "MemberFLPBorder"
                     };
 
@@ -904,7 +904,7 @@ namespace leehaeun.UIHelpers
                             bgPath.AddArc(0, h - radius * 2, radius * 2, radius * 2, 90, 90);
                             bgPath.CloseFigure();
 
-                            using (SolidBrush bgBrush = new SolidBrush(Color.White))
+                            using (SolidBrush bgBrush = new SolidBrush(ColorSchemes.White))
                             {
                                 e.Graphics.FillPath(bgBrush, bgPath);
                             }
@@ -927,7 +927,7 @@ namespace leehaeun.UIHelpers
 
                     flp.Location = new Point(4, 4);
                     flp.Size = new Size(312, 122);
-                    flp.BackColor = Color.White;
+                    flp.BackColor = ColorSchemes.White;
                     flp.FlowDirection = FlowDirection.TopDown;
                     flp.WrapContents = false;
                     flp.Padding = new Padding(5, 5, 5, 5);
@@ -954,7 +954,7 @@ namespace leehaeun.UIHelpers
                     {
                         Location = new Point(300, 2),
                         Size = new Size(16, 126),
-                        BackColor = Color.White,
+                        BackColor = ColorSchemes.White,
                         Name = "ScrollCover"
                     };
                     borderPanel.Controls.Add(scrollCover);
@@ -1003,7 +1003,7 @@ namespace leehaeun.UIHelpers
                 {
                     control.Location = new Point(centerX - 5, startY + 100);
                     control.Size = new Size(355, 355);
-                    control.BackColor = Color.White;
+                    control.BackColor = ColorSchemes.White;
 
                     if (control is FlowLayoutPanel flp)
                     {
@@ -1114,7 +1114,7 @@ namespace leehaeun.UIHelpers
         {
             if (control is Panel panel)
             {
-                panel.BackColor = Color.White;
+                panel.BackColor = ColorSchemes.White;
                 panel.Margin = new Padding(0, 0, 0, 8);
 
                 if (parentName == "ProfileFLP")

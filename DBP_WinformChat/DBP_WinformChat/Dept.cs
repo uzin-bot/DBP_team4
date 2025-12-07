@@ -1,12 +1,14 @@
 ﻿using DBP_WinformChat;
 using kyg;
 using leehaeun;
+using leehaeun.Themes;
 using MySqlConnector;
 using System;
 using System.Data;
 using System.Data.Common;
 using System.Windows.Forms;
 using 남예솔;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace DBP_Chat
 {
@@ -251,6 +253,39 @@ namespace DBP_Chat
         {
             EditInfoForm editForm = new EditInfoForm();
             editForm.ShowDialog();
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton1.Checked)
+            {
+                // 다크 모드
+                ColorSchemes.IsDarkMode = true;
+            }
+            else
+            {
+                // 라이트 모드
+                ColorSchemes.IsDarkMode = false;
+            }
+
+            RefreshAllForms();
+        }
+
+        private void RefreshAllForms()
+        {
+            // 현재 폼 새로고침
+            this.Invalidate(true);
+            this.Refresh();
+
+            // 열려있는 모든 폼 새로고침
+            foreach (Form form in Application.OpenForms)
+            {
+                if (form != this)
+                {
+                    form.Invalidate(true);
+                    form.Refresh();
+                }
+            }
         }
     }
 }

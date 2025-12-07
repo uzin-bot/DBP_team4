@@ -115,7 +115,7 @@ namespace leehaeun.UIHelpers
         private static void StyleScrollPanel(Panel panel)
         {
             panel.BorderStyle = BorderStyle.None;
-            panel.BackColor = Color.White;
+            panel.BackColor = ColorSchemes.White;
             panel.AutoScroll = true;
 
             int wrapperWidth = 440;
@@ -125,7 +125,7 @@ namespace leehaeun.UIHelpers
             {
                 Size = new Size(wrapperWidth, wrapperHeight),
                 Location = panel.Location,
-                BackColor = Color.White,
+                BackColor = ColorSchemes.White,
                 Tag = "UserScrollPanelWrapper"
             };
 
@@ -157,7 +157,7 @@ namespace leehaeun.UIHelpers
             // 스크롤바 가리기용 흰색 패널
             Panel scrollCover = new Panel
             {
-                BackColor = Color.White,
+                BackColor = ColorSchemes.White,
                 Size = new Size(20, wrapperHeight - 8),
                 Location = new Point(wrapperWidth - 24, 4)
             };
@@ -174,7 +174,7 @@ namespace leehaeun.UIHelpers
             {
                 Width = 398,
                 Height = 50,
-                BackColor = Color.White,
+                BackColor = ColorSchemes.White,
                 Margin = new Padding(0, 0, 0, 0),
                 Tag = userId
             };
@@ -216,7 +216,7 @@ namespace leehaeun.UIHelpers
                             e.Graphics.FillPath(fillBrush, checkPath);
                         }
 
-                        using (Pen checkPen = new Pen(Color.White, 2.5f))
+                        using (Pen checkPen = new Pen(ColorSchemes.White, 2.5f))
                         {
                             checkPen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
                             checkPen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
@@ -226,7 +226,7 @@ namespace leehaeun.UIHelpers
                     }
                     else
                     {
-                        using (SolidBrush bgBrush = new SolidBrush(Color.White))
+                        using (SolidBrush bgBrush = new SolidBrush(ColorSchemes.White))
                         {
                             e.Graphics.FillPath(bgBrush, checkPath);
                         }
@@ -381,7 +381,7 @@ namespace leehaeun.UIHelpers
         private static void StyleButton(Button button)
         {
             button.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
-            button.ForeColor = Color.White;
+            button.ForeColor = ColorSchemes.White;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
             button.FlatAppearance.MouseDownBackColor = ColorSchemes.DarkOlive;

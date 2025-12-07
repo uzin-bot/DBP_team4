@@ -149,7 +149,7 @@ namespace leehaeun.UIHelpers
         {
             textBox.BorderStyle = BorderStyle.None;
             textBox.Font = new Font("맑은 고딕", 10F);
-            textBox.BackColor = Color.White;
+            textBox.BackColor = ColorSchemes.White;
 
             string placeHolder = "";
             bool isPasswordBox = false;
@@ -225,7 +225,7 @@ namespace leehaeun.UIHelpers
             {
                 Size = new Size(230, 45),
                 Location = textBox.Location,
-                BackColor = Color.White,
+                BackColor = ColorSchemes.White,
                 Tag = textBox.Name
             };
 
@@ -262,7 +262,7 @@ namespace leehaeun.UIHelpers
         {
             button.Font = new Font("맑은 고딕", 11F, FontStyle.Bold);
             button.BackColor = ColorSchemes.SageGreen;
-            button.ForeColor = Color.White;
+            button.ForeColor = ColorSchemes.White;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
             button.Height = 50;
@@ -322,7 +322,7 @@ namespace leehaeun.UIHelpers
                 }
                 else
                 {
-                    bgColor = cb.Checked ? ColorSchemes.SageGreen : Color.White;
+                    bgColor = cb.Checked ? ColorSchemes.SageGreen : ColorSchemes.White;
                 }
 
                 // 둥근 네모 그리기
@@ -341,7 +341,7 @@ namespace leehaeun.UIHelpers
                 // 체크 표시
                 if (cb.Checked)
                 {
-                    using (Pen pen = new Pen(Color.White, 2f))
+                    using (Pen pen = new Pen(ColorSchemes.White, 2f))
                     {
                         pen.StartCap = LineCap.Round;
                         pen.EndCap = LineCap.Round;
