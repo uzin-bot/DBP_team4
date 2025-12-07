@@ -28,6 +28,11 @@ namespace kyg
         private bool isSending = false; // 중복 전송 방지 플래그
         private DateTime lastEmojiSendTime = DateTime.MinValue; // 이모지 마지막 전송 시간
 
+        // 문서3에만 있음 - 클래스 필드 선언부
+        private bool isDownloading = false;
+        private long remainingBytes = 0;
+        private FileStream fileStream = null;
+
         private ResourceManager formResourceManager; // 폼 리소스 접근용
         private Dictionary<string, Image> emojiMap = new Dictionary<string, Image>(); // 5-E: 이모티콘 맵
         private PermissionManager permissionManager; // 어드민 추가
@@ -68,13 +73,13 @@ namespace kyg
             // 5-E: 이모지 맵 초기화 (Resources 폴더 직접 참조)
             LoadEmojisFromDirectory();
 
-            if (niChatAlert != null) niChatAlert.Visible = true;
-
-            // 3주차 5-C: 대화 기록 로드
-            LoadChatHistory();
+            //if (niChatAlert != null) niChatAlert.Visible = true;
 
             // 2주차 5-A: 서버 연결
             ConnectToServer();
+
+            // 3주차 5-C: 대화 기록 로드
+            LoadChatHistory();
 
             // 이벤트 핸들러 연결
             this.btnSendFile.Click += btnSendFile_Click;
@@ -343,6 +348,7 @@ namespace kyg
             }
         }
 
+        /*
         private void ReceiveMessages()
         {
             // 2주차 5-A & 3주차 5-B: 메시지 수신 및 알림 로직
@@ -510,6 +516,173 @@ namespace kyg
                 client?.Close();
             });
             */
+        //}
+
+        private void ReceiveMessages()
+        {
+            byte[] buffer = new byte[8192];
+            StringBuilder messageBuilder = new StringBuilder();
+
+            while (client != null && client.Connected)
+            {
+                try
+                {
+                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                    if (bytesRead == 0) break;
+
+                    // [1] 파일 다운로드 모드 (바이너리 데이터 처리)
+                    if (isDownloading && fileStream != null)
+                    {
+                        int writeSize = (int)Math.Min(bytesRead, remainingBytes);
+                        fileStream.Write(buffer, 0, writeSize);
+                        remainingBytes -= writeSize;
+
+                        if (remainingBytes <= 0)
+                        {
+                            fileStream.Flush();
+                            fileStream.Close();
+                            fileStream = null;
+                            isDownloading = false;
+                            this.Invoke((MethodInvoker)delegate {
+                                MessageBox.Show("다운로드가 완료되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            });
+                        }
+                        continue;
+                    }
+
+                    // [2] 텍스트 메시지 처리
+                    string received = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    messageBuilder.Append(received);
+                    string fullMessage = messageBuilder.ToString();
+                    string[] messages = fullMessage.Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    bool lastMessageComplete = fullMessage.EndsWith("\0");
+                    int messagesToProcess = lastMessageComplete ? messages.Length : messages.Length - 1;
+
+                    for (int i = 0; i < messagesToProcess; i++)
+                    {
+                        string msg = messages[i].Trim();
+
+                        // ▼▼▼ [핵심 수정] 5가 아니라 4로 변경해야 내용이 안 잘립니다! ▼▼▼
+                        // 구조: TYPE : Sender : Receiver : Content(나머지 전체)
+                        string[] parts = msg.Split(new char[] { ':' }, 4);
+
+                        if (parts.Length < 1) continue;
+                        string type = parts[0];
+
+                        // [A] 파일 응답 헤더 처리 (FILE_RESP)
+                        // 서버 전송 포맷: FILE_RESP:SERVER:ReqID:FileName:Size
+                        // Split(4)를 했으므로 parts[3]에 "FileName:Size"가 들어있음
+                        if (type == "FILE_RESP" && parts.Length >= 4)
+                        {
+                            string filePayload = parts[3]; // "파일명:크기"
+                            int lastColonIndex = filePayload.LastIndexOf(':');
+
+                            if (lastColonIndex != -1)
+                            {
+                                string sizeStr = filePayload.Substring(lastColonIndex + 1);
+                                if (long.TryParse(sizeStr, out long size))
+                                {
+                                    remainingBytes = size;
+                                    isDownloading = true;
+                                    continue;
+                                }
+                            }
+                        }
+                        // [B] 채팅 및 알림 처리 (CHAT)
+                        else if (type == "CHAT" && parts.Length >= 4)
+                        {
+                            int senderId = Convert.ToInt32(parts[1]);
+                            string content = parts[3]; // 이제 잘리지 않은 전체 내용이 들어옵니다.
+
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                if (this.IsDisposed) return;
+                                string currentTime = DateTime.Now.ToString("tt hh:mm");
+
+                                // 파일 도착 알림 확인
+                                if (content.StartsWith("FILE_RECEIVED:"))
+                                {
+                                    try
+                                    {
+                                        // 내용 파싱: FILE_RECEIVED : 파일명 : 경로
+                                        string[] fileInfo = content.Split(new char[] { ':' }, 3);
+                                        string fileName = fileInfo.Length > 1 ? fileInfo[1] : "unknown";
+
+                                        DialogResult dr = MessageBox.Show(
+                                            $"'{senderId}'님이 '{fileName}' 파일을 보냈습니다.\n다운로드 하시겠습니까?",
+                                            "파일 수신", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                                        if (dr == DialogResult.Yes)
+                                        {
+                                            SaveFileDialog sfd = new SaveFileDialog();
+                                            sfd.FileName = fileName;
+                                            sfd.Filter = "All Files (*.*)|*.*";
+
+                                            if (sfd.ShowDialog(this) == DialogResult.OK)
+                                            {
+                                                fileStream = new FileStream(sfd.FileName, FileMode.Create, FileAccess.Write);
+
+                                                string reqMsg = $"FILE_DOWNLOAD_REQ:{myId}:{fileName}";
+                                                byte[] reqData = Encoding.UTF8.GetBytes(reqMsg);
+                                                stream.Write(reqData, 0, reqData.Length);
+                                                stream.Flush();
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show("오류: " + ex.Message);
+                                    }
+
+                                    // 채팅창에는 알림 문구만 출력
+                                    DisplayMessage($"[{senderId}]: 파일이 도착했습니다 ({content.Split(':')[1]})", false, currentTime);
+                                }
+                                else if (content.StartsWith("EMOJI:"))
+                                {
+                                    DisplayEmoji(senderId, content.Substring(6), currentTime);
+                                }
+                                else
+                                {
+                                    DisplayMessage($"[{senderId}]: {content}", false, currentTime);
+                                }
+
+                                if (CanMarkAsRead()) MarkMessagesAsRead();
+                            });
+                        }
+                        else if (parts[0] == "READ_CONFIRM" && parts.Length >= 3)
+                        {
+                            int readerId = Convert.ToInt32(parts[1]); // 읽은 사람
+                            int senderId = Convert.ToInt32(parts[2]); // 보낸 사람
+
+                            Console.WriteLine($"[ChatForm] READ_CONFIRM 수신 - readerId: {readerId}, senderId: {senderId}, myId: {myId}, partnerId: {partnerId}");
+
+                            // 내가 보낸 메시지를 상대방이 읽었을 때만
+                            if (senderId == myId && readerId == partnerId)
+                            {
+                                this.Invoke((MethodInvoker)delegate
+                                {
+                                    if (this.IsDisposed) return;
+
+                                    Console.WriteLine($"[ChatForm] 화면 갱신 시작");
+
+                                    // 화면 전체 다시 로드
+                                    rtbChatLog.Clear();
+                                    LoadChatHistory();
+                                });
+                            }
+                        }
+                    }
+
+                    if (!lastMessageComplete && messages.Length > 0)
+                    {
+                        messageBuilder.Clear();
+                        messageBuilder.Append(messages[messages.Length - 1]);
+                    }
+                    else { messageBuilder.Clear(); }
+                }
+                catch (Exception ex) { Console.WriteLine(ex.Message); break; }
+            }
         }
 
         private void DisplayMessage(string message, bool isMine, string timeString)
@@ -672,7 +845,44 @@ namespace kyg
 
         private void ChatForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            client?.Close();
+            //client?.Close();
+
+            try
+            {
+                // ChatMessage 업데이트
+                string queryChatMessage = $@"
+            UPDATE ChatMessage 
+            SET IsRead = 1 
+            WHERE FromUserId = {partnerId} 
+            AND ToUserId = {myId} 
+            AND IsRead = 0";
+
+                int updatedCount = DBconnector.GetInstance().NonQuery(queryChatMessage);
+
+                // RecentChat 업데이트
+                string queryRecentChat = $@"
+            UPDATE RecentChat
+            SET UnreadCount = 0
+            WHERE UserId = {myId}
+            AND PartnerUserId = {partnerId}";
+
+                DBconnector.GetInstance().NonQuery(queryRecentChat);
+
+                // READ_CONFIRM 전송
+                if (updatedCount > 0 && client != null && client.Connected)
+                {
+                    string confirmMsg = $"READ_CONFIRM:{myId}:{partnerId}::";
+                    byte[] data = Encoding.UTF8.GetBytes(confirmMsg);
+                    stream.Write(data, 0, data.Length);
+                    stream.Flush();
+                    Thread.Sleep(500);
+                }
+            }
+            catch { }
+            finally
+            {
+                client?.Close();
+            }
         }
 
         // 상대방이 나한테 보낸 안 읽은 메시지를 읽음 처리 (디비에)
@@ -689,6 +899,7 @@ namespace kyg
 
                 int updatedCount = DBconnector.GetInstance().NonQuery(query);
 
+                /*
                 if (updatedCount > 0)
                 {
                     // ✅ 0.5초 후에 READ_CONFIRM 전송
@@ -696,6 +907,19 @@ namespace kyg
                     {
                         SendReadConfirm();
                     });
+                }
+                */
+
+                if (updatedCount > 0)
+                {
+                    string updateRecent = $@"
+                        UPDATE RecentChat
+                        SET UnreadCount = 0
+                        WHERE UserId = {myId}
+                        AND PartnerUserId = {partnerId}";
+
+                    DBconnector.GetInstance().NonQuery(updateRecent);
+                    SendReadConfirm();
                 }
 
                 Console.WriteLine($"[ChatForm] {partnerId}로부터 받은 메시지 읽음 처리 완료");
