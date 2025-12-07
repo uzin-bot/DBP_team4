@@ -5,23 +5,27 @@ using System.Text.Json;
 namespace leehaeun
 {
     public partial class SearchAddressForm : Form
-    {
-        public SearchAddressForm()
         {
-            InitializeComponent();
-            SearchAddressFormUIHelper.ApplyStyles(this);
-            ResultBox.DoubleClick += ResultBox_DoubleClick;
-        }
+            private readonly HttpClient client = new HttpClient();
+            private string serviceKey = "devU01TX0FVVEgyMDI1MTEyMzIwMzYxMDExNjQ4NDU=";
+            public string selectedAddress, selectedZipCode;
 
-        private readonly HttpClient client = new HttpClient();
-        private string serviceKey = "devU01TX0FVVEgyMDI1MTEyMzIwMzYxMDExNjQ4NDU=";
-        public string selectedAddress, selectedZipCode;
-
-        private async void SearchButton_Click(object sender, EventArgs e)
-        {
-            string keyword = AddressBox.Text.Trim();
-            await SearchingAddress(keyword);
-        }
+            public SearchAddressForm()
+            {
+                InitializeComponent();
+                SearchAddressFormUIHelper.ApplyStyles(this);
+                
+                // AddressBox에서 Enter키 입력 시 검색
+                AddressBox.KeyDown += async (s, e) =>
+                {
+                    if (e.KeyCode == Keys.Return)
+                    {
+                        e.SuppressKeyPress = true;
+                        string keyword = AddressBox.Text.Trim();
+                        await SearchingAddress(keyword);
+                    }
+                };
+            }
 
         private async Task SearchingAddress(string keyword)
         {
@@ -75,7 +79,7 @@ namespace leehaeun
             }
         }
 
-        private void ResultBox_DoubleClick(object sender, EventArgs e)
+        private void SelectButton_Click(object sender, EventArgs e)
         {
             if (ResultBox.SelectedItem == null) return;
 

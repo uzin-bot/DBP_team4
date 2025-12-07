@@ -17,7 +17,7 @@ namespace leehaeun.UIHelpers
         public static void ApplyStyles(SearchAddressForm form)
         {
             form.BackColor = ColorSchemes.Ivory;
-            form.Size = new Size(600, 400);
+            form.Size = new Size(600, 470);
             form.StartPosition = FormStartPosition.CenterParent;
             form.FormBorderStyle = FormBorderStyle.None;
 
@@ -323,16 +323,6 @@ namespace leehaeun.UIHelpers
             {
                 listBox.Invalidate();
             };
-
-            // 마우스 클릭으로 선택 취소 가능
-            listBox.MouseClick += (s, e) =>
-            {
-                int index = listBox.IndexFromPoint(e.Location);
-                if (index != ListBox.NoMatches && index == listBox.SelectedIndex)
-                {
-                    listBox.ClearSelected();
-                }
-            };
         }
 
         /// <summary>
@@ -340,44 +330,41 @@ namespace leehaeun.UIHelpers
         /// </summary>
         private static void ReconnectEvents(SearchAddressForm form)
         {
-            // ListBox 찾기
-            ListBox listBox = FindListBox(form);
-            if (listBox != null && listBox.Name == "ResultBox")
+            // SelectButton 찾기
+            Button selectButton = FindButtonByName(form, "SelectButton");
+            if (selectButton != null)
             {
-                // 더블클릭 이벤트 연결
-                listBox.DoubleClick += (s, e) =>
+                // SelectButton 클릭 이벤트 연결
+                selectButton.Click += (s, e) =>
                 {
-                    if (listBox.SelectedItem != null)
-                    {
-                        // SearchAddressForm의 ResultBox_DoubleClick 메서드 호출
-                        var method = form.GetType().GetMethod("ResultBox_DoubleClick",
-                            System.Reflection.BindingFlags.NonPublic |
-                            System.Reflection.BindingFlags.Instance |
-                            System.Reflection.BindingFlags.Public);
+                    // SearchAddressForm의 SelectButton_Click 메서드 호출
+                    var method = form.GetType().GetMethod("SelectButton_Click",
+                        System.Reflection.BindingFlags.NonPublic |
+                        System.Reflection.BindingFlags.Instance |
+                        System.Reflection.BindingFlags.Public);
 
-                        if (method != null)
-                        {
-                            method.Invoke(form, new object[] { s, e });
-                        }
+                    if (method != null)
+                    {
+                        method.Invoke(form, new object[] { s, e });
                     }
                 };
             }
         }
 
         /// <summary>
-        /// ListBox 찾기
+        /// 이름으로 Button 찾기
         /// </summary>
-        private static ListBox FindListBox(Control parent)
+        private static Button FindButtonByName(Control parent, string name)
         {
             foreach (Control control in parent.Controls)
             {
-                if (control is ListBox lb)
+                if (control is Button btn && btn.Name == name)
                 {
-                    return lb;
+                    return btn;
                 }
                 else if (control is Panel panel)
                 {
-                    ListBox found = FindListBox(panel);
+                    Button found = FindButtonByName(panel, name);
                     if (found != null) return found;
                 }
             }
@@ -392,11 +379,10 @@ namespace leehaeun.UIHelpers
             int leftMargin = 30;
             int rightMargin = 30;
             int topMargin = 60;
-            int spacing = 20;
+            int spacing = 15;
+            int buttonHeight = 40;
 
             int availableWidth = form.Width - leftMargin - rightMargin;
-            int textBoxWidth = availableWidth - 100;
-            int buttonWidth = 90;
 
             foreach (Control control in form.Controls)
             {
@@ -405,18 +391,24 @@ namespace leehaeun.UIHelpers
                     if (wrapper.Tag.ToString() == "AddressBox")
                     {
                         wrapper.Location = new Point(leftMargin, topMargin);
-                        wrapper.Width = textBoxWidth;
+                        wrapper.Width = availableWidth;
                     }
                     else if (wrapper.Tag.ToString() == "ResultBox")
                     {
-                        wrapper.Location = new Point(leftMargin, topMargin + 38 + spacing);
+                        wrapper.Location = new Point(leftMargin, topMargin + buttonHeight + spacing);
                         wrapper.Size = new Size(availableWidth, 212);
                     }
                 }
                 else if (control is Button btn && btn.Name == "SearchButton")
                 {
-                    btn.Location = new Point(leftMargin + textBoxWidth + 10, topMargin);
-                    btn.Width = buttonWidth;
+                    // SearchButton을 AddressBox 라벨로 변경
+                    btn.Visible = false;
+                }
+                else if (control is Button btn2 && btn2.Name == "SelectButton")
+                {
+                    btn2.Location = new Point(leftMargin, topMargin + buttonHeight + spacing + 212 + spacing);
+                    btn2.Width = availableWidth;
+                    btn2.Height = buttonHeight;
                 }
             }
         }

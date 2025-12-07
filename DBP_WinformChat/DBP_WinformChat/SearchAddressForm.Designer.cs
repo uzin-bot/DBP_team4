@@ -33,27 +33,17 @@ namespace leehaeun
         private void InitializeComponent()
         {
             AddressBox = new TextBox();
-            SearchButton = new Button();
             ResultBox = new ListBox();
+            SelectButton = new Button();
             SuspendLayout();
             // 
             // AddressBox
             // 
             AddressBox.Location = new Point(45, 44);
             AddressBox.Name = "AddressBox";
-            AddressBox.Size = new Size(406, 23);
+            AddressBox.Size = new Size(515, 23);
             AddressBox.TabIndex = 0;
             AddressBox.Text = "주소 입력";
-            // 
-            // SearchButton
-            // 
-            SearchButton.Location = new Point(486, 44);
-            SearchButton.Name = "SearchButton";
-            SearchButton.Size = new Size(75, 23);
-            SearchButton.TabIndex = 1;
-            SearchButton.Text = "검색";
-            SearchButton.UseVisualStyleBackColor = true;
-            SearchButton.Click += SearchButton_Click;
             // 
             // ResultBox
             // 
@@ -61,16 +51,26 @@ namespace leehaeun
             ResultBox.ItemHeight = 15;
             ResultBox.Location = new Point(45, 88);
             ResultBox.Name = "ResultBox";
-            ResultBox.Size = new Size(516, 244);
-            ResultBox.TabIndex = 2;
+            ResultBox.Size = new Size(515, 244);
+            ResultBox.TabIndex = 1;
+            // 
+            // SelectButton
+            // 
+            SelectButton.Location = new Point(45, 340);
+            SelectButton.Name = "SelectButton";
+            SelectButton.Size = new Size(515, 40);
+            SelectButton.TabIndex = 2;
+            SelectButton.Text = "선택";
+            SelectButton.UseVisualStyleBackColor = true;
+            SelectButton.Click += SelectButton_Click;
             // 
             // SearchAddress
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(605, 376);
+            ClientSize = new Size(605, 400);
+            Controls.Add(SelectButton);
             Controls.Add(ResultBox);
-            Controls.Add(SearchButton);
             Controls.Add(AddressBox);
             Name = "SearchAddress";
             Text = "SearchAddress";
@@ -81,7 +81,7 @@ namespace leehaeun
         #endregion
 
         private TextBox AddressBox;
-        private Button SearchButton;
         private ListBox ResultBox;
+        private Button SelectButton;
     }
 }
