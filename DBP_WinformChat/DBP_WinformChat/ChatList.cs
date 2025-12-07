@@ -345,6 +345,9 @@ namespace 남예솔
 
                             if (receiverId == currentUserId.ToString())
                             {
+                                // ★★★ 여기에 추가 ★★★
+                                lastMessageSenderId = Convert.ToInt32(senderId);
+
                                 // ✅ 3초 지연 로직 (1번 문서 방식)
                                 Task.Delay(3000).ContinueWith(_ =>
                                 {
@@ -369,6 +372,8 @@ namespace 남예솔
                                                     niChatAlert.BalloonTipTitle = $"새 메시지: {senderId}";
                                                     niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
                                                     niChatAlert.ShowBalloonTip(5000);
+
+                                                    LoadRecentChat();
                                                 }
                                             }
                                             catch { }
@@ -762,8 +767,13 @@ namespace 남예솔
         // ✅ 추가 3
         private void NiChatAlert_BalloonTipClicked(object sender, EventArgs e)
         {
-            new ChatForm(currentUserId, lastMessageSenderId).Show();
-            this.Show();
+            ChatForm chatform = new ChatForm(currentUserId, lastMessageSenderId);
+
+            chatform.Show();
+            chatform.Activate();
+
+            //this.Show();
+            //LoadRecentChat();
         }
     }
 }

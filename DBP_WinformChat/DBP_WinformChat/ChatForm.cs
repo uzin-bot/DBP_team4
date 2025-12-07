@@ -261,7 +261,8 @@ namespace kyg
                     string readStatus = "";
                     if (senderId == myId && isRead == 0)
                     {
-                        readStatus = " (1)"; // 안 읽음
+                        //원래 " (1)" 임 
+                        readStatus = " "; // 안 읽음
                     }
 
                     if (content.StartsWith("EMOJI:"))
