@@ -376,7 +376,7 @@ namespace DBP_Chat
             this.lBlist.Items.Clear();
 
             string sql = $@"
-                SELECT u.UserId, u.LoginId, u.Name, p.Nickname
+                SELECT u.UserId, u.LoginId, u.Name
                 FROM Favorite f
                 JOIN User u ON f.FavoriteUserId = u.UserId
                 JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1
@@ -391,7 +391,7 @@ namespace DBP_Chat
                 if (!this.permissionManager.CanViewUser(this.currentUserId, userId))
                     continue;
 
-                string displayText = $"{row["UserId"]} - {row["Name"]} ({row["Nickname"]})";
+                string displayText = $"({row["LoginId"]}) {row["Name"]}";
 
                 if (!this.permissionManager.CanChat(this.currentUserId, userId))
                     displayText += " 🚫";
@@ -446,9 +446,23 @@ namespace DBP_Chat
                 MessageBox.Show("삭제할 대상을 선택하세요!");
                 return;
             }
+            /*
+            //string userIdText = this.lBlist.SelectedItem.ToString().Split('-')[0].Trim();
+            int targetUserId = Convert.ToInt32(this.lBlist.SelectedItem.ToString());
+            */
 
-            string userIdText = this.lBlist.SelectedItem.ToString().Split('-')[0].Trim();
-            int targetUserId = Convert.ToInt32(userIdText);
+            // ListBox에서 선택된 텍스트: "(LoginId) Name" 형식
+            string selectedText = this.lBlist.SelectedItem.ToString();
+
+            // "()" 사이의 LoginId 추출
+            int startIdx = selectedText.IndexOf('(') + 1;
+            int endIdx = selectedText.IndexOf(')');
+            string loginId = selectedText.Substring(startIdx, endIdx - startIdx);
+
+            // LoginId로 UserId 찾기
+            string findUserSql = $"SELECT UserId FROM User WHERE LoginId = '{loginId}'";
+            DataTable userDt = DBconnector.GetInstance().Query(findUserSql);
+            int targetUserId = Convert.ToInt32(userDt.Rows[0]["UserId"]);
 
             string sql =
                 $"DELETE FROM Favorite WHERE UserId = {this.currentUserId} AND FavoriteUserId = {targetUserId}";
