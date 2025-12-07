@@ -14,6 +14,7 @@ namespace leehaeun
         public EditInfoForm()
         {
             InitializeComponent();
+            EditInfoFormUIHelper.ApplyStyles(this);
             LoadUserInfo();
             LoadProfileInfo();
             LoadMulProfileList();

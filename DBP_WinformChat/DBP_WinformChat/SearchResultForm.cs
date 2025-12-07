@@ -9,122 +9,119 @@ using 남예솔;
 
 namespace DBP_Chat
 {
-	public partial class SearchResultForm : Form
-	{
-		string id, name, dept;
-		int currentUserId;
-		Dept parentForm;
+    public partial class SearchResultForm : Form
+    {
+        string id, name, dept;
+        int currentUserId;
+        Dept parentForm;
 
-		public SearchResultForm(string id, string name, string dept, int userId, Dept parent)
-		{
-			InitializeComponent();
+        public SearchResultForm(string id, string name, string dept, int userId, Dept parent)
+        {
 
-			this.id = id;
-			this.name = name;
-			this.dept = dept;
-			this.currentUserId = userId;
-			this.parentForm = parent;
+            this.AutoScaleMode = AutoScaleMode.None;
+            this.DoubleBuffered = true;
 
-			//셀 클릭 시 자동 체크되도록 이벤트 연결
-			lvResult.ItemSelectionChanged += lvResult_ItemSelectionChanged;
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint |
+              ControlStyles.OptimizedDoubleBuffer |
+              ControlStyles.UserPaint, true);
 
-			LoadResult();
-		}
+            InitializeComponent();
 
-		//셀 클릭 시 자동 체크되도록 설정
-		//셀 클릭하면 자동으로 체크표시 되도록 변경했습니다!
-		private void lvResult_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
-		{
-			e.Item.Checked = true;
-		}
+            DBP_WinformChat.SearchResultUIHelper.Apply(this);
 
-		private void LoadResult()
-		{
-            // 로그인 추가 관리자 제외
-			// 닉네임관련 쿼리 수정
+            this.id = id;
+            this.name = name;
+            this.dept = dept;
+            this.currentUserId = userId;
+            this.parentForm = parent;
+
+            //셀 클릭 시 자동 체크되도록 이벤트 연결
+            lvResult.ItemSelectionChanged += lvResult_ItemSelectionChanged;
+
+            LoadResult();
+        }
+
+        //셀 클릭 시 자동 체크되도록 설정
+        //셀 클릭하면 자동으로 체크표시 되도록 변경했습니다!
+        private void lvResult_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            e.Item.Checked = true;
+        }
+
+        private void LoadResult()
+        {
             string sql = @"
-			SELECT u.UserId, u.LoginId, u.Name, d.DeptName, p.Nickname
-			FROM User u 
-			JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1
-			JOIN Department d ON u.DeptId = d.DeptId
-			WHERE u.Role != 'admin' ";
+                SELECT u.UserId, u.Name, d.DeptName, u.Nickname
+                FROM User u 
+                JOIN Department d ON u.DeptId = d.DeptId
+                WHERE 1=1 ";
 
             if (!string.IsNullOrEmpty(id))
-				sql += $"AND u.LoginId LIKE '%{id}%'";
+                sql += $"AND u.UserId = {id} ";
 
-			if (!string.IsNullOrEmpty(name))
-				sql += $"AND u.Name LIKE '%{name}%' ";
+            if (!string.IsNullOrEmpty(name))
+                sql += $"AND u.Name LIKE '%{name}%' ";
 
-			if (!string.IsNullOrEmpty(dept))
-				// 부분 검색 바꿀까요?
-				sql += $"AND d.DeptName = '{dept}' ";
+            if (!string.IsNullOrEmpty(dept))
+                sql += $"AND d.DeptName = '{dept}' ";
 
-			DataTable dt = DBconnector.GetInstance().Query(sql);
+            DataTable dt = DBconnector.GetInstance().Query(sql);
 
-			lvResult.Items.Clear();
+            lvResult.Items.Clear();
 
-			foreach (DataRow row in dt.Rows)
-			{
-				ListViewItem item = new ListViewItem(row["LoginId"].ToString());
-				item.SubItems.Add(row["Name"].ToString());
-				item.SubItems.Add(row["DeptName"].ToString());
-				item.SubItems.Add(row["Nickname"].ToString());
-
-                // Tag에 실제 UserId 저장
-                item.Tag = row["UserId"].ToString();
-
+            foreach (DataRow row in dt.Rows)
+            {
+                ListViewItem item = new ListViewItem(row["UserId"].ToString());
+                item.SubItems.Add(row["Name"].ToString());
+                item.SubItems.Add(row["DeptName"].ToString());
+                item.SubItems.Add(row["Nickname"].ToString());
                 lvResult.Items.Add(item);
-			}
-		}
+            }
+        }
 
-		private void lvResult_DoubleClick(object sender, EventArgs e)
-		{
-			if (lvResult.SelectedItems.Count == 0) return;
+        private void lvResult_DoubleClick(object sender, EventArgs e)
+        {
+            if (lvResult.SelectedItems.Count == 0) return;
 
-            // Tag에서 UserId 가져오기
-            int targetUserId = Convert.ToInt32(lvResult.SelectedItems[0].Tag);
+            int targetUserId = Convert.ToInt32(lvResult.SelectedItems[0].Text);
+            new ChatForm(currentUserId, targetUserId).Show();
+        }
 
-          
-			new ChatForm(currentUserId, targetUserId).Show();
-		}
+        private void btnAddFavorite_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in lvResult.Items)
+            {
+                if (item.Checked)
+                {
+                    int targetUserId = Convert.ToInt32(item.Text);
 
-		private void btnAddFavorite_Click(object sender, EventArgs e)
-		{
-			foreach (ListViewItem item in lvResult.Items)
-			{
-				if (item.Checked)
-				{
-
-                    // Tag에서 UserId 가져오기
-                    int targetUserId = Convert.ToInt32(item.Tag);
-
-					string sql = $@"
+                    string sql = $@"
                         SELECT COUNT(*) 
                         FROM Favorite 
                         WHERE UserId = {currentUserId} AND FavoriteUserId = {targetUserId}";
 
-					DataTable dt = DBconnector.GetInstance().Query(sql);
+                    DataTable dt = DBconnector.GetInstance().Query(sql);
 
-					if (dt.Rows.Count > 0 && Convert.ToInt32(dt.Rows[0][0]) > 0)
-						continue;
+                    if (dt.Rows.Count > 0 && Convert.ToInt32(dt.Rows[0][0]) > 0)
+                        continue;
 
-					string insertSql = $@"
+                    string insertSql = $@"
                         INSERT INTO Favorite (UserId, FavoriteUserId)
                         VALUES ({currentUserId}, {targetUserId})";
 
-					DBconnector.GetInstance().NonQuery(insertSql);
-				}
-			}
+                    DBconnector.GetInstance().NonQuery(insertSql);
+                }
+            }
 
-			MessageBox.Show("즐겨찾기에 추가되었습니다!");
+            MessageBox.Show("즐겨찾기에 추가되었습니다!");
 
-			if (parentForm != null)
-				parentForm.RefreshFavorites();
-		}
+            if (parentForm != null)
+                parentForm.RefreshFavorites();
+        }
 
-		private void btnClose_Click(object sender, EventArgs e)
-		{
-			this.Close();
-		}
-	}
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+    }
 }

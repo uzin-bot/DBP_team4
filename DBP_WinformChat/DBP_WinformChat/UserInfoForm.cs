@@ -16,6 +16,7 @@ namespace leehaeun
         public UserInfoForm(int id)
         {
             InitializeComponent();
+            UserInfoFormUIHelper.ApplyStyles(this);
             targetUserId = id;
             GetUserProfileInfo();
         }

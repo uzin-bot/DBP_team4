@@ -15,15 +15,19 @@ namespace DBP_Chat
         private int currentUserId;
         private string currentUserName;
         private string currentUserNickname;
-        private PermissionManager permissionManager; // 어드민 추가
+        private PermissionManager permissionManager; // 관리자 권한 매니저 추가
+
         public Dept(int userId, string name, string nickname)
         {
             InitializeComponent();
 
+            DBP_WinformChat.DeptUIHelper.Apply(this);
+
             this.currentUserId = userId;
             this.currentUserName = name;
             this.currentUserNickname = nickname;
-            this.permissionManager = new PermissionManager(); // 어드민 추가
+            this.permissionManager = new PermissionManager(); // 권한 매니저 초기화
+
             this.Load += Dept_Load;
 
             //TreeView 직원 더블클릭 → 프로필 폼(현재 임시로 메시지만 뜸)
@@ -66,11 +70,9 @@ namespace DBP_Chat
             LoadFavoriteList();
         }
 
-        // 어드민 수정
-        //회사 → 부서 → 직원 TreeView 로딩
+        //회사 → 부서 → 직원 TreeView 로딩 (권한 적용)
         private void LoadTreeView()
         {
-
             tvdept.Nodes.Clear();
             TreeNode companyNode = new TreeNode("회사");
             tvdept.Nodes.Add(companyNode);
@@ -103,23 +105,33 @@ namespace DBP_Chat
 
                 foreach (DataRow user in deptUsers.Rows)
                 {
-                    int userId = Convert.ToInt32(user["UserId"]);
+                    int uid = Convert.ToInt32(user["UserId"]);
 
                     // 본인은 항상 표시, 다른 사용자는 권한 체크
-                    if (userId != currentUserId && !permissionManager.CanViewUser(currentUserId, userId))
+                    if (uid != currentUserId && !permissionManager.CanViewUser(currentUserId, uid))
                         continue;
 
-                    string text = $"({user["LoginId"]}) {user["Name"]} ({user["Nickname"]})";
+                    string uname = user["Name"].ToString();
+                    string nick = user["Nickname"].ToString();
+                    string loginId = user["LoginId"].ToString();
 
-                    if (userId == currentUserId)
-                        text += " (나)";
-
-                    // 대화 차단된 사용자 표시
-                    if (userId != currentUserId && !permissionManager.CanChat(currentUserId, userId))
-                        text += " 🚫";
+                    string text = $"({loginId}) {uname} ({nick})";
 
                     TreeNode userNode = new TreeNode(text);
-                    userNode.Tag = user["UserId"]; // UserId로 통일
+                    userNode.Tag = uid;
+
+                    //로그인한 본인 표시
+                    if (uid == currentUserId)
+                    {
+                        userNode.Text = $"{text}  - 나";
+                        userNode.NodeFont = new Font("맑은 고딕", 10, FontStyle.Bold);
+                        userNode.ForeColor = Color.FromArgb(119, 136, 115);
+                    }
+                    // 대화 차단된 사용자 표시
+                    else if (!permissionManager.CanChat(currentUserId, uid))
+                    {
+                        userNode.Text = $"{text} 🚫";
+                    }
 
                     deptNode.Nodes.Add(userNode);
                 }
@@ -156,9 +168,7 @@ namespace DBP_Chat
             s.Show();
         }
 
-
-        // 어드민 수정
-        //즐겨찾기 로딩
+        //즐겨찾기 로딩 (권한 적용)
         private void LoadFavoriteList()
         {
             lBlist.Items.Clear();
@@ -169,6 +179,7 @@ namespace DBP_Chat
                 JOIN User u ON f.FavoriteUserId = u.UserId
                 JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1
                 WHERE f.UserId = {currentUserId}";
+
             DataTable dt = DBconnector.GetInstance().Query(sql);
 
             foreach (DataRow row in dt.Rows)
@@ -189,29 +200,30 @@ namespace DBP_Chat
             }
         }
 
-        // 어드민 수정
-        //즐겨찾기 추가
+        // 즐겨찾기 추가 (권한 체크)
         private void btnadd_Click(object sender, EventArgs e)
         {
-            string userIdText = txtID.Text.Trim();
-            if (userIdText == "")
+            //TreeView에서 직원 선택 확인
+            if (tvdept.SelectedNode == null || tvdept.SelectedNode.Level != 2)
             {
                 MessageBox.Show("직원을 선택하세요!");
                 return;
             }
 
-            int targetUserId = int.Parse(userIdText);
+            //TreeView에서 선택된 직원 ID 가져오기
+            int targetUserId = Convert.ToInt32(tvdept.SelectedNode.Tag);
 
             // 권한 체크 추가
             if (!permissionManager.CanViewUser(currentUserId, targetUserId))
             {
-                MessageBox.Show("해당 사용자를 볼 수 있는 권한이 없습니다.");
+                MessageBox.Show("해당 사용자를 볼 수 있는 권한이 없습니다.", "권한 없음", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
+            //DB에 이미 있는지 확인
             string checkSql = $@"
-                SELECT COUNT(*)
-                FROM Favorite
+                SELECT COUNT(*) 
+                FROM Favorite 
                 WHERE UserId = {currentUserId} AND FavoriteUserId = {targetUserId}";
 
             DataTable dt = DBconnector.GetInstance().Query(checkSql);
@@ -222,12 +234,15 @@ namespace DBP_Chat
                 return;
             }
 
+            //DB Insert
             string sql =
                 $"INSERT INTO Favorite (UserId, FavoriteUserId) VALUES ({currentUserId}, {targetUserId})";
 
             DBconnector.GetInstance().NonQuery(sql);
 
             MessageBox.Show("즐겨찾기에 추가되었습니다!");
+
+            //ListBox 갱신
             LoadFavoriteList();
         }
 
@@ -252,18 +267,18 @@ namespace DBP_Chat
             LoadFavoriteList();
         }
 
-
-        // 어드민 수정
-        //즐겨찾기 OR TreeView 직원 선택 → 채팅하기
+        //즐겨찾기 OR TreeView 직원 선택 → 채팅하기 (권한 체크)
         private void btnChat_Click(object sender, EventArgs e)
         {
             int targetUserId = -1;
 
+            //즐겨찾기 선택
             if (lBlist.SelectedItem != null)
             {
                 string userIdText = lBlist.SelectedItem.ToString().Split('-')[0].Trim();
                 targetUserId = Convert.ToInt32(userIdText);
             }
+            //TreeView에서 직원 선택한 경우
             else if (tvdept.SelectedNode != null && tvdept.SelectedNode.Level == 2)
             {
                 targetUserId = Convert.ToInt32(tvdept.SelectedNode.Tag);
@@ -274,7 +289,7 @@ namespace DBP_Chat
                 return;
             }
 
-            // 어드민 권한 체크 추가
+            // 관리자 권한 체크 추가
             var result = permissionManager.CanSendMessage(currentUserId, targetUserId);
             if (!result.CanSend)
             {

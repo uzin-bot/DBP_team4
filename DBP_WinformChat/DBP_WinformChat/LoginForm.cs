@@ -9,6 +9,7 @@ namespace leehaeun
         public LoginForm()
         {
             InitializeComponent();
+            LoginFormUIHelper.ApplyStyles(this);
             if (LoadConfig()) Login();
         }
 

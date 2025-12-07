@@ -7,36 +7,35 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Windows.Forms;
-using System.Net.Sockets;      
-using System.Text;              
-using System.Threading;         
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace 남예솔
 {
-	public partial class chatlist : Form
-	{
-		//현재 로그인한 사용자 정보(UserInfo에서 가져옴)
-		//User.Rows[0] -> User
-		private int currentUserId = Convert.ToInt32(UserInfo.User["UserId"]);
-		private string currentUserName = UserInfo.User["Name"].ToString();
-		private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+    public partial class chatlist : Form
+    {
+        //현재 로그인한 사용자 정보(UserInfo에서 가져옴)
+        //User.Rows[0] -> User
+        private int currentUserId = Convert.ToInt32(UserInfo.User["UserId"]);
+        private string currentUserName = UserInfo.User["Name"].ToString();
+        private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
 
         // 알람용 TCP 클라이언트
         private TcpClient alertClient;
         private NetworkStream alertStream;
 
         private NotifyIcon niChatAlert;
-        private System.Windows.Forms.Timer refreshTimer;
+
         public chatlist()
         {
+
             InitializeComponent();
 
-            btndept.Click += btndept_Click; //클릭시 DeptForm으로 이동 
+            DBP_WinformChat.chatlistUIHelper.Apply(this);
 
-            // Owner Draw 이벤트 등록
-            lvlist.DrawColumnHeader += LvList_DrawColumnHeader;
-            lvlist.DrawSubItem += LvList_DrawSubItem;
+            btndept.Click += btndept_Click; //클릭시 DeptForm으로 이동 
 
             // NotifyIcon 초기화 추가 (수정사항)
             niChatAlert = new NotifyIcon();
@@ -44,49 +43,29 @@ namespace 남예솔
             niChatAlert.Visible = true;
             niChatAlert.Text = "채팅 알림";
 
-            refreshTimer = new System.Windows.Forms.Timer();
-            refreshTimer.Interval = 3000;
-            refreshTimer.Tick += (s, e) => LoadRecentChat();
+            this.FormClosing += OnFormClosing;
 
         }
 
         private void chatlist_Load(object sender, EventArgs e)
         {
-            Console.WriteLine($"[chatlist] ==================== chatlist_Load 시작 ====================");
-            Console.WriteLine($"[chatlist] currentUserId = {currentUserId}");
-
             LoadRecentChat();
 
-            Console.WriteLine($"[chatlist] ConnectAlertClient 호출 전");
 
             //알림 클라이언트 연결
             ConnectAlertClient();
-
-            Console.WriteLine($"[chatlist] chatlist_Load 완료");
         }
-        
 
-        private void RefreshTimer_Tick(object sender, EventArgs e)
-        {
-            refreshTimer.Stop(); // ← 이거 있어야 한 번만!
-            LoadRecentChat();
-        }
 
         // ===== 알림 기능 추가 =====
 
         // 서버에 알림용 연결 생성
         private void ConnectAlertClient()
         {
-            if (alertClient != null && alertClient.Connected)
-            {
-                Console.WriteLine($"[chatlist] 이미 연결되어 있음");
-                return;
-            }
+            if (alertClient != null && alertClient.Connected) return;
 
             try
             {
-                Console.WriteLine($"[chatlist] 서버 연결 시도 중...");
-
                 // 1. 기존 연결 정리
                 alertClient?.Close();
                 alertClient = new TcpClient();
@@ -95,20 +74,19 @@ namespace 남예솔
                 //alertClient.Connect("127.0.0.1", 8888);
                 alertClient.Connect("51.21.27.234", 12345);
                 //alertClient.Connect("10.201.21.210", 8888);
-                Console.WriteLine($"[chatlist] 서버 연결 성공!");
+
                 alertStream = alertClient.GetStream();
 
                 // 3. 서버에 로그인 ID 등록
                 string loginMsg = $"LOGIN:{currentUserId}:::";
                 byte[] loginData = Encoding.UTF8.GetBytes(loginMsg);
                 alertStream.Write(loginData, 0, loginData.Length);
-                Console.WriteLine($"[chatlist] LOGIN 전송: {currentUserId}");
 
                 // 4. 메시지 수신용 스레드 시작
                 Thread receiveThread = new Thread(ReceiveAlertMessages);
                 receiveThread.IsBackground = true;
                 receiveThread.Start();
-                Console.WriteLine($"[chatlist] ReceiveAlertMessages 스레드 시작");
+
                 Console.WriteLine("[chatlist] 알림 클라이언트 연결 성공.");
             }
             catch (Exception ex)
@@ -136,7 +114,7 @@ namespace 남예솔
         {
             if (alertClient == null || !alertClient.Connected) return;
 
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[4096]; // 버퍼 크기 증가
             StringBuilder messageBuilder = new StringBuilder();
 
             while (alertClient != null && alertClient.Connected)
@@ -147,13 +125,17 @@ namespace 남예솔
                     if (bytesRead == 0) break;
 
                     string received = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    Console.WriteLine($"[chatlist] 원본 수신: [{received}]");
 
                     messageBuilder.Append(received);
                     string fullMessage = messageBuilder.ToString();
 
+                    // null 문자로 메시지 구분
                     string[] messages = fullMessage.Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
 
+                    // 마지막 메시지가 완전하지 않을 수 있으므로 체크
                     bool lastMessageComplete = fullMessage.EndsWith("\0");
+
                     int messagesToProcess = lastMessageComplete ? messages.Length : messages.Length - 1;
 
                     for (int i = 0; i < messagesToProcess; i++)
@@ -161,7 +143,17 @@ namespace 남예솔
                         string msg = messages[i].Trim();
                         if (string.IsNullOrWhiteSpace(msg)) continue;
 
-                        string[] parts = msg.Split(new char[] { ':' }, 5);
+                        Console.WriteLine($"[chatlist] 처리할 메시지: [{msg}]");
+
+                        // CHAT:senderId:receiverId:content (4개로 분할)
+                        string[] parts = msg.Split(new char[] { ':' }, 4);
+
+                        Console.WriteLine($"[chatlist] parts.Length={parts.Length}");
+
+                        if (parts.Length >= 4)
+                        {
+                            Console.WriteLine($"[chatlist] Type={parts[0]}, Sender={parts[1]}, Receiver={parts[2]}");
+                        }
 
                         if (parts.Length >= 4 && parts[0] == "CHAT")
                         {
@@ -169,46 +161,40 @@ namespace 남예솔
                             string receiverId = parts[2];
                             string content = parts[3];
 
+                            Console.WriteLine($"[chatlist] receiverId={receiverId}, currentUserId={currentUserId}");
+
+                            // 나에게 온 메시지인 경우에만 처리
                             if (receiverId == currentUserId.ToString())
                             {
-                                try
+                                Console.WriteLine($"[chatlist] 알람 표시 시작!");
+
+                                if (this.InvokeRequired)
                                 {
-                                    // ✅ BeginInvoke로 비동기 처리
-                                    this.BeginInvoke((MethodInvoker)delegate
+                                    this.Invoke((MethodInvoker)delegate
                                     {
-                                        if (this.IsDisposed) return;
-
-                                        // ✅ 1초 대기 (DB 저장 완료 보장)
-                                        System.Threading.Thread.Sleep(3000);
-
-                                        // 1. 새로고침
-                                        LoadRecentChat();
-
-                                        // 2. 깜빡임
-                                        try
+                                        if (!this.IsDisposed && this.IsHandleCreated)
                                         {
-                                            FlashWindow.Flash(this);
+                                            ShowAlertOnMainForm(senderId, content);
                                         }
-                                        catch { }
-
-                                        // 3. 알람
-                                        try
-                                        {
-                                            if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
-                                            {
-                                                niChatAlert.BalloonTipTitle = $"새 메시지: {senderId}";
-                                                niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
-                                                niChatAlert.ShowBalloonTip(5000);
-                                            }
-                                        }
-                                        catch { }
                                     });
                                 }
-                                catch { }
+                                else
+                                {
+                                    ShowAlertOnMainForm(senderId, content);
+                                }
                             }
+                            else
+                            {
+                                Console.WriteLine($"[chatlist] 다른 사람 메시지");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[chatlist] CHAT 메시지 아님 또는 형식 오류");
                         }
                     }
 
+                    // 미처리 메시지 보관
                     if (!lastMessageComplete && messages.Length > 0)
                     {
                         messageBuilder.Clear();
@@ -219,63 +205,73 @@ namespace 남예솔
                         messageBuilder.Clear();
                     }
                 }
-                catch (System.IO.IOException)
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"[chatlist] 수신 오류: {ex.Message}\n{ex.StackTrace}");
                     break;
                 }
-                catch { }
             }
 
-            // 재연결
-            Task.Run(() =>
-            {
-                Thread.Sleep(3000);
-                try
-                {
-                    if (!this.IsDisposed)
-                    {
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            alertClient?.Close();
-                            alertClient = null;
-                            ConnectAlertClient();
-                        });
-                    }
-                }
-                catch { }
-            });
+            // 연결 종료 후 재연결
+            ReconnectAlert();
+        }
 
-           
+        // 재연결 메서드 (새로 추가)
+        private void ReconnectAlert()
+        {
+            try
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        if (this.IsDisposed || !this.IsHandleCreated) return;
+
+                        alertClient?.Close();
+                        alertClient = null;
+
+                        Task.Run(() =>
+                        {
+                            Thread.Sleep(3000);
+                            if (!this.IsDisposed)
+                            {
+                                this.Invoke((MethodInvoker)delegate
+                                {
+                                    if (!this.IsDisposed)
+                                    {
+                                        Console.WriteLine("[chatlist] 재연결 시도...");
+                                        ConnectAlertClient();
+                                    }
+                                });
+                            }
+                        });
+
+                        Console.WriteLine("[chatlist] 알림 클라이언트 재연결 예약.");
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[chatlist] 재연결 오류: {ex.Message}");
+            }
         }
 
         // 새메세지 도착 알림
         private void ShowAlertOnMainForm(string senderId, string content)
         {
-            try
+            // 1. 대화목록을 갱신하여 최신 메시지가 위로 오게 함
+            LoadRecentChat();
+
+            // 2. 작업 표시줄 깜빡임
+            FlashWindow.Flash(this); // FlashWindow 헬퍼 클래스가 필요함
+
+            // 3. NotifyIcon 풍선 알림 (niChatAlert 컨트롤이 필요함)
+            if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
             {
-                // 1. 대화목록 갱신
-                LoadRecentChat();
-
-                // 2. 작업 표시줄 깜빡임
-                try
-                {
-                    FlashWindow.Flash(this);
-                }
-                catch { }
-
-                // 3. NotifyIcon 풍선 알림
-                try
-                {
-                    if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
-                    {
-                        niChatAlert.BalloonTipTitle = $"새 메시지: {senderId}";
-                        niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
-                        niChatAlert.ShowBalloonTip(5000);
-                    }
-                }
-                catch { }
+                niChatAlert.BalloonTipTitle = $"새 메시지: {senderId}";
+                niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
+                niChatAlert.ShowBalloonTip(5000); // 5초 유지
             }
-            catch { }
 
             // 4. ListView 항목 강조 (Optional)
             /*
@@ -305,52 +301,26 @@ namespace 남예솔
 
         // ===== 챗리스트 기능 ======
 
-        //RecentChat + 고정정렬 + 부서 권한 적용
+        //RecentChat + 고정정렬
         private void LoadRecentChat()
         {
             lvlist.Items.Clear();
 
-            // 부서 권한 및 사용자별 권한, 차단 체크 포함
+
             string sql = $@"
                 SELECT 
                     rc.PartnerUserId,
                     u.Name,
-                    u.LoginId,
-                    p.Nickname,
+                    u.Nickname,
                     d.DeptName,
                     cm.Content AS LastMessage,       
                     rc.LastMessageAt,
-                    rc.is_pinned,
-                    rc.UnreadCount
+                    rc.is_pinned
                 FROM RecentChat rc
                 JOIN User u ON rc.PartnerUserId = u.UserId
-                LEFT JOIN Department d ON u.DeptId = d.DeptId
-                LEFT JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1  
-                LEFT JOIN ChatMessage cm ON rc.LastMessageId = cm.MessageId 
+                JOIN Department d ON u.DeptId = d.DeptId
+                JOIN ChatMessage cm ON rc.LastMessageId = cm.MessageId 
                 WHERE rc.UserId = {currentUserId}
-                  AND u.Role = 'user'
-                  -- 부서 권한 체크: 제한된 부서의 사용자 제외
-                  AND NOT EXISTS (
-                    SELECT 1 FROM UserVisibleDept uvd
-                    LEFT JOIN Department d2 ON u.DeptId = d2.DeptId
-                    WHERE uvd.OwnerUserId = {currentUserId}
-                      AND (
-                        uvd.DeptId = u.DeptId  -- 직접 제한된 팀
-                        OR uvd.DeptId = d2.ParentDeptId  -- 상위 부서가 제한됨
-                      )
-                  )
-                  -- 사용자별 권한 체크
-                  AND (
-                    NOT EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {currentUserId})
-                    OR EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {currentUserId} AND VisibleUserId = u.UserId)
-                  )
-                  -- 대화 차단 체크
-                  AND NOT EXISTS (
-                    SELECT 1 FROM ChatPermission 
-                    WHERE ((UserAId = {currentUserId} AND UserBId = u.UserId) 
-                       OR (UserAId = u.UserId AND UserBId = {currentUserId}))
-                      AND IsBlocked = 1
-                  )
                 ORDER BY rc.is_pinned DESC, rc.LastMessageAt DESC";
 
             try
@@ -359,176 +329,106 @@ namespace 남예솔
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
+                    MessageBox.Show("채팅 목록이 비어있습니다.");
                     return;
                 }
 
                 foreach (DataRow row in dt.Rows)
                 {
                     bool isPinned = Convert.ToInt32(row["is_pinned"]) == 1;
-                    int unreadCount = Convert.ToInt32(row["UnreadCount"]);
 
-                    // 첫 번째 컬럼: 안 읽은 메시지 있으면 ●, 없으면 공백
-                    string indicator = unreadCount > 0 ? "●" : "";
-                    ListViewItem item = new ListViewItem(indicator);
-
+                    ListViewItem item = new ListViewItem();
                     item.ImageIndex = isPinned ? 0 : -1;
-                     
-                    item.SubItems.Add(row["LoginId"].ToString()); // 로그인 아이디
-                    item.SubItems.Add(row["Name"].ToString());
-                    
-                    // 부서명이 NULL일 수 있으므로 체크
-                    string deptName = row["DeptName"] == DBNull.Value ? "미배정" : row["DeptName"].ToString();
-                    item.SubItems.Add(deptName);
 
-                    //최근 메시지 길면 ...으로 잘림 (20제한)
-                    string msg = row["LastMessage"] == DBNull.Value ? "" : row["LastMessage"].ToString();
-                    if (msg.Length > 20)
-                        msg = msg.Substring(0, 20) + "…";
+                    item.SubItems.Add(row["PartnerUserId"].ToString());
+                    item.SubItems.Add(row["Name"].ToString());
+                    item.SubItems.Add(row["DeptName"].ToString());
+
+                    //최근 메시지 길면 ...으로 잘림 (30제한 >> UI 변경시 늘리거나 해도 O)
+                    string msg = row["LastMessage"].ToString();
+                    if (msg.Length > 30)
+                        msg = msg.Substring(0, 30) + "…";
                     item.SubItems.Add(msg);
 
                     item.SubItems.Add(row["LastMessageAt"].ToString());
-
-                    // Tag에 실제 UserId 저장 (더블클릭 시 사용)
-                    item.Tag = row["PartnerUserId"].ToString();
 
                     lvlist.Items.Add(item);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[chatlist] LoadRecentChat 오류: {ex.Message}");
+                MessageBox.Show($"채팅 목록 로드 실패: {ex.Message}\n\n{ex.StackTrace}");
             }
         }
 
-		//우클릭 자동 선택
-		private void lvlist_MouseDown(object sender, MouseEventArgs e)
-		{
-			if (e.Button == MouseButtons.Right)
-			{
-				ListViewItem item = lvlist.GetItemAt(e.X, e.Y);
-				if (item != null)
-					item.Selected = true;
-			}
-		}
-
-		//더블클릭 → 채팅창 열기
-		private void lvlist_DoubleClick(object sender, EventArgs e)
-		{
-			if (lvlist.SelectedItems.Count == 0) return;
-
-            // 수정
-            int targetUserId = Convert.ToInt32(lvlist.SelectedItems[0].Tag);
-
-            // 채팅창 열기 전에 UnreadCount = 0으로
-            string updateQuery = $@"
-                UPDATE RecentChat
-                SET UnreadCount = 0
-                WHERE UserId = {currentUserId}
-                AND PartnerUserId = {targetUserId}";
-
-            DBconnector.GetInstance().NonQuery(updateQuery);
-
-            new ChatForm(currentUserId, targetUserId).Show();
-
-            LoadRecentChat();
+        //우클릭 자동 선택
+        private void lvlist_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                ListViewItem item = lvlist.GetItemAt(e.X, e.Y);
+                if (item != null)
+                    item.Selected = true;
+            }
         }
 
-		//고정하기
-		private void PinChat(int partnerUserId)
-		{
-			string sql = $@"
+        //더블클릭 → 채팅창 열기
+        private void lvlist_DoubleClick(object sender, EventArgs e)
+        {
+            if (lvlist.SelectedItems.Count == 0) return;
+
+            int targetUserId = Convert.ToInt32(lvlist.SelectedItems[0].SubItems[1].Text);
+
+            new ChatForm(currentUserId, targetUserId).Show();
+        }
+
+        //고정하기
+        private void PinChat(int partnerUserId)
+        {
+            string sql = $@"
                 UPDATE RecentChat 
                 SET is_pinned = 1
                 WHERE UserId = {currentUserId} AND PartnerUserId = {partnerUserId}";
 
-			DBconnector.GetInstance().NonQuery(sql);
-		}
+            DBconnector.GetInstance().NonQuery(sql);
+        }
 
-		//고정 해제
-		private void UnpinChat(int partnerUserId)
-		{
-			string sql = $@"
+        //고정 해제
+        private void UnpinChat(int partnerUserId)
+        {
+            string sql = $@"
                 UPDATE RecentChat 
                 SET is_pinned = 0 
                 WHERE UserId = {currentUserId} AND PartnerUserId = {partnerUserId}";
 
-			DBconnector.GetInstance().NonQuery(sql);
-		}
+            DBconnector.GetInstance().NonQuery(sql);
+        }
 
-		//우클릭 메뉴 → 고정하기
-		private void addpin_Click(object sender, EventArgs e)
-		{
-			if (lvlist.SelectedItems.Count == 0) return;
+        //우클릭 메뉴 → 고정하기
+        private void addpin_Click(object sender, EventArgs e)
+        {
+            if (lvlist.SelectedItems.Count == 0) return;
 
-            // 수정
-            int partnerUserId = Convert.ToInt32(lvlist.SelectedItems[0].Tag);
-
+            int partnerUserId = Convert.ToInt32(lvlist.SelectedItems[0].SubItems[1].Text);
             PinChat(partnerUserId);
-			LoadRecentChat();
-		}
+            LoadRecentChat();
+        }
 
-		//우클릭 메뉴 → 고정 해제
-		private void deletepin_Click(object sender, EventArgs e)
-		{
-			if (lvlist.SelectedItems.Count == 0) return;
+        //우클릭 메뉴 → 고정 해제
+        private void deletepin_Click(object sender, EventArgs e)
+        {
+            if (lvlist.SelectedItems.Count == 0) return;
 
-            // 수정
-            int partnerUserId = Convert.ToInt32(lvlist.SelectedItems[0].Tag);
+            int partnerUserId = Convert.ToInt32(lvlist.SelectedItems[0].SubItems[1].Text);
             UnpinChat(partnerUserId);
-			LoadRecentChat();
-		}
-
-		//btndept → 친구 목록(DeptForm)으로 이동
-		private void btndept_Click(object sender, EventArgs e)
-		{
-			Dept deptForm = new Dept(currentUserId, currentUserName, currentUserNickname);
-			deptForm.Show();
-		}
-
-        // 컬럼 헤더는 기본 방식으로
-        private void LvList_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
-        {
-            e.DrawDefault = true;
+            LoadRecentChat();
         }
 
-        // 각 셀 그리기
-        private void LvList_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        //btndept → 친구 목록(DeptForm)으로 이동
+        private void btndept_Click(object sender, EventArgs e)
         {
-            // 첫 번째 컬럼(동그라미)만 특별 처리
-            if (e.ColumnIndex == 0)
-            {
-                // 배경 그리기
-                e.DrawBackground();
-
-                string text = e.SubItem.Text;
-
-                if (!string.IsNullOrEmpty(text)) // "●" 있을 때만
-                {
-                    // 빨간색으로 동그라미 그리기
-                    using (Brush redBrush = new SolidBrush(Color.Red))
-                    {
-                        StringFormat sf = new StringFormat
-                        {
-                            Alignment = StringAlignment.Center,
-                            LineAlignment = StringAlignment.Center
-                        };
-
-                        using (Font boldFont = new Font(e.Item.Font.FontFamily, 8, FontStyle.Bold))
-                        {
-                            e.Graphics.DrawString(text, boldFont, redBrush, e.Bounds, sf);
-                        }
-                    }
-                }
-
-                e.DrawFocusRectangle(e.Bounds);
-            }
-            else
-            {
-                // 나머지 컬럼은 기본 방식으로
-                e.DrawDefault = true;
-            }
+            Dept deptForm = new Dept(currentUserId, currentUserName, currentUserNickname);
+            deptForm.Show();
         }
-
-
     }
 }

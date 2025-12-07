@@ -86,11 +86,11 @@ namespace DBPAdmin
             {
                 if (ctrl is Button btn)
                 {
-                    btn.BackColor = UIHelper.Colors.DarkBg;
-                    btn.ForeColor = UIHelper.Colors.TextLight;
+                    btn.BackColor = AdminUIHelper.Colors.DarkBg;
+                    btn.ForeColor = AdminUIHelper.Colors.TextLight;
                 }
             }
-            activeBtn.BackColor = UIHelper.Colors.Primary;
+            activeBtn.BackColor = AdminUIHelper.Colors.Primary;
             activeBtn.ForeColor = Color.White;
         }
 
@@ -102,27 +102,27 @@ namespace DBPAdmin
         // ==================== A. 대시보드 ====================
         private void ShowDashboard()
         {
-            var title = UIHelper.CreateTitle("대시보드");
+            var title = AdminUIHelper.CreateTitle("대시보드");
             title.Location = new Point(15, 15);
             pnlContent.Controls.Add(title);
 
             int cardW = 300, cardH = 120, cardSpacing = 30;
-            int startX = UIHelper.CalculateMultiElementStartX(pnlContent.Width, cardW, 3, cardSpacing);
-            int cardY = UIHelper.CalculateCenterY(pnlContent.Height, cardH) - 50;
+            int startX = AdminUIHelper.CalculateMultiElementStartX(pnlContent.Width, cardW, 3, cardSpacing);
+            int cardY = AdminUIHelper.CalculateCenterY(pnlContent.Height, cardH) - 50;
 
-            var card1 = UIHelper.CreateCard(startX, cardY, cardW, cardH);
-            card1.Controls.Add(UIHelper.CreateLabel("전체 사용자", 20, 20, 9, UIHelper.Colors.TextSecondary));
-            card1.Controls.Add(UIHelper.CreateLabel(GetTotalUserCount() + "명", 20, 50, 28, UIHelper.Colors.TextPrimary, true));
+            var card1 = AdminUIHelper.CreateCard(startX, cardY, cardW, cardH);
+            card1.Controls.Add(AdminUIHelper.CreateLabel("전체 사용자", 20, 20, 9, AdminUIHelper.Colors.TextSecondary));
+            card1.Controls.Add(AdminUIHelper.CreateLabel(GetTotalUserCount() + "명", 20, 50, 28, AdminUIHelper.Colors.TextPrimary, true));
             pnlContent.Controls.Add(card1);
 
-            var card2 = UIHelper.CreateCard(startX + cardW + cardSpacing, cardY, cardW, cardH);
-            card2.Controls.Add(UIHelper.CreateLabel("전체 부서", 20, 20, 9, UIHelper.Colors.TextSecondary));
-            card2.Controls.Add(UIHelper.CreateLabel(GetTotalDepartmentCount() + "개", 20, 50, 28, UIHelper.Colors.TextPrimary, true));
+            var card2 = AdminUIHelper.CreateCard(startX + cardW + cardSpacing, cardY, cardW, cardH);
+            card2.Controls.Add(AdminUIHelper.CreateLabel("전체 부서", 20, 20, 9, AdminUIHelper.Colors.TextSecondary));
+            card2.Controls.Add(AdminUIHelper.CreateLabel(GetTotalDepartmentCount() + "개", 20, 50, 28, AdminUIHelper.Colors.TextPrimary, true));
             pnlContent.Controls.Add(card2);
 
-            var card3 = UIHelper.CreateCard(startX + (cardW + cardSpacing) * 2, cardY, cardW, cardH);
-            card3.Controls.Add(UIHelper.CreateLabel("오늘 접속자", 20, 20, 9, UIHelper.Colors.TextSecondary));
-            card3.Controls.Add(UIHelper.CreateLabel(GetTodayLoginCount() + "명", 20, 50, 28, UIHelper.Colors.TextPrimary, true));
+            var card3 = AdminUIHelper.CreateCard(startX + (cardW + cardSpacing) * 2, cardY, cardW, cardH);
+            card3.Controls.Add(AdminUIHelper.CreateLabel("오늘 접속자", 20, 20, 9, AdminUIHelper.Colors.TextSecondary));
+            card3.Controls.Add(AdminUIHelper.CreateLabel(GetTodayLoginCount() + "명", 20, 50, 28, AdminUIHelper.Colors.TextPrimary, true));
             pnlContent.Controls.Add(card3);
         }
 
@@ -159,26 +159,26 @@ namespace DBPAdmin
         // ==================== B. 부서관리 (2단계 계층 구조) ====================
         private void ShowDepartmentManage()
         {
-            var title = UIHelper.CreateTitle("부서 관리 (부서 > 팀 2단계 구조)");
+            var title = AdminUIHelper.CreateTitle("부서 관리 (부서 > 팀 2단계 구조)");
             title.Location = new Point(15, 15);
             pnlContent.Controls.Add(title);
 
-            var btnAdd = UIHelper.CreateBlueButton("+ 부서/팀 추가", pnlContent.Width - 140, 15, 120, 40);
+            var btnAdd = AdminUIHelper.CreateBlueButton("+ 부서/팀 추가", pnlContent.Width - 140, 15, 120, 40);
             btnAdd.Click += (s, e) => ShowDepartmentEditPanel(null);
             pnlContent.Controls.Add(btnAdd);
 
             int cardWidth = 1100;
-            int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
+            int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
 
-            var searchCard = UIHelper.CreateCard(cardX, 70, cardWidth, 60);
-            var txtSearch = UIHelper.CreateTextBox(15, 18, 840, 25, "txtDeptSearch", "부서/팀명 검색...");
-            var btnSearch = UIHelper.CreateBlueButton("검색", 870, 13, 80, 35);
+            var searchCard = AdminUIHelper.CreateCard(cardX, 70, cardWidth, 60);
+            var txtSearch = AdminUIHelper.CreateTextBox(15, 18, 840, 25, "txtDeptSearch", "부서/팀명 검색...");
+            var btnSearch = AdminUIHelper.CreateBlueButton("검색", 870, 13, 80, 35);
             btnSearch.Click += (s, e) => LoadDepartmentData(txtSearch.Text);
             searchCard.Controls.Add(txtSearch);
             searchCard.Controls.Add(btnSearch);
             pnlContent.Controls.Add(searchCard);
 
-            var dgv = UIHelper.CreateDGV(cardX, 145, cardWidth, 450, "dgvDepartment");
+            var dgv = AdminUIHelper.CreateDGV(cardX, 145, cardWidth, 450, "dgvDepartment");
             dgv.Columns.Add("DeptId", "ID");
             dgv.Columns["DeptId"].Visible = false;
             dgv.Columns.Add("Level", "레벨");
@@ -303,39 +303,39 @@ namespace DBPAdmin
             this.Controls.Add(editPanel);
             editPanel.BringToFront();
 
-            var title = UIHelper.CreateTitle(deptId.HasValue ? "부서/팀 수정" : "부서/팀 추가");
+            var title = AdminUIHelper.CreateTitle(deptId.HasValue ? "부서/팀 수정" : "부서/팀 추가");
             title.Location = new Point(15, 15);
             editPanel.Controls.Add(title);
 
             int cardWidth = 570, cardHeight = 350;
-            int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
-            int cardY = UIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
+            int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
+            int cardY = AdminUIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
 
-            var inputCard = UIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
+            var inputCard = AdminUIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
 
             int yPos = 30;
 
-            inputCard.Controls.Add(UIHelper.CreateLabel("부서/팀 이름", 30, yPos, 10, Color.Black, true));
-            var txtName = UIHelper.CreateTextBox(30, yPos + 25, 510, 30, "txtDeptName");
+            inputCard.Controls.Add(AdminUIHelper.CreateLabel("부서/팀 이름", 30, yPos, 10, Color.Black, true));
+            var txtName = AdminUIHelper.CreateTextBox(30, yPos + 25, 510, 30, "txtDeptName");
             inputCard.Controls.Add(txtName);
             yPos += 80;
 
-            inputCard.Controls.Add(UIHelper.CreateLabel("상위 부서 (없으면 최상위 부서로 등록됨)", 30, yPos, 10, Color.Black, true));
-            var cboParent = UIHelper.CreateComboBox(30, yPos + 25, 510, 30, "cboParentDept");
+            inputCard.Controls.Add(AdminUIHelper.CreateLabel("상위 부서 (없으면 최상위 부서로 등록됨)", 30, yPos, 10, Color.Black, true));
+            var cboParent = AdminUIHelper.CreateComboBox(30, yPos + 25, 510, 30, "cboParentDept");
             LoadParentDepartmentCombo(cboParent, deptId);
             inputCard.Controls.Add(cboParent);
             yPos += 65;
 
-            var lblInfo = UIHelper.CreateLabel("💡 상위 부서를 선택하지 않으면 '부서'로 등록됩니다.\n상위 부서를 선택하면 '팀'으로 등록됩니다.",
+            var lblInfo = AdminUIHelper.CreateLabel("💡 상위 부서를 선택하지 않으면 '부서'로 등록됩니다.\n상위 부서를 선택하면 '팀'으로 등록됩니다.",
                 30, yPos, 9, Color.Gray);
             inputCard.Controls.Add(lblInfo);
             yPos += 50;
 
-            var btnSave = UIHelper.CreateBlueButton("저장", 30, yPos, 250, 40);
+            var btnSave = AdminUIHelper.CreateBlueButton("저장", 30, yPos, 250, 40);
             btnSave.Click += (s, e) => SaveDepartment(deptId, editPanel);
             inputCard.Controls.Add(btnSave);
 
-            var btnCancel = UIHelper.CreateBlueButton("취소", 290, yPos, 220, 40);
+            var btnCancel = AdminUIHelper.CreateBlueButton("취소", 290, yPos, 220, 40);
             btnCancel.BackColor = Color.Gray;
             btnCancel.Click += (s, e) => CloseDepartmentEditPanel(editPanel);
             inputCard.Controls.Add(btnCancel);
@@ -495,19 +495,19 @@ namespace DBPAdmin
         // ==================== C. 사용자 관리 (팀 변경 시 부서 자동 변경) ====================
         private void ShowUserManage()
         {
-            var title = UIHelper.CreateTitle("사용자 관리");
+            var title = AdminUIHelper.CreateTitle("사용자 관리");
             title.Location = new Point(15, 15);
             pnlContent.Controls.Add(title);
 
             int cardWidth = 1100;
-            int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
+            int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
 
-            var searchCard = UIHelper.CreateCard(cardX, 70, cardWidth, 60);
-            var txtSearch = UIHelper.CreateTextBox(15, 18, 400, 25, "txtUserSearch", "이름 또는 ID 검색...");
-            var cboDept = UIHelper.CreateComboBox(430, 18, 200, 25, "cboDeptFilter");
+            var searchCard = AdminUIHelper.CreateCard(cardX, 70, cardWidth, 60);
+            var txtSearch = AdminUIHelper.CreateTextBox(15, 18, 400, 25, "txtUserSearch", "이름 또는 ID 검색...");
+            var cboDept = AdminUIHelper.CreateComboBox(430, 18, 200, 25, "cboDeptFilter");
             LoadDepartmentComboForFilter(cboDept);
 
-            var btnSearch = UIHelper.CreateBlueButton("검색", 650, 13, 80, 35);
+            var btnSearch = AdminUIHelper.CreateBlueButton("검색", 650, 13, 80, 35);
             btnSearch.Click += (s, e) =>
             {
                 string deptId = (cboDept.SelectedItem as ComboBoxItem)?.Value;
@@ -519,7 +519,7 @@ namespace DBPAdmin
             searchCard.Controls.Add(btnSearch);
             pnlContent.Controls.Add(searchCard);
 
-            var dgv = UIHelper.CreateDGV(cardX, 145, cardWidth, 450, "dgvUsers");
+            var dgv = AdminUIHelper.CreateDGV(cardX, 145, cardWidth, 450, "dgvUsers");
             dgv.Columns.Add("UserId", "ID");
             dgv.Columns["UserId"].Visible = false;
             dgv.Columns.Add("Name", "이름");
@@ -677,33 +677,33 @@ namespace DBPAdmin
             this.Controls.Add(editPanel);
             editPanel.BringToFront();
 
-            var title = UIHelper.CreateTitle($"사용자 부서/팀 변경 - {userName}");
+            var title = AdminUIHelper.CreateTitle($"사용자 부서/팀 변경 - {userName}");
             title.Location = new Point(15, 15);
             editPanel.Controls.Add(title);
 
             int cardWidth = 600, cardHeight = 350;
-            int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
-            int cardY = UIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
+            int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
+            int cardY = AdminUIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
 
-            var inputCard = UIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
+            var inputCard = AdminUIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
 
-            inputCard.Controls.Add(UIHelper.CreateLabel("사용자", 30, 30, 10, Color.Black, true));
-            inputCard.Controls.Add(UIHelper.CreateLabel(userName, 30, 55, 11, UIHelper.Colors.Primary));
+            inputCard.Controls.Add(AdminUIHelper.CreateLabel("사용자", 30, 30, 10, Color.Black, true));
+            inputCard.Controls.Add(AdminUIHelper.CreateLabel(userName, 30, 55, 11, AdminUIHelper.Colors.Primary));
 
-            inputCard.Controls.Add(UIHelper.CreateLabel("변경할 부서/팀", 30, 100, 10, Color.Black, true));
-            var cboDept = UIHelper.CreateComboBox(30, 125, 540, 30, "cboNewDept");
+            inputCard.Controls.Add(AdminUIHelper.CreateLabel("변경할 부서/팀", 30, 100, 10, Color.Black, true));
+            var cboDept = AdminUIHelper.CreateComboBox(30, 125, 540, 30, "cboNewDept");
             LoadAllDepartmentComboWithHierarchy(cboDept);
             inputCard.Controls.Add(cboDept);
 
-            var lblInfo = UIHelper.CreateLabel("💡 팀을 선택하면 상위 부서도 자동으로 설정됩니다.",
+            var lblInfo = AdminUIHelper.CreateLabel("💡 팀을 선택하면 상위 부서도 자동으로 설정됩니다.",
                 30, 165, 9, Color.Gray);
             inputCard.Controls.Add(lblInfo);
 
-            var btnSave = UIHelper.CreateBlueButton("변경", 30, 220, 260, 40);
+            var btnSave = AdminUIHelper.CreateBlueButton("변경", 30, 220, 260, 40);
             btnSave.Click += (s, e) => SaveUserDepartmentChange(userId, cboDept, editPanel);
             inputCard.Controls.Add(btnSave);
 
-            var btnCancel = UIHelper.CreateBlueButton("취소", 300, 220, 270, 40);
+            var btnCancel = AdminUIHelper.CreateBlueButton("취소", 300, 220, 270, 40);
             btnCancel.BackColor = Color.Gray;
             btnCancel.Click += (s, e) => CloseUserDepartmentChangePanel(editPanel);
             inputCard.Controls.Add(btnCancel);
@@ -825,54 +825,54 @@ namespace DBPAdmin
         // ==================== D. 대화내용 검색 (시간별 검색 추가) ====================
         private void ShowChatSearch()
         {
-            var title = UIHelper.CreateTitle("대화내용 검색");
+            var title = AdminUIHelper.CreateTitle("대화내용 검색");
             title.Location = new Point(15, 15);
             pnlContent.Controls.Add(title);
 
             int cardWidth = 1100;
-            int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
+            int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
 
-            var searchCard = UIHelper.CreateCard(cardX, 70, cardWidth, 120);
+            var searchCard = AdminUIHelper.CreateCard(cardX, 70, cardWidth, 120);
 
             // 첫 번째 줄
-            searchCard.Controls.Add(UIHelper.CreateLabel("발신자", 20, 15, 9, Color.Black, true));
-            var cboSender = UIHelper.CreateComboBox(80, 12, 180, 25, "cboSender");
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("발신자", 20, 15, 9, Color.Black, true));
+            var cboSender = AdminUIHelper.CreateComboBox(80, 12, 180, 25, "cboSender");
             LoadUserComboForSearchAll(cboSender);
             searchCard.Controls.Add(cboSender);
 
-            searchCard.Controls.Add(UIHelper.CreateLabel("수신자", 280, 15, 9, Color.Black, true));
-            var cboReceiver = UIHelper.CreateComboBox(340, 12, 180, 25, "cboReceiver");
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("수신자", 280, 15, 9, Color.Black, true));
+            var cboReceiver = AdminUIHelper.CreateComboBox(340, 12, 180, 25, "cboReceiver");
             LoadUserComboForSearchAll(cboReceiver);
             searchCard.Controls.Add(cboReceiver);
 
-            searchCard.Controls.Add(UIHelper.CreateLabel("내용", 540, 15, 9, Color.Black, true));
-            var txtContent = UIHelper.CreateTextBox(590, 12, 390, 25, "txtContent", "메시지 내용 검색...");
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("내용", 540, 15, 9, Color.Black, true));
+            var txtContent = AdminUIHelper.CreateTextBox(590, 12, 390, 25, "txtContent", "메시지 내용 검색...");
             searchCard.Controls.Add(txtContent);
 
             // 두 번째 줄 (시간 검색)
-            searchCard.Controls.Add(UIHelper.CreateLabel("시작일", 20, 55, 9, Color.Black, true));
-            var dtpStart = UIHelper.CreateDateTimePicker(80, 52, 200, 25, "dtpChatStart");
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("시작일", 20, 55, 9, Color.Black, true));
+            var dtpStart = AdminUIHelper.CreateDateTimePicker(80, 52, 200, 25, "dtpChatStart");
             dtpStart.Value = DateTime.Now.AddMonths(-1);
             dtpStart.Format = DateTimePickerFormat.Custom;
             dtpStart.CustomFormat = "yyyy-MM-dd HH:mm";
             dtpStart.ShowUpDown = false;
             searchCard.Controls.Add(dtpStart);
 
-            searchCard.Controls.Add(UIHelper.CreateLabel("종료일", 300, 55, 9, Color.Black, true));
-            var dtpEnd = UIHelper.CreateDateTimePicker(360, 52, 200, 25, "dtpChatEnd");
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("종료일", 300, 55, 9, Color.Black, true));
+            var dtpEnd = AdminUIHelper.CreateDateTimePicker(360, 52, 200, 25, "dtpChatEnd");
             dtpEnd.Value = DateTime.Now;
             dtpEnd.Format = DateTimePickerFormat.Custom;
             dtpEnd.CustomFormat = "yyyy-MM-dd HH:mm";
             dtpEnd.ShowUpDown = false;
             searchCard.Controls.Add(dtpEnd);
 
-            var btnSearch = UIHelper.CreateBlueButton("검색", 980, 45, 100, 40);
+            var btnSearch = AdminUIHelper.CreateBlueButton("검색", 980, 45, 100, 40);
             btnSearch.Click += BtnSearchChat_Click;
             searchCard.Controls.Add(btnSearch);
 
             pnlContent.Controls.Add(searchCard);
 
-            var dgv = UIHelper.CreateDGV(cardX, 205, cardWidth, 440, "dgvChat");
+            var dgv = AdminUIHelper.CreateDGV(cardX, 205, cardWidth, 440, "dgvChat");
             dgv.Columns.Add("MessageId", "ID");
             dgv.Columns["MessageId"].Visible = false;
             dgv.Columns.Add("FromUser", "발신자");
@@ -994,36 +994,36 @@ namespace DBPAdmin
         // ==================== E. 로그인/로그아웃 기록 (모든 사용자 표시) ====================
         private void ShowLoginLog()
         {
-            var title = UIHelper.CreateTitle("로그인/로그아웃 기록");
+            var title = AdminUIHelper.CreateTitle("로그인/로그아웃 기록");
             title.Location = new Point(15, 15);
             pnlContent.Controls.Add(title);
 
             int cardWidth = 1000;
-            int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
+            int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
 
-            var searchCard = UIHelper.CreateCard(cardX, 60, cardWidth, 70);
+            var searchCard = AdminUIHelper.CreateCard(cardX, 60, cardWidth, 70);
 
-            searchCard.Controls.Add(UIHelper.CreateLabel("사용자", 20, 15, 9, Color.Black, true));
-            var cboUser = UIHelper.CreateComboBox(80, 12, 220, 25, "cboLogUser");
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("사용자", 20, 15, 9, Color.Black, true));
+            var cboUser = AdminUIHelper.CreateComboBox(80, 12, 220, 25, "cboLogUser");
             LoadUserComboForSearchAll(cboUser); // 모든 사용자 조회
             searchCard.Controls.Add(cboUser);
 
-            searchCard.Controls.Add(UIHelper.CreateLabel("시작일", 320, 15, 9, Color.Black, true));
-            var dtpStart = UIHelper.CreateDateTimePicker(375, 12, 180, 25, "dtpLogStart");
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("시작일", 320, 15, 9, Color.Black, true));
+            var dtpStart = AdminUIHelper.CreateDateTimePicker(375, 12, 180, 25, "dtpLogStart");
             dtpStart.Value = DateTime.Now.AddMonths(-1);
             searchCard.Controls.Add(dtpStart);
 
-            searchCard.Controls.Add(UIHelper.CreateLabel("종료일", 575, 15, 9, Color.Black, true));
-            var dtpEnd = UIHelper.CreateDateTimePicker(630, 12, 180, 25, "dtpLogEnd");
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("종료일", 575, 15, 9, Color.Black, true));
+            var dtpEnd = AdminUIHelper.CreateDateTimePicker(630, 12, 180, 25, "dtpLogEnd");
             dtpEnd.Value = DateTime.Now;
             searchCard.Controls.Add(dtpEnd);
 
-            var btnSearch = UIHelper.CreateBlueButton("검색", 830, 10, 150, 30);
+            var btnSearch = AdminUIHelper.CreateBlueButton("검색", 830, 10, 150, 30);
             btnSearch.Click += BtnSearchLog_Click;
             searchCard.Controls.Add(btnSearch);
             pnlContent.Controls.Add(searchCard);
 
-            var dgv = UIHelper.CreateDGV(cardX, 145, cardWidth, 500, "dgvLoginLog");
+            var dgv = AdminUIHelper.CreateDGV(cardX, 145, cardWidth, 500, "dgvLoginLog");
             dgv.Columns.Add("UserName", "사용자");
             dgv.Columns["UserName"].Width = 200;
             dgv.Columns.Add("Role", "권한");
@@ -1095,19 +1095,19 @@ namespace DBPAdmin
         // ==================== F. 권한 관리 (완전 구현) ====================
         private void ShowPermissionManage()
         {
-            var title = UIHelper.CreateTitle("권한 관리");
+            var title = AdminUIHelper.CreateTitle("권한 관리");
             title.Location = new Point(15, 15);
             pnlContent.Controls.Add(title);
 
             // 탭 버튼
-            var btnTab1 = UIHelper.CreateBlueButton("부서별 보기 권한", 15, 60, 200, 40);
-            var btnTab2 = UIHelper.CreateBlueButton("사용자별 보기 권한", 225, 60, 200, 40);
-            var btnTab3 = UIHelper.CreateBlueButton("대화 차단 관리", 435, 60, 200, 40);
+            var btnTab1 = AdminUIHelper.CreateBlueButton("부서별 보기 권한", 15, 60, 200, 40);
+            var btnTab2 = AdminUIHelper.CreateBlueButton("사용자별 보기 권한", 225, 60, 200, 40);
+            var btnTab3 = AdminUIHelper.CreateBlueButton("대화 차단 관리", 435, 60, 200, 40);
 
             btnTab1.Click += (s, e) =>
             {
                 ShowPermissionTab1();
-                btnTab1.BackColor = UIHelper.Colors.Primary;
+                btnTab1.BackColor = AdminUIHelper.Colors.Primary;
                 btnTab2.BackColor = Color.Gray;
                 btnTab3.BackColor = Color.Gray;
             };
@@ -1115,7 +1115,7 @@ namespace DBPAdmin
             {
                 ShowPermissionTab2();
                 btnTab1.BackColor = Color.Gray;
-                btnTab2.BackColor = UIHelper.Colors.Primary;
+                btnTab2.BackColor = AdminUIHelper.Colors.Primary;
                 btnTab3.BackColor = Color.Gray;
             };
             btnTab3.Click += (s, e) =>
@@ -1123,7 +1123,7 @@ namespace DBPAdmin
                 ShowPermissionTab3();
                 btnTab1.BackColor = Color.Gray;
                 btnTab2.BackColor = Color.Gray;
-                btnTab3.BackColor = UIHelper.Colors.Primary;
+                btnTab3.BackColor = AdminUIHelper.Colors.Primary;
             };
 
             pnlContent.Controls.Add(btnTab1);
@@ -1151,25 +1151,25 @@ namespace DBPAdmin
             };
 
             int cardWidth = 1100;
-            int cardX = UIHelper.CalculateCenterX(tabPanel.Width, cardWidth);
+            int cardX = AdminUIHelper.CalculateCenterX(tabPanel.Width, cardWidth);
 
-            var searchCard = UIHelper.CreateCard(cardX - 15, 10, cardWidth, 60);
-            searchCard.Controls.Add(UIHelper.CreateLabel("사용자 선택", 20, 18, 9, Color.Black, true));
-            var cboUser = UIHelper.CreateComboBox(110, 15, 300, 25, "cboPermUser");
+            var searchCard = AdminUIHelper.CreateCard(cardX - 15, 10, cardWidth, 60);
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("사용자 선택", 20, 18, 9, Color.Black, true));
+            var cboUser = AdminUIHelper.CreateComboBox(110, 15, 300, 25, "cboPermUser");
             LoadUserComboForSearchAll(cboUser);
             searchCard.Controls.Add(cboUser);
 
-            var btnSearch = UIHelper.CreateBlueButton("조회", 430, 13, 100, 35);
+            var btnSearch = AdminUIHelper.CreateBlueButton("조회", 430, 13, 100, 35);
             btnSearch.Click += (s, e) => LoadDeptPermissionData((cboUser.SelectedItem as ComboBoxItem)?.Value);
             searchCard.Controls.Add(btnSearch);
 
-            var lblInfo = UIHelper.CreateLabel("💡 부서를 제한하면 해당 부서의 모든 팀도 함께 제한됩니다.", 
+            var lblInfo = AdminUIHelper.CreateLabel("💡 부서를 제한하면 해당 부서의 모든 팀도 함께 제한됩니다.", 
         560, 20, 9, Color.Gray);
     searchCard.Controls.Add(lblInfo);
 
             tabPanel.Controls.Add(searchCard);
 
-            var dgv = UIHelper.CreateDGV(cardX - 15, 85, cardWidth, 450, "dgvDeptPerm");
+            var dgv = AdminUIHelper.CreateDGV(cardX - 15, 85, cardWidth, 450, "dgvDeptPerm");
             dgv.Columns.Add("OwnerUserId", "OwnerUserId");
             dgv.Columns["OwnerUserId"].Visible = false;
             dgv.Columns.Add("DeptId", "DeptId");
@@ -1422,25 +1422,25 @@ private void DeleteDeptPermission(int ownerUserId, int deptId)
             };
 
             int cardWidth = 1100;
-            int cardX = UIHelper.CalculateCenterX(tabPanel.Width, cardWidth);
+            int cardX = AdminUIHelper.CalculateCenterX(tabPanel.Width, cardWidth);
 
-            var searchCard = UIHelper.CreateCard(cardX - 15, 10, cardWidth, 60);
-            searchCard.Controls.Add(UIHelper.CreateLabel("사용자", 20, 18, 9, Color.Black, true));
-            var cboUser = UIHelper.CreateComboBox(80, 15, 250, 25, "cboPermUser2");
+            var searchCard = AdminUIHelper.CreateCard(cardX - 15, 10, cardWidth, 60);
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("사용자", 20, 18, 9, Color.Black, true));
+            var cboUser = AdminUIHelper.CreateComboBox(80, 15, 250, 25, "cboPermUser2");
             LoadUserComboForSearchAll(cboUser);
             searchCard.Controls.Add(cboUser);
 
-            var btnSearch = UIHelper.CreateBlueButton("조회", 350, 13, 80, 35);
+            var btnSearch = AdminUIHelper.CreateBlueButton("조회", 350, 13, 80, 35);
             btnSearch.Click += (s, e) => LoadUserPermissionData((cboUser.SelectedItem as ComboBoxItem)?.Value);
             searchCard.Controls.Add(btnSearch);
 
-            var btnAdd = UIHelper.CreateBlueButton("+ 권한 추가", 980, 13, 100, 35);
+            var btnAdd = AdminUIHelper.CreateBlueButton("+ 권한 추가", 980, 13, 100, 35);
             btnAdd.Click += (s, e) => ShowAddUserPermission();
             searchCard.Controls.Add(btnAdd);
 
             tabPanel.Controls.Add(searchCard);
 
-            var dgv = UIHelper.CreateDGV(cardX - 15, 85, cardWidth, 450, "dgvUserPerm");
+            var dgv = AdminUIHelper.CreateDGV(cardX - 15, 85, cardWidth, 450, "dgvUserPerm");
             dgv.Columns.Add("OwnerUserId", "OwnerUserId");
             dgv.Columns["OwnerUserId"].Visible = false;
             dgv.Columns.Add("VisibleUserId", "VisibleUserId");
@@ -1550,35 +1550,35 @@ private void DeleteDeptPermission(int ownerUserId, int deptId)
             this.Controls.Add(editPanel);
             editPanel.BringToFront();
 
-            var title = UIHelper.CreateTitle("사용자별 보기 권한 추가");
+            var title = AdminUIHelper.CreateTitle("사용자별 보기 권한 추가");
             title.Location = new Point(15, 15);
             editPanel.Controls.Add(title);
 
             int cardWidth = 600, cardHeight = 300;
-            int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
-            int cardY = UIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
+            int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
+            int cardY = AdminUIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
 
-            var inputCard = UIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
+            var inputCard = AdminUIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
 
             int yPos = 30;
 
-            inputCard.Controls.Add(UIHelper.CreateLabel("사용자 선택", 30, yPos, 10, Color.Black, true));
-            var cboOwner = UIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboOwnerUser");
+            inputCard.Controls.Add(AdminUIHelper.CreateLabel("사용자 선택", 30, yPos, 10, Color.Black, true));
+            var cboOwner = AdminUIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboOwnerUser");
             LoadUserComboForSearchAll(cboOwner);
             inputCard.Controls.Add(cboOwner);
             yPos += 80;
 
-            inputCard.Controls.Add(UIHelper.CreateLabel("볼 수 있는 사용자", 30, yPos, 10, Color.Black, true));
-            var cboVisible = UIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboVisibleUser");
+            inputCard.Controls.Add(AdminUIHelper.CreateLabel("볼 수 있는 사용자", 30, yPos, 10, Color.Black, true));
+            var cboVisible = AdminUIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboVisibleUser");
             LoadUserComboForSearchAll(cboVisible);
             inputCard.Controls.Add(cboVisible);
             yPos += 80;
 
-            var btnSave = UIHelper.CreateBlueButton("추가", 30, yPos, 260, 40);
+            var btnSave = AdminUIHelper.CreateBlueButton("추가", 30, yPos, 260, 40);
             btnSave.Click += (s, e) => SaveUserPermission(cboOwner, cboVisible, editPanel);
             inputCard.Controls.Add(btnSave);
 
-            var btnCancel = UIHelper.CreateBlueButton("취소", 300, yPos, 270, 40);
+            var btnCancel = AdminUIHelper.CreateBlueButton("취소", 300, yPos, 270, 40);
             btnCancel.BackColor = Color.Gray;
             btnCancel.Click += (s, e) => CloseAddUserPermPanel(editPanel);
             inputCard.Controls.Add(btnCancel);
@@ -1650,25 +1650,25 @@ private void DeleteDeptPermission(int ownerUserId, int deptId)
             };
 
             int cardWidth = 1100;
-            int cardX = UIHelper.CalculateCenterX(tabPanel.Width, cardWidth);
+            int cardX = AdminUIHelper.CalculateCenterX(tabPanel.Width, cardWidth);
 
-            var searchCard = UIHelper.CreateCard(cardX - 15, 10, cardWidth, 60);
-            searchCard.Controls.Add(UIHelper.CreateLabel("사용자", 20, 18, 9, Color.Black, true));
-            var cboUser = UIHelper.CreateComboBox(80, 15, 250, 25, "cboPermUser3");
+            var searchCard = AdminUIHelper.CreateCard(cardX - 15, 10, cardWidth, 60);
+            searchCard.Controls.Add(AdminUIHelper.CreateLabel("사용자", 20, 18, 9, Color.Black, true));
+            var cboUser = AdminUIHelper.CreateComboBox(80, 15, 250, 25, "cboPermUser3");
             LoadUserComboForSearchAll(cboUser);
             searchCard.Controls.Add(cboUser);
 
-            var btnSearch = UIHelper.CreateBlueButton("조회", 350, 13, 80, 35);
+            var btnSearch = AdminUIHelper.CreateBlueButton("조회", 350, 13, 80, 35);
             btnSearch.Click += (s, e) => LoadChatPermissionData((cboUser.SelectedItem as ComboBoxItem)?.Value);
             searchCard.Controls.Add(btnSearch);
 
-            var btnAdd = UIHelper.CreateBlueButton("+ 차단 추가", 980, 13, 100, 35);
+            var btnAdd = AdminUIHelper.CreateBlueButton("+ 차단 추가", 980, 13, 100, 35);
             btnAdd.Click += (s, e) => ShowAddChatBlock();
             searchCard.Controls.Add(btnAdd);
 
             tabPanel.Controls.Add(searchCard);
 
-            var dgv = UIHelper.CreateDGV(cardX - 15, 85, cardWidth, 450, "dgvChatPerm");
+            var dgv = AdminUIHelper.CreateDGV(cardX - 15, 85, cardWidth, 450, "dgvChatPerm");
             dgv.Columns.Add("UserAId", "UserAId");
             dgv.Columns["UserAId"].Visible = false;
             dgv.Columns.Add("UserBId", "UserBId");
@@ -1816,35 +1816,35 @@ private void DeleteDeptPermission(int ownerUserId, int deptId)
             this.Controls.Add(editPanel);
             editPanel.BringToFront();
 
-            var title = UIHelper.CreateTitle("대화 차단 추가");
+            var title = AdminUIHelper.CreateTitle("대화 차단 추가");
             title.Location = new Point(15, 15);
             editPanel.Controls.Add(title);
 
             int cardWidth = 600, cardHeight = 300;
-            int cardX = UIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
-            int cardY = UIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
+            int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
+            int cardY = AdminUIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
 
-            var inputCard = UIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
+            var inputCard = AdminUIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
 
             int yPos = 30;
 
-            inputCard.Controls.Add(UIHelper.CreateLabel("사용자 A", 30, yPos, 10, Color.Black, true));
-            var cboUserA = UIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboUserA");
+            inputCard.Controls.Add(AdminUIHelper.CreateLabel("사용자 A", 30, yPos, 10, Color.Black, true));
+            var cboUserA = AdminUIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboUserA");
             LoadUserComboForSearchAll(cboUserA);
             inputCard.Controls.Add(cboUserA);
             yPos += 80;
 
-            inputCard.Controls.Add(UIHelper.CreateLabel("사용자 B", 30, yPos, 10, Color.Black, true));
-            var cboUserB = UIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboUserB");
+            inputCard.Controls.Add(AdminUIHelper.CreateLabel("사용자 B", 30, yPos, 10, Color.Black, true));
+            var cboUserB = AdminUIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboUserB");
             LoadUserComboForSearchAll(cboUserB);
             inputCard.Controls.Add(cboUserB);
             yPos += 80;
 
-            var btnSave = UIHelper.CreateBlueButton("차단 추가", 30, yPos, 260, 40);
+            var btnSave = AdminUIHelper.CreateBlueButton("차단 추가", 30, yPos, 260, 40);
             btnSave.Click += (s, e) => SaveChatBlock(cboUserA, cboUserB, editPanel);
             inputCard.Controls.Add(btnSave);
 
-            var btnCancel = UIHelper.CreateBlueButton("취소", 300, yPos, 270, 40);
+            var btnCancel = AdminUIHelper.CreateBlueButton("취소", 300, yPos, 270, 40);
             btnCancel.BackColor = Color.Gray;
             btnCancel.Click += (s, e) => CloseAddChatBlockPanel(editPanel);
             inputCard.Controls.Add(btnCancel);

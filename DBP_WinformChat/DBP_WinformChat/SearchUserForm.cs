@@ -12,6 +12,7 @@ namespace leehaeun
         public SearchUserForm()
         {
             InitializeComponent();
+            SearchUserFormUIHelper.ApplyStyles(this);
             SearchUser();
         }
 

@@ -32,7 +32,7 @@ namespace DBPAdmin
     }
 
     // ==================== 2. UIHelper (색상은 AppTheme에서 가져옴) ====================
-    public static class UIHelper
+    public static class AdminUIHelper
     {
         // 기존 코드 호환용 Colors 클래스
         public static class Colors

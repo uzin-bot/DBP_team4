@@ -8,6 +8,7 @@ namespace leehaeun
         public SearchAddressForm()
         {
             InitializeComponent();
+            SearchAddressFormUIHelper.ApplyStyles(this);
             ResultBox.DoubleClick += ResultBox_DoubleClick;
         }
 
