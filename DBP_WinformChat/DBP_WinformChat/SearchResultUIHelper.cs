@@ -59,6 +59,29 @@ namespace DBP_WinformChat
 
                 lv.FullRowSelect = true;
                 lv.HideSelection = false;
+
+                // 폼 폭에 맞게 ListView 폭 확장 (우측 여백 고려)
+                if (lv.Parent != null)
+                {
+                    // 너무 과도하게 넓어지지 않도록 여백을 조금 더 둔다
+                    lv.Width = Math.Max(lv.Width, lv.Parent.ClientSize.Width - 40);
+                }
+
+                // 컬럼 폭 조정: 텍스트 기준 매칭
+                foreach (ColumnHeader ch in lv.Columns)
+                {
+                    var text = (ch.Text ?? string.Empty).Trim();
+                    if (text.Equals("닉네임") || text.Equals("Nickname", System.StringComparison.OrdinalIgnoreCase))
+                        ch.Width = Math.Max(ch.Width, 160);
+                    else if (text.Equals("팀") || text.Equals("Team", System.StringComparison.OrdinalIgnoreCase))
+                        ch.Width = Math.Max(ch.Width, 140);
+                    else if (text.Equals("부서") || text.Equals("Dept", System.StringComparison.OrdinalIgnoreCase) || text.Equals("Department", System.StringComparison.OrdinalIgnoreCase))
+                        ch.Width = Math.Max(ch.Width, 200);
+                    else if (text.Equals("이름") || text.Equals("Name", System.StringComparison.OrdinalIgnoreCase))
+                        ch.Width = Math.Max(ch.Width, 150);
+                    else if (text.Equals("ID", System.StringComparison.OrdinalIgnoreCase))
+                        ch.Width = Math.Max(ch.Width, 130);
+                }
             }
 
             //자식 컨트롤에도 동일 적용 (재귀)

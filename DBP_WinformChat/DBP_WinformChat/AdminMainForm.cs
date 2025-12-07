@@ -1298,7 +1298,7 @@ private void LoadDeptPermissionData(string userId)
             int teamCount = Convert.ToInt32(row["TeamCount"]);
             
             dgv.Rows.Add(
-                row["OwnerUserId"],
+                row["OwnerUerId"],
                 row["DeptId"],
                 "🏢 " + row["DeptName"].ToString(),
                 teamCount + "개",
@@ -1407,7 +1407,7 @@ private void DeleteDeptPermission(int ownerUserId, int deptId)
     }
 }
 
-        // ==================== Tab2: 사용자별 보기 권한 ====================
+        // ==================== Tab2: 사용자별 보기 권한 (안 보이게 할 사용자 관리) ====================
         private void ShowPermissionTab2()
         {
             var existing = pnlContent.Controls.Find("pnlPermTab", true).FirstOrDefault();
@@ -1434,7 +1434,7 @@ private void DeleteDeptPermission(int ownerUserId, int deptId)
             btnSearch.Click += (s, e) => LoadUserPermissionData((cboUser.SelectedItem as ComboBoxItem)?.Value);
             searchCard.Controls.Add(btnSearch);
 
-            var btnAdd = AdminUIHelper.CreateBlueButton("+ 권한 추가", 980, 13, 100, 35);
+            var btnAdd = AdminUIHelper.CreateBlueButton("+ 제한 추가", 980, 13, 100, 35);
             btnAdd.Click += (s, e) => ShowAddUserPermission();
             searchCard.Controls.Add(btnAdd);
 
@@ -1446,9 +1446,11 @@ private void DeleteDeptPermission(int ownerUserId, int deptId)
             dgv.Columns.Add("VisibleUserId", "VisibleUserId");
             dgv.Columns["VisibleUserId"].Visible = false;
             dgv.Columns.Add("OwnerName", "사용자");
-            dgv.Columns["OwnerName"].Width = 200;
-            dgv.Columns.Add("VisibleName", "볼 수 있는 사용자");
-            dgv.Columns["VisibleName"].Width = 200;
+            dgv.Columns["OwnerName"].Width = 250;
+            dgv.Columns.Add("VisibleName", "안 보이게 할 사용자");
+            dgv.Columns["VisibleName"].Width = 250;
+            dgv.Columns.Add("Status", "상태");
+            dgv.Columns["Status"].Width = 150;
             dgv.Columns.Add(new DataGridViewButtonColumn
             {
                 Text = "삭제",
@@ -1458,182 +1460,230 @@ private void DeleteDeptPermission(int ownerUserId, int deptId)
             });
 
             dgv.CellClick += DgvUserPerm_CellClick;
+            dgv.CellFormatting += DgvUserPerm_CellFormatting;
             tabPanel.Controls.Add(dgv);
 
             pnlContent.Controls.Add(tabPanel);
-            LoadUserPermissionData(null);
+            LoadUserPermissionData("0");
         }
 
-        private void LoadUserPermissionData(string userId)
+private void DgvUserPerm_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+{
+    var dgv = sender as DataGridView;
+    if (dgv == null || e.RowIndex < 0) return;
+
+    if (dgv.Columns[e.ColumnIndex].Name == "Status")
+    {
+        dgv.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.MistyRose;
+        dgv.Rows[e.RowIndex].Cells["Status"].Value = "🚫 안 보임";
+    }
+}
+
+private void LoadUserPermissionData(string userId)
+{
+    var dgv = pnlContent.Controls.Find("dgvUserPerm", true).FirstOrDefault() as DataGridView;
+    if (dgv == null) return;
+
+    dgv.Rows.Clear();
+
+    // ✅ 수정: "안 보이게 할" 사용자 목록 표시
+    string sql = @"
+        SELECT uvu.OwnerUserId, uvu.VisibleUserId,
+               u1.Name AS OwnerName, u2.Name AS VisibleName
+        FROM UserVisibleUser uvu
+        INNER JOIN `User` u1 ON uvu.OwnerUserId = u1.UserId
+        INNER JOIN `User` u2 ON uvu.VisibleUserId = u2.UserId
+        WHERE 1=1";
+
+    if (!string.IsNullOrEmpty(userId) && userId != "0")
+    {
+        sql += $" AND uvu.OwnerUserId = {userId}";
+    }
+
+    sql += " ORDER BY u1.Name, u2.Name";
+
+    try
+    {
+        var dt = db.Query(sql);
+        
+        Console.WriteLine($"[UserPermission] 조회 쿼리: {sql}");
+        Console.WriteLine($"[UserPermission] 조회된 행 수: {dt.Rows.Count}");
+        
+        if (dt.Rows.Count == 0)
         {
-            var dgv = pnlContent.Controls.Find("dgvUserPerm", true).FirstOrDefault() as DataGridView;
-            if (dgv == null) return;
-
-            dgv.Rows.Clear();
-
-            string sql = @"
-                SELECT uvu.OwnerUserId, uvu.VisibleUserId,
-                       u1.Name AS OwnerName, u2.Name AS VisibleName
-                FROM UserVisibleUser uvu
-                INNER JOIN User u1 ON uvu.OwnerUserId = u1.UserId
-                INNER JOIN User u2 ON uvu.VisibleUserId = u2.UserId
-                WHERE 1=1";
-
-            if (!string.IsNullOrEmpty(userId) && userId != "0")
-            {
-                sql += $" AND uvu.OwnerUserId = {userId}";
-            }
-
-            sql += " ORDER BY u1.Name, u2.Name";
-
-            try
-            {
-                var dt = db.Query(sql);
-                foreach (DataRow row in dt.Rows)
-                {
-                    dgv.Rows.Add(row["OwnerUserId"], row["VisibleUserId"], row["OwnerName"], row["VisibleName"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"사용자 권한 로드 실패: {ex.Message}", "오류");
-            }
+            Console.WriteLine("[UserPermission] 등록된 사용자별 보기 제한이 없습니다.");
+            return;
         }
-
-        private void DgvUserPerm_CellClick(object sender, DataGridViewCellEventArgs e)
+        
+        foreach (DataRow row in dt.Rows)
         {
-            if (e.RowIndex < 0) return;
-
-            var dgv = sender as DataGridView;
-            if (dgv.Columns[e.ColumnIndex].Name == "Delete")
-            {
-                int ownerUserId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["OwnerUserId"].Value);
-                int visibleUserId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["VisibleUserId"].Value);
-                string ownerName = dgv.Rows[e.RowIndex].Cells["OwnerName"].Value.ToString();
-                string visibleName = dgv.Rows[e.RowIndex].Cells["VisibleName"].Value.ToString();
-
-                if (MessageBox.Show($"'{ownerName}'이(가) '{visibleName}'을(를) 볼 수 있는 권한을 삭제하시겠습니까?",
-                    "삭제 확인", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-                {
-                    DeleteUserPermission(ownerUserId, visibleUserId);
-                }
-            }
+            dgv.Rows.Add(
+                row["OwnerUserId"], 
+                row["VisibleUserId"], 
+                row["OwnerName"], 
+                row["VisibleName"],
+                "🚫 안 보임"
+            );
         }
+        
+        Console.WriteLine($"[UserPermission] DataGridView에 {dgv.Rows.Count}개 행 추가됨");
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"사용자 권한 로드 실패: {ex.Message}\n\nSQL: {sql}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        Console.WriteLine($"[UserPermission Error] {ex.Message}");
+        Console.WriteLine($"[UserPermission SQL] {sql}");
+    }
+}
 
-        private void DeleteUserPermission(int ownerUserId, int visibleUserId)
+private void DgvUserPerm_CellClick(object sender, DataGridViewCellEventArgs e)
+{
+    if (e.RowIndex < 0) return;
+
+    var dgv = sender as DataGridView;
+    if (dgv.Columns[e.ColumnIndex].Name == "Delete")
+    {
+        int ownerUserId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["OwnerUserId"].Value);
+        int visibleUserId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["VisibleUserId"].Value);
+        string ownerName = dgv.Rows[e.RowIndex].Cells["OwnerName"].Value.ToString();
+        string visibleName = dgv.Rows[e.RowIndex].Cells["VisibleName"].Value.ToString();
+
+        if (MessageBox.Show($"'{ownerName}'이(가) '{visibleName}'을(를) 다시 볼 수 있도록 하시겠습니까?",
+            "제한 해제", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
         {
-            try
-            {
-                db.NonQuery($"DELETE FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = {visibleUserId}");
-                LoadUserPermissionData(null);
-                MessageBox.Show("사용자 보기 권한이 삭제되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"삭제 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            DeleteUserPermission(ownerUserId, visibleUserId);
         }
+    }
+}
 
-        private void ShowAddUserPermission()
+private void DeleteUserPermission(int ownerUserId, int visibleUserId)
+{
+    try
+    {
+        db.NonQuery($"DELETE FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = {visibleUserId}");
+        
+        var cboUser = pnlContent.Controls.Find("cboPermUser2", true).FirstOrDefault() as ComboBox;
+        string currentUserId = (cboUser?.SelectedItem as ComboBoxItem)?.Value ?? "0";
+        
+        LoadUserPermissionData(currentUserId);
+        MessageBox.Show("사용자 보기 제한이 해제되었습니다. 이제 볼 수 있습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"제한 해제 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
+
+private void ShowAddUserPermission()
+{
+    pnlContent.Visible = false;
+
+    var editPanel = new Panel
+    {
+        Name = "pnlAddUserPerm",
+        Location = pnlContent.Location,
+        Size = pnlContent.Size,
+        BackColor = pnlContent.BackColor,
+        Padding = new Padding(15),
+        AutoScroll = true
+    };
+    this.Controls.Add(editPanel);
+    editPanel.BringToFront();
+
+    var title = AdminUIHelper.CreateTitle("사용자별 보기 제한 추가");
+    title.Location = new Point(15, 15);
+    editPanel.Controls.Add(title);
+
+    int cardWidth = 600, cardHeight = 350;
+    int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
+    int cardY = AdminUIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
+
+    var inputCard = AdminUIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
+
+    int yPos = 30;
+
+    inputCard.Controls.Add(AdminUIHelper.CreateLabel("사용자 선택", 30, yPos, 10, Color.Black, true));
+    var cboOwner = AdminUIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboOwnerUser");
+    LoadUserComboForSearchAll(cboOwner);
+    inputCard.Controls.Add(cboOwner);
+    yPos += 80;
+
+    inputCard.Controls.Add(AdminUIHelper.CreateLabel("안 보이게 할 사용자", 30, yPos, 10, Color.Black, true));
+    var cboVisible = AdminUIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboVisibleUser");
+    LoadUserComboForSearchAll(cboVisible);
+    inputCard.Controls.Add(cboVisible);
+    yPos += 80;
+
+    var lblInfo = AdminUIHelper.CreateLabel("💡 선택한 사용자가 특정 사용자를 목록에서 볼 수 없게 됩니다.",
+        30, yPos, 9, Color.Gray);
+    inputCard.Controls.Add(lblInfo);
+    yPos += 40;
+
+    var btnSave = AdminUIHelper.CreateBlueButton("제한 추가", 30, yPos, 260, 40);
+    btnSave.Click += (s, e) => SaveUserPermission(cboOwner, cboVisible, editPanel);
+    inputCard.Controls.Add(btnSave);
+
+    var btnCancel = AdminUIHelper.CreateBlueButton("취소", 300, yPos, 270, 40);
+    btnCancel.BackColor = Color.Gray;
+    btnCancel.Click += (s, e) => CloseAddUserPermPanel(editPanel);
+    inputCard.Controls.Add(btnCancel);
+
+    editPanel.Controls.Add(inputCard);
+}
+
+private void SaveUserPermission(ComboBox cboOwner, ComboBox cboVisible, Panel editPanel)
+{
+    if (!(cboOwner.SelectedItem is ComboBoxItem ownerItem) || string.IsNullOrEmpty(ownerItem.Value) || ownerItem.Value == "0")
+    {
+        MessageBox.Show("사용자를 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        return;
+    }
+
+    if (!(cboVisible.SelectedItem is ComboBoxItem visibleItem) || string.IsNullOrEmpty(visibleItem.Value) || visibleItem.Value == "0")
+    {
+        MessageBox.Show("안 보이게 할 사용자를 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        return;
+    }
+
+    if (ownerItem.Value == visibleItem.Value)
+    {
+        MessageBox.Show("자기 자신을 숨길 수 없습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        return;
+    }
+
+    try
+    {
+        // 중복 체크
+        var dtCheck = db.Query($"SELECT COUNT(*) FROM UserVisibleUser WHERE OwnerUserId = {ownerItem.Value} AND VisibleUserId = {visibleItem.Value}");
+        if (dtCheck.Rows.Count > 0 && Convert.ToInt32(dtCheck.Rows[0][0]) > 0)
         {
-            pnlContent.Visible = false;
-
-            var editPanel = new Panel
-            {
-                Name = "pnlAddUserPerm",
-                Location = pnlContent.Location,
-                Size = pnlContent.Size,
-                BackColor = pnlContent.BackColor,
-                Padding = new Padding(15),
-                AutoScroll = true
-            };
-            this.Controls.Add(editPanel);
-            editPanel.BringToFront();
-
-            var title = AdminUIHelper.CreateTitle("사용자별 보기 권한 추가");
-            title.Location = new Point(15, 15);
-            editPanel.Controls.Add(title);
-
-            int cardWidth = 600, cardHeight = 300;
-            int cardX = AdminUIHelper.CalculateCenterX(pnlContent.Width, cardWidth);
-            int cardY = AdminUIHelper.CalculateCenterY(pnlContent.Height, cardHeight) - 30;
-
-            var inputCard = AdminUIHelper.CreateCard(cardX, cardY, cardWidth, cardHeight);
-
-            int yPos = 30;
-
-            inputCard.Controls.Add(AdminUIHelper.CreateLabel("사용자 선택", 30, yPos, 10, Color.Black, true));
-            var cboOwner = AdminUIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboOwnerUser");
-            LoadUserComboForSearchAll(cboOwner);
-            inputCard.Controls.Add(cboOwner);
-            yPos += 80;
-
-            inputCard.Controls.Add(AdminUIHelper.CreateLabel("볼 수 있는 사용자", 30, yPos, 10, Color.Black, true));
-            var cboVisible = AdminUIHelper.CreateComboBox(30, yPos + 25, 540, 30, "cboVisibleUser");
-            LoadUserComboForSearchAll(cboVisible);
-            inputCard.Controls.Add(cboVisible);
-            yPos += 80;
-
-            var btnSave = AdminUIHelper.CreateBlueButton("추가", 30, yPos, 260, 40);
-            btnSave.Click += (s, e) => SaveUserPermission(cboOwner, cboVisible, editPanel);
-            inputCard.Controls.Add(btnSave);
-
-            var btnCancel = AdminUIHelper.CreateBlueButton("취소", 300, yPos, 270, 40);
-            btnCancel.BackColor = Color.Gray;
-            btnCancel.Click += (s, e) => CloseAddUserPermPanel(editPanel);
-            inputCard.Controls.Add(btnCancel);
-
-            editPanel.Controls.Add(inputCard);
+            MessageBox.Show("이미 동일한 제한이 존재합니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
         }
 
-        private void SaveUserPermission(ComboBox cboOwner, ComboBox cboVisible, Panel editPanel)
-        {
-            if (!(cboOwner.SelectedItem is ComboBoxItem ownerItem) || string.IsNullOrEmpty(ownerItem.Value) || ownerItem.Value == "0")
-            {
-                MessageBox.Show("사용자를 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+        db.NonQuery($"INSERT INTO UserVisibleUser (OwnerUserId, VisibleUserId) VALUES ({ownerItem.Value}, {visibleItem.Value})");
+        MessageBox.Show($"'{(cboOwner.SelectedItem as ComboBoxItem).Text}'이(가) '{(cboVisible.SelectedItem as ComboBoxItem).Text}'을(를) 볼 수 없게 되었습니다.", 
+            "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            if (!(cboVisible.SelectedItem is ComboBoxItem visibleItem) || string.IsNullOrEmpty(visibleItem.Value) || visibleItem.Value == "0")
-            {
-                MessageBox.Show("볼 수 있는 사용자를 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+        CloseAddUserPermPanel(editPanel);
+        ShowPermissionTab2();
+        
+        // 탭 버튼 색상 복원
+        var btnTab2 = pnlContent.Controls.Find("btnTab2", false).FirstOrDefault() as Button;
+        if (btnTab2 != null) btnTab2.BackColor = AdminUIHelper.Colors.Primary;
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"제한 추가 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
 
-            if (ownerItem.Value == visibleItem.Value)
-            {
-                MessageBox.Show("자기 자신에게는 권한을 부여할 수 없습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            try
-            {
-                // 중복 체크
-                var dtCheck = db.Query($"SELECT COUNT(*) FROM UserVisibleUser WHERE OwnerUserId = {ownerItem.Value} AND VisibleUserId = {visibleItem.Value}");
-                if (dtCheck.Rows.Count > 0 && Convert.ToInt32(dtCheck.Rows[0][0]) > 0)
-                {
-                    MessageBox.Show("이미 동일한 권한이 존재합니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                db.NonQuery($"INSERT INTO UserVisibleUser (OwnerUserId, VisibleUserId) VALUES ({ownerItem.Value}, {visibleItem.Value})");
-                MessageBox.Show("사용자 보기 권한이 추가되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                CloseAddUserPermPanel(editPanel);
-                ShowPermissionManage();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"추가 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void CloseAddUserPermPanel(Panel editPanel)
-        {
-            this.Controls.Remove(editPanel);
-            editPanel.Dispose();
-            pnlContent.Visible = true;
-        }
+private void CloseAddUserPermPanel(Panel editPanel)
+{
+    this.Controls.Remove(editPanel);
+    editPanel.Dispose();
+    pnlContent.Visible = true;
+}
 
         // ==================== Tab3: 대화 차단 관리 ====================
         private void ShowPermissionTab3()
@@ -1908,6 +1958,14 @@ private void DeleteDeptPermission(int ownerUserId, int deptId)
         {
             try
             {
+                // ✅ 로그아웃 로그 DB에 기록 추가
+                int currentUserId = leehaeun.LoginForm.UserId;
+                if (currentUserId > 0)
+                {
+                    string logQuery = $"INSERT INTO UserLog (UserId, ActionType, CreatedAt) VALUES ({currentUserId}, 'LOGOUT', NOW())";
+                    db.NonQuery(logQuery);
+                }
+
                 // 로그아웃 플래그 설정: LoginForm이 로그아웃으로 복귀할지 알 수 있도록 합니다.
                 leehaeun.LoginForm.Logout = true;
 

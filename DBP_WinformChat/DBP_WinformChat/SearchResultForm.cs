@@ -48,12 +48,19 @@ namespace DBP_Chat
             e.Item.Checked = true;
         }
 
+        // 팀 컬럼(DeptPath의 마지막 세그먼트) 추가 조회 및 표시
         private void LoadResult()
         {
             string sql = @"
-                SELECT u.UserId, u.Name, d.DeptName, u.Nickname
+                SELECT 
+                    u.UserId, 
+                    u.Name, 
+                    p.DeptName AS DeptName,      -- 상위 부서명
+                    d.DeptName AS TeamName,      -- 팀명(자식 부서 DeptName)
+                    u.Nickname
                 FROM User u 
                 JOIN Department d ON u.DeptId = d.DeptId
+                LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
                 WHERE 1=1 ";
 
             if (!string.IsNullOrEmpty(id))
@@ -63,7 +70,7 @@ namespace DBP_Chat
                 sql += $"AND u.Name LIKE '%{name}%' ";
 
             if (!string.IsNullOrEmpty(dept))
-                sql += $"AND d.DeptName = '{dept}' ";
+                sql += $"AND p.DeptName = '{dept}' ";
 
             DataTable dt = DBconnector.GetInstance().Query(sql);
 
@@ -73,7 +80,8 @@ namespace DBP_Chat
             {
                 ListViewItem item = new ListViewItem(row["UserId"].ToString());
                 item.SubItems.Add(row["Name"].ToString());
-                item.SubItems.Add(row["DeptName"].ToString());
+                item.SubItems.Add(row["DeptName"].ToString()); // 상위 부서
+                item.SubItems.Add(row["TeamName"].ToString()); // 팀(자식 부서)
                 item.SubItems.Add(row["Nickname"].ToString());
                 lvResult.Items.Add(item);
             }
@@ -122,6 +130,12 @@ namespace DBP_Chat
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void lvResult_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // 선택된 항목이 변경될 때 실행할 코드 작성
+            // 예시: 아무 동작도 하지 않음
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using DBP_WinformChat;
 using System.Data;
 using DBPAdmin;
+using DBP_Chat;
 
 namespace leehaeun
 {
@@ -9,6 +10,11 @@ namespace leehaeun
         public LoginForm()
         {
             InitializeComponent();
+            ThemeRadioHelper.AddThemeRadios(this);
+            ThemeManager.ApplyTheme(this);
+            ThemeManager.ThemeChanged += _ => ThemeManager.ApplyTheme(this);
+            this.Load += (s, e) => ThemeManager.ApplyTheme(this);
+
             LoginFormUIHelper.ApplyStyles(this);
             if (LoadConfig()) Login();
         }

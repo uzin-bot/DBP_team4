@@ -22,6 +22,7 @@
             colId = new ColumnHeader();
             colName = new ColumnHeader();
             colDept = new ColumnHeader();
+            colTeam = new ColumnHeader();
             colNickname = new ColumnHeader();
             btnAddFavorite = new Button();
             btnClose = new Button();
@@ -37,21 +38,22 @@
             label1.ForeColor = Color.White;
             label1.Location = new Point(32, 26);
             label1.Name = "label1";
-            label1.Size = new Size(161, 30);
+            label1.Size = new Size(140, 25);
             label1.TabIndex = 0;
             label1.Text = "직원 검색 결과";
             // 
             // lvResult
             // 
             lvResult.CheckBoxes = true;
-            lvResult.Columns.AddRange(new ColumnHeader[] { colId, colName, colDept, colNickname });
+            lvResult.Columns.AddRange(new ColumnHeader[] { colId, colName, colDept, colTeam, colNickname });
             lvResult.FullRowSelect = true;
             lvResult.Location = new Point(-1, 79);
             lvResult.Name = "lvResult";
-            lvResult.Size = new Size(607, 307);
+            lvResult.Size = new Size(645, 315);
             lvResult.TabIndex = 1;
             lvResult.UseCompatibleStateImageBehavior = false;
             lvResult.View = View.Details;
+            lvResult.SelectedIndexChanged += lvResult_SelectedIndexChanged;
             lvResult.DoubleClick += lvResult_DoubleClick;
             // 
             // colId
@@ -69,17 +71,22 @@
             colDept.Text = "부서";
             colDept.Width = 180;
             // 
+            // colTeam
+            // 
+            colTeam.Text = "팀";
+            colTeam.Width = 120;
+            // 
             // colNickname
             // 
             colNickname.Text = "닉네임";
-            colNickname.Width = 150;
+            colNickname.Width = 80;
             // 
             // btnAddFavorite
             // 
             btnAddFavorite.BackColor = Color.FromArgb(119, 136, 115);
             btnAddFavorite.FlatStyle = FlatStyle.Flat;
             btnAddFavorite.ForeColor = Color.White;
-            btnAddFavorite.Location = new Point(88, 413);
+            btnAddFavorite.Location = new Point(109, 406);
             btnAddFavorite.Name = "btnAddFavorite";
             btnAddFavorite.Size = new Size(160, 40);
             btnAddFavorite.TabIndex = 3;
@@ -92,7 +99,7 @@
             btnClose.BackColor = Color.FromArgb(119, 136, 115);
             btnClose.FlatStyle = FlatStyle.Flat;
             btnClose.ForeColor = Color.White;
-            btnClose.Location = new Point(344, 413);
+            btnClose.Location = new Point(365, 406);
             btnClose.Name = "btnClose";
             btnClose.Size = new Size(160, 40);
             btnClose.TabIndex = 0;
@@ -112,7 +119,7 @@
             // SearchResultForm
             // 
             BackColor = Color.FromArgb(241, 243, 224);
-            ClientSize = new Size(607, 482);
+            ClientSize = new Size(643, 464);
             Controls.Add(btnClose);
             Controls.Add(lvResult);
             Controls.Add(panel1);
@@ -131,6 +138,7 @@
         private ColumnHeader colId;
         private ColumnHeader colName;
         private ColumnHeader colDept;
+        private ColumnHeader colTeam;
         private ColumnHeader colNickname;
 
         private Button btnAddFavorite;

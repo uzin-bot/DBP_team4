@@ -1,4 +1,6 @@
-﻿namespace kyg
+﻿using DBPAdmin;
+
+namespace kyg
 {
     partial class ChatForm
     {
@@ -138,7 +140,7 @@
             // 
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(532, 913);
+            ClientSize = new Size(532, 934);
             Controls.Add(btnEmojiHeart);
             Controls.Add(btnEmojiCrying);
             Controls.Add(btnEmojiSmiley);
@@ -152,6 +154,39 @@
             Text = "ChatForm";
             ResumeLayout(false);
             PerformLayout();
+            // ----------------------------------------------------------------
+
+            
+
+            // ChatForm.Designer.cs 파일의 InitializeComponent() 메서드 내
+
+            // ----------------------------------------------------------------
+            // ChatFormUIHelper를 사용하여 스타일 및 둥근 모서리 적용
+            // ----------------------------------------------------------------
+
+            // 1. 폼 배경에 중간 밝은 색(ColorLight)을 적용합니다.
+            
+            ChatFormUIHelper.ApplyDisplayStyle(this);
+
+            // 2. RichTextBox 배경에 아주 밝은 색(ColorLightest)을 적용합니다.
+            // (ApplyLightestStyle은 Control을 받으므로 RichTextBox에 사용 가능합니다.)
+            ChatFormUIHelper.ApplyLightestStyle(this.rtbChatLog);
+
+            // TextBox 스타일 적용 및 둥근 모서리 적용
+            ChatFormUIHelper.ApplyInputStyle(this.txtInput);
+            ChatFormUIHelper.ApplyInputStyle(this.txtSearch);
+
+            // 버튼 스타일 및 둥근 모서리, 흰색 텍스트 적용
+            ChatFormUIHelper.ApplyButtonStyle(this.btnSend);
+            ChatFormUIHelper.ApplyButtonStyle(this.btnSearch);
+            ChatFormUIHelper.ApplyButtonStyle(this.btnSendFile);
+            ChatFormUIHelper.ApplyButtonStyle(this.btnEmojiSmiley);
+            ChatFormUIHelper.ApplyButtonStyle(this.btnEmojiCrying);
+            ChatFormUIHelper.ApplyButtonStyle(this.btnEmojiHeart);
+            // ----------------------------------------------------------------
+            
+
+
         }
 
         #endregion

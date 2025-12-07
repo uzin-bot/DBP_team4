@@ -11,6 +11,7 @@ using System.Resources;
 using System.Collections.Generic;
 using System.IO.Compression;
 using DBP_WinformChat;
+using DBP_Chat;
 
 // ChatForm은 RichTextBox: rtbChatLog, TextBox: txtInput, Button: btnSend, 
 // NotifyIcon: niChatAlert, TextBox: txtSearch, Button: btnSearch, Button: btnSendFile, 
@@ -34,6 +35,24 @@ namespace kyg
         public ChatForm(int myId, int partnerId) // 생성자 수정
         {
             InitializeComponent();
+            
+            // ✅ UIHelper 스타일 적용
+            ChatFormUIHelper.ApplyDisplayStyle(this);
+            ChatFormUIHelper.ApplyLightestStyle(rtbChatLog);
+            ChatFormUIHelper.ApplyInputStyle(txtInput);
+            ChatFormUIHelper.ApplyInputStyle(txtSearch);
+            ChatFormUIHelper.ApplyButtonStyle(btnSend);
+            ChatFormUIHelper.ApplyButtonStyle(btnSearch);
+            ChatFormUIHelper.ApplyButtonStyle(btnSendFile);
+            ChatFormUIHelper.ApplyButtonStyle(btnEmojiSmiley);
+            ChatFormUIHelper.ApplyButtonStyle(btnEmojiCrying);
+            ChatFormUIHelper.ApplyButtonStyle(btnEmojiHeart);
+
+            // ✅ 테마 적용만 유지 (라디오 버튼 생성 제거)
+            ThemeManager.ApplyTheme(this);
+            ThemeManager.ThemeChanged += _ => ThemeManager.ApplyTheme(this);
+
+            this.Load += (s, e) => ThemeManager.ApplyTheme(this);
             this.myId = myId;
             this.partnerId = partnerId;
             this.permissionManager = new PermissionManager(); // 어드민 추가
@@ -51,26 +70,10 @@ namespace kyg
             string partnerName = GetUserName(partnerId);
             this.Text = $"{partnerName} 님과의 채팅 ({myId})";
 
-
-            // 5-E: 이모티콘 맵 초기화 (Resources 폴더 직접 참조)
+            // 5-E: 이모지 맵 초기화 (Resources 폴더 직접 참조)
             LoadEmojisFromDirectory();
-            // 5-E: 이모티콘 맵 초기화 (ChatForm.resx 리소스 사용)
-            //formResourceManager = new ResourceManager(typeof(ChatForm));
 
-            /*
-            try
-            {
-                emojiMap.Add("EMO1", (Image)formResourceManager.GetObject("smiley"));
-                emojiMap.Add("EMO2", (Image)formResourceManager.GetObject("crying"));
-                emojiMap.Add("EMO3", (Image)formResourceManager.GetObject("heart"));
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("이모티콘 리소스 로드 중 오류 발생. resx 파일 확인 필요: " + ex.Message, "리소징 오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            */
             if (niChatAlert != null) niChatAlert.Visible = true;
-
 
             // 3주차 5-C: 대화 기록 로드
             LoadChatHistory();
@@ -79,7 +82,6 @@ namespace kyg
             ConnectToServer();
 
             // 이벤트 핸들러 연결
-            //this.btnSearch.Click += btnSearch_Click;
             this.btnSendFile.Click += btnSendFile_Click;
 
             // 5-E: 세 개의 개별 이모지 버튼 이벤트 연결
