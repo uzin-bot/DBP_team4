@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="UIHelper\**" />
+    <EmbeddedResource Remove="UIHelper\**" />
+    <None Remove="UIHelper\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
     <PackageReference Include="MySqlConnector" Version="2.5.0" />
   </ItemGroup>
@@ -50,10 +56,6 @@
     <None Update="Resources\Emojis\smiley.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="UIHelper\" />
   </ItemGroup>
 
 </Project>

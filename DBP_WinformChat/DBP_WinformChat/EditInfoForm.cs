@@ -1,4 +1,5 @@
 ﻿using DBP_WinformChat;
+using leehaeun.UIHelpers;
 using System.Data;
 
 namespace leehaeun
@@ -69,23 +70,29 @@ namespace leehaeun
                     ProfileImageMBox.Image = DBP_WinformChat.Properties.Resources._default;
                 }
 
+                // 수정 사항 - 패널 보이기/안보이기 추가
                 // 멀티프로필 멤버 관리 창 끄기
                 label2.Visible = false;
                 EditMButton.Visible = false;
                 MemberFLP.Visible = false;
+                EditInfoFormUIHelper.SetMemberPanelVisible(this, false);
             }
             else
             {
                 // 멀티프로필 멤버 관리 창 켜기
+                // 수정 사항 - 패널 보이기/안보이기 추가
                 label2.Visible = true;
                 EditMButton.Visible = true;
                 MemberFLP.Visible = true;
-
-                // 멀티 프로필 멤버 리스트 로딩
-                LoadMulProfileMemberList();
+                EditInfoFormUIHelper.SetMemberPanelVisible(this, true);
             }
 
-            tabControl.SelectedIndex = 0;
+            // 수정 사항 - 탭 이동 수정(커스텀)
+            EditInfoFormUIHelper.SwitchToTab(0);
+
+            // 수정 사항 - 오류 때문에 위치 이동
+            // 멀티 프로필 멤버 리스트 로딩
+            LoadMulProfileMemberList();
         }
 
         // 멀티 프로필 리스트 로딩
@@ -310,58 +317,34 @@ namespace leehaeun
         // 프로필 저장
         private void SaveProfileInfo()
         {
-            try
-    {
-        int profileId = Convert.ToInt32(NicknameBox.Tag);
-
-        // 닉네임 변경
-        if (NicknameBox.Text != CurrProfile["Nickname"].ToString())
-        {
-            string query = $"UPDATE Profile SET Nickname = '{NicknameBox.Text}' WHERE ProfileId = {profileId};";
-            int affected = DBconnector.GetInstance().NonQuery(query);
-            if (affected <= 0) MessageBox.Show("닉네임 변경 실패");
-        }
-
-        // 상태메시지 변경
-        if (StatusBox.Text != CurrProfile["StatusMessage"].ToString())
-        {
-            string query = $"UPDATE Profile SET StatusMessage = '{StatusBox.Text}' WHERE ProfileId = {profileId};";
-            int affected = DBconnector.GetInstance().NonQuery(query);
-            if (affected <= 0) MessageBox.Show("상태메시지 변경 실패");
-        }
-
-        // 프로필 이미지 변경
-        string currentImage = CurrProfile["ProfileImage"]?.ToString() ?? "";
-        string newImage = ProfileImagePBox.Tag?.ToString() ?? "";
-
-        if (newImage != currentImage)
-        {
-            string query;
-            if (string.IsNullOrEmpty(newImage))
+            // 닉네임 변경
+            if (NicknameBox.Text != CurrProfile["Nickname"].ToString())
             {
-                query = $"UPDATE Profile SET ProfileImage = NULL WHERE ProfileId = {profileId};";
+                string query = $"UPDATE Profile SET Name = '{NicknameBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                int affected = DBconnector.GetInstance().NonQuery(query);
+                if (affected <= 0) MessageBox.Show("닉네임 변경 실패");
             }
-            else
-            {
-                query = $"UPDATE Profile SET ProfileImage = '{newImage}' WHERE ProfileId = {profileId};";
-            }
-            int affected = DBconnector.GetInstance().NonQuery(query);
-            if (affected <= 0) MessageBox.Show("프로필 이미지 변경 실패");
-        }
 
-        MessageBox.Show("프로필 저장 완료");
-        UserInfo.GetProfileInfo();
-        
-        // CurrProfile 업데이트
-        CurrProfile = UserInfo.Profile.Rows.Cast<DataRow>()
-            .First(r => Convert.ToInt32(r["ProfileId"]) == profileId);
-        
-        LoadProfileInfo();
-    }
-    catch (Exception ex)
-    {
-        MessageBox.Show($"저장 중 오류 발생: {ex.Message}");
-    }
+            // 상태메시지 변경
+            if (StatusBox.Text != CurrProfile["StatusMessage"].ToString())
+            {
+                string query = $"UPDATE Profile SET Address = '{StatusBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                int affected = DBconnector.GetInstance().NonQuery(query);
+                if (affected <= 0) MessageBox.Show("상태메시지 변경 실패");
+            }
+
+            // 프로필 이미지 변경
+            if (ProfileImagePBox.Tag?.ToString() != CurrProfile["ProfileImage"].ToString() &&
+                string.IsNullOrEmpty(ProfileImagePBox.Tag.ToString()))
+            {
+                string query = $"UPDATE Profile SET ProfileImage = '{ProfileImagePBox.Tag?.ToString()}' WHERE UserId = '{LoginForm.UserId}';";
+                int affected = DBconnector.GetInstance().NonQuery(query);
+                if (affected <= 0) MessageBox.Show("프로필 이미지 변경 실패");
+            }
+
+            MessageBox.Show("프로필 저장 완료");
+            UserInfo.GetProfileInfo();
+            LoadProfileInfo();
         }
 
         // 멤버 추가 버튼
