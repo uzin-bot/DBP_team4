@@ -54,18 +54,13 @@ namespace DBP_WinformChat
                 if (ownerUserId == targetUserId)
                     return true;
 
-                // 2. UserVisibleUser 테이블 체크 (있으면 명시적 허용)
-                string checkVisibleUserSql = $"SELECT COUNT(*) FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId}";
-                var dtCheck = db.Query(checkVisibleUserSql);
-                int visibleUserCount = Convert.ToInt32(dtCheck.Rows[0][0]);
-
-                // UserVisibleUser에 데이터가 있으면 명시적으로 허용된 사용자만 볼 수 있음
-                if (visibleUserCount > 0)
-                {
-                    string sql = $"SELECT COUNT(*) FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = {targetUserId}";
-                    var dt = db.Query(sql);
-                    return Convert.ToInt32(dt.Rows[0][0]) > 0;
-                }
+                // 2. UserVisibleUser 테이블 체크 (있으면 안 보이게 설정된 사용자)
+                string sql = $"SELECT COUNT(*) FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = {targetUserId}";
+                var dt = db.Query(sql);
+                
+                // UserVisibleUser에 있으면 안 보임 (차단된 사용자)
+                if (Convert.ToInt32(dt.Rows[0][0]) > 0)
+                    return false;
 
                 // 3. 부서 권한 체크 (UserVisibleDept에 있으면 제한됨)
                 string deptCheckSql = $@"
@@ -169,10 +164,10 @@ namespace DBP_WinformChat
                         OR uvd.DeptId = d.ParentDeptId
                       )
                   )
-                  -- 사용자별 권한 체크
-                  AND (
-                    NOT EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId})
-                    OR EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = u.UserId)
+                  -- 사용자별 권한 체크: UserVisibleUser에 있으면 안 보임
+                  AND NOT EXISTS (
+                    SELECT 1 FROM UserVisibleUser 
+                    WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = u.UserId
                   )
                 ORDER BY u.Name";
 
@@ -212,10 +207,10 @@ namespace DBP_WinformChat
                     WHERE uvd.OwnerUserId = {userId}
                       AND (uvd.DeptId = u.DeptId OR uvd.DeptId = d.ParentDeptId)
                   )
-                  -- 사용자별 권한 체크
-                  AND (
-                    NOT EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {userId})
-                    OR EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {userId} AND VisibleUserId = u.UserId)
+                  -- 사용자별 권한 체크: UserVisibleUser에 있으면 안 보임
+                  AND NOT EXISTS (
+                    SELECT 1 FROM UserVisibleUser 
+                    WHERE OwnerUserId = {userId} AND VisibleUserId = u.UserId
                   )
                   -- 대화 차단 체크
                   AND NOT EXISTS (
@@ -364,10 +359,10 @@ namespace DBP_WinformChat
                     WHERE uvd.OwnerUserId = {ownerUserId}
                       AND (uvd.DeptId = u.DeptId OR uvd.DeptId = d.ParentDeptId)
                   )
-                  -- 사용자별 권한 체크
-                  AND (
-                    NOT EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId})
-                    OR EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = u.UserId)
+                  -- 사용자별 권한 체크: UserVisibleUser에 있으면 안 보임
+                  AND NOT EXISTS (
+                    SELECT 1 FROM UserVisibleUser 
+                    WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = u.UserId
                   )
                 ORDER BY u.Name
                 LIMIT 50";
