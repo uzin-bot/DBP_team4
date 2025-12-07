@@ -149,6 +149,8 @@ namespace 남예솔
 
         // 서버로 부터 알림 메세지 수신
         // ChatList.cs 파일의 ReceiveAlertMessages() 함수
+        // 서버로 부터 알림 메세지 수신
+        // ChatList.cs 파일의 ReceiveAlertMessages() 함수
         private void ReceiveAlertMessages()
         {
             if (alertClient == null || !alertClient.Connected) return;
@@ -190,23 +192,15 @@ namespace 남예솔
 
                             if (receiverId == currentUserId.ToString())
                             {
-
-                                // ✅ 마지막 메시지 보낸 사람 저장
-                                lastMessageSenderId = int.Parse(senderId);
-
                                 // 💡 수정된 부분: 3초 대기 후 UI 업데이트를 요청하는 Task 생성
-                                Task.Delay(1000).ContinueWith(_ =>
+                                Task.Delay(3000).ContinueWith(_ =>
                                 {
                                     try
                                     {
-
-                                        
                                         // UI 스레드에 업데이트 요청
                                         this.BeginInvoke((MethodInvoker)delegate
                                         {
                                             if (this.IsDisposed) return;
-
-                                            //System.Threading.Thread.Sleep(1000);
 
                                             // 1. 새로고침 (지연 후 실행)
                                             LoadRecentChat();
@@ -273,6 +267,7 @@ namespace 남예솔
                 catch { }
             });
         }
+
 
 
         // 새메세지 도착 알림
