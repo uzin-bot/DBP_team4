@@ -3,11 +3,11 @@ using kyg;
 using leehaeun;
 using MySqlConnector;
 using System;
-using System.Data;
-using System.Windows.Forms;
-using System.Drawing;
-using 남예솔;
 using System.Collections.Generic;   // HashSet 사용
+using System.Data;
+using System.Drawing;
+using System.Windows.Forms;
+using 남예솔;
 
 namespace DBP_Chat
 {
@@ -154,12 +154,33 @@ namespace DBP_Chat
             {
                 // 다크 모드 ON
                 ThemeManager.SetTheme(ThemeMode.Dark);
+                ColorSchemes.IsDarkMode = true;
+                RefreshAllForms();
                 // ThemeManager 내부에서 CurrentMode 변경 + 모든 폼 ApplyTheme + ThemeChanged 이벤트
             }
             else
             {
                 // 라이트 모드 ON
                 ThemeManager.SetTheme(ThemeMode.Light);
+                ColorSchemes.IsDarkMode = false;
+                RefreshAllForms();
+            }
+        }
+
+        private void RefreshAllForms()
+        {
+            // 현재 폼 새로고침
+            this.Invalidate(true);
+            this.Refresh();
+
+            // 열려있는 모든 폼 새로고침
+            foreach (Form form in Application.OpenForms)
+            {
+                if (form != this)
+                {
+                    form.Invalidate(true);
+                    form.Refresh();
+                }
             }
         }
 

@@ -115,19 +115,19 @@
             contextMenuStrip1.ImageScalingSize = new Size(24, 24);
             contextMenuStrip1.Items.AddRange(new ToolStripItem[] { addpin, deletepin });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(144, 52);
+            contextMenuStrip1.Size = new Size(127, 48);
             // 
             // addpin
             // 
             addpin.Name = "addpin";
-            addpin.Size = new Size(143, 24);
+            addpin.Size = new Size(126, 22);
             addpin.Text = "고정하기";
             addpin.Click += addpin_Click;
             // 
             // deletepin
             // 
             deletepin.Name = "deletepin";
-            deletepin.Size = new Size(143, 24);
+            deletepin.Size = new Size(126, 22);
             deletepin.Text = "고정 해제";
             deletepin.Click += deletepin_Click;
             // 
@@ -136,7 +136,7 @@
             imageList1.ColorDepth = ColorDepth.Depth32Bit;
             imageList1.ImageStream = (ImageListStreamer)resources.GetObject("imageList1.ImageStream");
             imageList1.TransparentColor = Color.Transparent;
-            imageList1.Images.SetKeyName(0, "imageList1");
+            imageList1.Images.SetKeyName(0, "imageList1.png");
             // 
             // panelHeader
             // 
@@ -168,7 +168,7 @@
             label1.ForeColor = Color.White;
             label1.Location = new Point(28, 28);
             label1.Name = "label1";
-            label1.Size = new Size(186, 28);
+            label1.Size = new Size(150, 21);
             label1.TabIndex = 1;
             label1.Text = "현재 채팅중인 목록";
             // 

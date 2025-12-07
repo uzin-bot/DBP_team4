@@ -4,8 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-
-namespace leehaeun
+namespace leehaeun.UIHelpers
 {
     public static class UserInfoFormUIHelper
     {

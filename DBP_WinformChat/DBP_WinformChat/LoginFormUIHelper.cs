@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-namespace leehaeun
+namespace leehaeun.UIHelpers
 {
     public static class LoginFormUIHelper
     {
@@ -148,7 +148,7 @@ namespace leehaeun
         {
             textBox.BorderStyle = BorderStyle.None;
             textBox.Font = new Font("맑은 고딕", 10F);
-            textBox.BackColor = Color.White;
+            textBox.BackColor = ColorSchemes.White;
 
             string placeHolder = "";
             bool isPasswordBox = false;
@@ -224,7 +224,7 @@ namespace leehaeun
             {
                 Size = new Size(230, 45),
                 Location = textBox.Location,
-                BackColor = Color.White,
+                BackColor = ColorSchemes.White,
                 Tag = textBox.Name
             };
 
@@ -261,7 +261,7 @@ namespace leehaeun
         {
             button.Font = new Font("맑은 고딕", 11F, FontStyle.Bold);
             button.BackColor = ColorSchemes.SageGreen;
-            button.ForeColor = Color.White;
+            button.ForeColor = ColorSchemes.White;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
             button.Height = 50;
@@ -321,7 +321,7 @@ namespace leehaeun
                 }
                 else
                 {
-                    bgColor = cb.Checked ? ColorSchemes.SageGreen : Color.White;
+                    bgColor = cb.Checked ? ColorSchemes.SageGreen : ColorSchemes.White;
                 }
 
                 // 둥근 네모 그리기
@@ -340,7 +340,7 @@ namespace leehaeun
                 // 체크 표시
                 if (cb.Checked)
                 {
-                    using (Pen pen = new Pen(Color.White, 2f))
+                    using (Pen pen = new Pen(ColorSchemes.White, 2f))
                     {
                         pen.StartCap = LineCap.Round;
                         pen.EndCap = LineCap.Round;
@@ -395,16 +395,7 @@ namespace leehaeun
         private static void AdjustLayout(Form form)
         {
             int centerX = (form.ClientSize.Width - 230) / 2;
-            int startY = 120; // 158 → 120으로 수정하여 상단 여백 증가
-
-            // label1과 label2 숨기기
-            foreach (Control control in form.Controls)
-            {
-                if (control.Name == "label1" || control.Name == "label2")
-                {
-                    control.Visible = false;
-                }
-            }
+            int startY = 158;
 
             foreach (Control control in form.Controls)
             {
@@ -415,27 +406,27 @@ namespace leehaeun
                 }
                 else if (control.Name == "PwBox" || (control is Panel && control.Tag?.ToString() == "PwBox"))
                 {
-                    control.Location = new Point(centerX, startY + 65); // 60 → 65
+                    control.Location = new Point(centerX, startY + 60);
                     control.Width = 230;
                 }
-                else if (control.Name == "RememberMe")
+                else if (control.Name == "RememberMeCheckBox")
                 {
-                    control.Location = new Point(centerX, startY + 125); // 110 → 125
+                    control.Location = new Point(centerX, startY + 110);
                     control.Width = 230;
                 }
-                else if (control.Name == "SaveInfo")
+                else if (control.Name == "SaveInfoCheckBox")
                 {
-                    control.Location = new Point(centerX, startY + 153); // 135 → 153
+                    control.Location = new Point(centerX, startY + 135);
                     control.Width = 230;
                 }
                 else if (control.Name == "LoginButton")
                 {
-                    control.Location = new Point(centerX, startY + 193); // 175 → 193
+                    control.Location = new Point(centerX, startY + 175);
                     control.Width = 230;
                 }
-                else if (control.Name == "SignUpLabel")
+                else if (control.Name == "SignUpLInkLabel")
                 {
-                    control.Location = new Point(centerX + 85, startY + 263); // 245 → 263
+                    control.Location = new Point(centerX + 85, startY + 245);
                 }
             }
         }

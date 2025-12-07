@@ -4,8 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-
-namespace leehaeun
+namespace leehaeun.UIHelpers
 {
     public static class SearchAddressFormUIHelper
     {
@@ -126,7 +125,7 @@ namespace leehaeun
             textBox.BorderStyle = BorderStyle.None;
             textBox.Font = new Font("맑은 고딕", 10F);
             textBox.ForeColor = ColorSchemes.DarkOlive;
-            textBox.BackColor = Color.White;
+            textBox.BackColor = ColorSchemes.White;
 
             int wrapperWidth = 440;
             int wrapperHeight = 38;
@@ -135,7 +134,7 @@ namespace leehaeun
             {
                 Size = new Size(wrapperWidth, wrapperHeight),
                 Location = textBox.Location,
-                BackColor = Color.White,
+                BackColor = ColorSchemes.White,
                 Tag = textBox.Name,
                 Cursor = Cursors.IBeam
             };
@@ -204,7 +203,7 @@ namespace leehaeun
         private static void StyleButton(Button button)
         {
             button.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
-            button.ForeColor = Color.White;
+            button.ForeColor = ColorSchemes.White;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
             button.FlatAppearance.MouseDownBackColor = ColorSchemes.DarkOlive;
@@ -237,7 +236,7 @@ namespace leehaeun
             listBox.BorderStyle = BorderStyle.None;
             listBox.Font = new Font("맑은 고딕", 9F);
             listBox.ForeColor = ColorSchemes.DarkOlive;
-            listBox.BackColor = Color.White;
+            listBox.BackColor = ColorSchemes.White;
             listBox.ItemHeight = 30;
             listBox.DrawMode = DrawMode.OwnerDrawFixed;
 
@@ -248,7 +247,7 @@ namespace leehaeun
             {
                 Size = new Size(wrapperWidth, wrapperHeight),
                 Location = listBox.Location,
-                BackColor = Color.White,
+                BackColor = ColorSchemes.White,
                 Tag = listBox.Name
             };
 
@@ -296,7 +295,7 @@ namespace leehaeun
 
                 // 배경
                 bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-                using (SolidBrush bgBrush = new SolidBrush(isSelected ? ColorSchemes.LightOlive : Color.White))
+                using (SolidBrush bgBrush = new SolidBrush(isSelected ? ColorSchemes.LightOlive : ColorSchemes.White))
                 {
                     e.Graphics.FillRectangle(bgBrush, e.Bounds);
                 }
