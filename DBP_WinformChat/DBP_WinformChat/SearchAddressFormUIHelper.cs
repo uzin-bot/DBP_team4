@@ -25,6 +25,7 @@ namespace leehaeun.UIHelpers
             CreateCustomTitleBar(form);
             StyleControls(form);
             AdjustLayout(form);
+            ReconnectEvents(form);  // 이벤트 재연결 추가
         }
 
         /// <summary>
@@ -332,6 +333,55 @@ namespace leehaeun.UIHelpers
                     listBox.ClearSelected();
                 }
             };
+        }
+
+        /// <summary>
+        /// 이벤트 재연결
+        /// </summary>
+        private static void ReconnectEvents(SearchAddressForm form)
+        {
+            // ListBox 찾기
+            ListBox listBox = FindListBox(form);
+            if (listBox != null && listBox.Name == "ResultBox")
+            {
+                // 더블클릭 이벤트 연결
+                listBox.DoubleClick += (s, e) =>
+                {
+                    if (listBox.SelectedItem != null)
+                    {
+                        // SearchAddressForm의 ResultBox_DoubleClick 메서드 호출
+                        var method = form.GetType().GetMethod("ResultBox_DoubleClick",
+                            System.Reflection.BindingFlags.NonPublic |
+                            System.Reflection.BindingFlags.Instance |
+                            System.Reflection.BindingFlags.Public);
+
+                        if (method != null)
+                        {
+                            method.Invoke(form, new object[] { s, e });
+                        }
+                    }
+                };
+            }
+        }
+
+        /// <summary>
+        /// ListBox 찾기
+        /// </summary>
+        private static ListBox FindListBox(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is ListBox lb)
+                {
+                    return lb;
+                }
+                else if (control is Panel panel)
+                {
+                    ListBox found = FindListBox(panel);
+                    if (found != null) return found;
+                }
+            }
+            return null;
         }
 
         /// <summary>

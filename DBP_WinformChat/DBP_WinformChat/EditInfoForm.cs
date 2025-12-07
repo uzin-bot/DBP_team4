@@ -320,7 +320,7 @@ namespace leehaeun
             // 닉네임 변경
             if (NicknameBox.Text != CurrProfile["Nickname"].ToString())
             {
-                string query = $"UPDATE Profile SET Nickname = '{NicknameBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE Profile SET Nickname = '{NicknameBox.Text}' WHERE UserId = '{LoginForm.UserId}' AND ProfileId = {CurrProfile["ProfileId"]};";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("닉네임 변경 실패");
             }
@@ -328,23 +328,24 @@ namespace leehaeun
             // 상태메시지 변경
             if (StatusBox.Text != CurrProfile["StatusMessage"].ToString())
             {
-                string query = $"UPDATE Profile SET StatusMessage = '{StatusBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE Profile SET StatusMessage = '{StatusBox.Text}' WHERE UserId = '{LoginForm.UserId}' AND ProfileId = {CurrProfile["ProfileId"]};";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("상태메시지 변경 실패");
             }
 
             // 프로필 이미지 변경
-            if (ProfileImagePBox.Tag?.ToString() != CurrProfile["ProfileImage"].ToString() &&
-                string.IsNullOrEmpty(ProfileImagePBox.Tag.ToString()))
+            if (ProfileImagePBox.Tag != null &&
+                !string.IsNullOrEmpty(ProfileImagePBox.Tag.ToString()) &&
+                ProfileImagePBox.Tag.ToString() != CurrProfile["ProfileImage"].ToString())
             {
-                string query = $"UPDATE Profile SET ProfileImage = '{ProfileImagePBox.Tag?.ToString()}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE Profile SET ProfileImage = '{ProfileImagePBox.Tag?.ToString()}' WHERE UserId = '{LoginForm.UserId}' AND ProfileId = {CurrProfile["ProfileId"]};";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("프로필 이미지 변경 실패");
             }
 
             MessageBox.Show("프로필 저장 완료");
-            UserInfo.GetProfileInfo();
-            LoadProfileInfo();
+            //UserInfo.GetProfileInfo();
+            //LoadProfileInfo();
         }
 
         // 멤버 추가 버튼

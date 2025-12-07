@@ -30,23 +30,31 @@ namespace leehaeun
         {
             string id = IdBox.Text;
 
-            // User 테이블에서 LoginId 중복 체크
-            string query = $"SELECT COUNT(*) FROM User WHERE LoginId = '{id}';";
-
-            DataTable dt = DBconnector.GetInstance().Query(query);
-            bool result = dt != null && dt.Rows.Count > 0;
-
-            if (result)
+            if (string.IsNullOrEmpty(id))
             {
-                if (Convert.ToInt32(dt.Rows[0][0]) > 0)
+                IsDuplicate.Text = "아이디를 입력해주세요.";
+                IsDuplicate.ForeColor = Color.Red;
+            }
+            else
+            {
+                // User 테이블에서 LoginId 중복 체크
+                string query = $"SELECT COUNT(*) FROM User WHERE LoginId = '{id}';";
+
+                DataTable dt = DBconnector.GetInstance().Query(query);
+                bool result = dt != null && dt.Rows.Count > 0;
+
+                if (result)
                 {
-                    IsDuplicate.Text = "이미 사용 중인 아이디입니다.";
-                    IsDuplicate.ForeColor = Color.Red;
-                }
-                else
-                {
-                    IsDuplicate.Text = "사용 가능한 아이디입니다.";
-                    IsDuplicate.ForeColor = Color.Blue;
+                    if (Convert.ToInt32(dt.Rows[0][0]) > 0)
+                    {
+                        IsDuplicate.Text = "이미 사용 중인 아이디입니다.";
+                        IsDuplicate.ForeColor = Color.Red;
+                    }
+                    else
+                    {
+                        IsDuplicate.Text = "사용 가능한 아이디입니다.";
+                        IsDuplicate.ForeColor = Color.Blue;
+                    }
                 }
             }
         }
@@ -75,7 +83,7 @@ namespace leehaeun
                 MessageBox.Show("모든 항목을 입력해주세요.");
                 return; // 이거 실행하고 확인해보기
             }
-            else if (IsDuplicate.Text == "이미 사용 중인 아이디입니다.")
+            else if (IsDuplicate.ForeColor == Color.Red)
             {
                 // 직접 쓴 문구 -> IsDuplicate.Text
                 MessageBox.Show(IsDuplicate.Text);
