@@ -69,7 +69,7 @@ namespace kyg
                 MessageBox.Show("이모티콘 리소스 로드 중 오류 발생. resx 파일 확인 필요: " + ex.Message, "리소징 오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             */
-            if (niChatAlert != null) niChatAlert.Visible = true;
+            //if (niChatAlert != null) niChatAlert.Visible = true;
 
 
             // 3주차 5-C: 대화 기록 로드
@@ -675,7 +675,52 @@ namespace kyg
 
         private void ChatForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            client?.Close();
+            try
+            {
+                // ✅ 무조건 읽음 처리 (조건 없이)
+                string queryChatMessage = $@"
+            UPDATE ChatMessage 
+            SET IsRead = 1 
+            WHERE FromUserId = {partnerId} 
+            AND ToUserId = {myId} 
+            AND IsRead = 0";
+
+                int updatedCount = DBconnector.GetInstance().NonQuery(queryChatMessage);
+
+                // ✅ RecentChat도 무조건 업데이트
+                string queryRecentChat = $@"
+            UPDATE RecentChat
+            SET UnreadCount = 0
+            WHERE UserId = {myId}
+            AND PartnerUserId = {partnerId}";
+
+                DBconnector.GetInstance().NonQuery(queryRecentChat);
+
+                Console.WriteLine($"[ChatForm] FormClosing에서 읽음 처리: ChatMessage {updatedCount}개 업데이트");
+
+                // ✅ READ_CONFIRM 전송
+                if (updatedCount > 0 && client != null && client.Connected)
+                {
+                    try
+                    {
+                        string confirmMsg = $"READ_CONFIRM:{myId}:{partnerId}::";
+                        byte[] data = Encoding.UTF8.GetBytes(confirmMsg);
+                        stream.Write(data, 0, data.Length);
+                        stream.Flush();
+
+                        System.Threading.Thread.Sleep(500); // 서버 처리 대기
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ChatForm] FormClosing 오류: {ex.Message}");
+            }
+            finally
+            {
+                client?.Close();
+            }
         }
 
         // 상대방이 나한테 보낸 안 읽은 메시지를 읽음 처리 (디비에)
@@ -693,12 +738,17 @@ namespace kyg
                 int updatedCount = DBconnector.GetInstance().NonQuery(query);
 
                 if (updatedCount > 0)
-                {
-                    // ✅ 0.5초 후에 READ_CONFIRM 전송
-                    Task.Delay(500).ContinueWith(_ =>
-                    {
-                        SendReadConfirm();
-                    });
+                { // ✅ 2. RecentChat의 UnreadCount도 0으로 업데이트 추가!
+                    string updateRecent = $@"
+                UPDATE RecentChat
+                SET UnreadCount = 0
+                WHERE UserId = {myId}
+                AND PartnerUserId = {partnerId}";
+
+                    DBconnector.GetInstance().NonQuery(updateRecent);
+
+                    System.Threading.Thread.Sleep(1000);
+                    SendReadConfirm();
                 }
 
                 Console.WriteLine($"[ChatForm] {partnerId}로부터 받은 메시지 읽음 처리 완료");

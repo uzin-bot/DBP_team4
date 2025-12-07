@@ -195,14 +195,18 @@ namespace 남예솔
                                 lastMessageSenderId = int.Parse(senderId);
 
                                 // 💡 수정된 부분: 3초 대기 후 UI 업데이트를 요청하는 Task 생성
-                                Task.Delay(3000).ContinueWith(_ =>
+                                Task.Delay(1000).ContinueWith(_ =>
                                 {
                                     try
                                     {
+
+                                        
                                         // UI 스레드에 업데이트 요청
                                         this.BeginInvoke((MethodInvoker)delegate
                                         {
                                             if (this.IsDisposed) return;
+
+                                            //System.Threading.Thread.Sleep(1000);
 
                                             // 1. 새로고침 (지연 후 실행)
                                             LoadRecentChat();
