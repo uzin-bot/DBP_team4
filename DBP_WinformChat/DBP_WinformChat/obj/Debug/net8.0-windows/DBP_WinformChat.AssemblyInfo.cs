@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DBP_WinformChat")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6562a299338ff1deaf06347ed0283bdacb80a9a2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f7a7273c5a97d03abda437dfb8004d0fbc50bfe7")]
 [assembly: System.Reflection.AssemblyProductAttribute("DBP_WinformChat")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DBP_WinformChat")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -78,6 +78,9 @@ namespace kyg
             // 2주차 5-A: 서버 연결
             ConnectToServer();
 
+            // ★★★ [추가] 더블 클릭 이벤트 연결 (파일 다운로드용) ★★★
+            this.rtbChatLog.DoubleClick += RtbChatLog_DoubleClick;
+
             // 3주차 5-C: 대화 기록 로드
             LoadChatHistory();
 
@@ -240,7 +243,13 @@ namespace kyg
             // 3주차 5-C: DB에서 과거 대화 기록을 조회하여 화면에 출력
             try
             {
+                /*
                 string query = $" SELECT  FromUserId, Content, SentAt, IsRead FROM ChatMessage" +
+                    $" WHERE (FromUserId = {myId} AND ToUserId = {partnerId}) " +
+                    $"OR (FromUserId = {partnerId} AND ToUserId = {myId}) ORDER BY SentAt ASC";
+                */
+                // ★★★ [수정] IsFile 컬럼을 함께 조회합니다.
+                string query = $" SELECT FromUserId, Content, SentAt, IsRead, IsFile FROM ChatMessage" +
                     $" WHERE (FromUserId = {myId} AND ToUserId = {partnerId}) " +
                     $"OR (FromUserId = {partnerId} AND ToUserId = {myId}) ORDER BY SentAt ASC";
 
@@ -257,6 +266,10 @@ namespace kyg
                     string timeString = sendTime.ToString("tt hh:mm");
                     int isRead = Convert.ToInt32(row["IsRead"]);
 
+                    // ★★★ [수정] DB에서 IsFile 값을 가져옴 (없으면 0 처리)
+                    int isFile = row.Table.Columns.Contains("IsFile") && row["IsFile"] != DBNull.Value
+                                 ? Convert.ToInt32(row["IsFile"]) : 0;
+
                     // 내가 보낸 메시지에만 읽음 표시
                     string readStatus = "";
                     if (senderId == myId && isRead == 0)
@@ -268,6 +281,17 @@ namespace kyg
                     if (content.StartsWith("EMOJI:"))
                     {
                         DisplayEmoji(senderId, content.Substring(6), timeString, readStatus);
+                    }
+                    else if (isFile == 1)
+                    {
+                        // ★★★ [추가] 파일인 경우 식별 가능한 태그와 함께 출력
+                        // DB에는 "[파일 전송 완료] 파일명" 형태로 저장되어 있으므로 파일명만 추출하거나 그대로 둠
+                        // 여기서는 사용자가 식별하기 쉽게 아이콘 텍스트를 붙입니다.
+                        string fileName = content.Replace("[파일 전송 완료] ", "").Trim();
+                        string senderLabel = senderId == myId ? "나" : senderId.ToString();
+
+                        // 특수 태그(📂 FILE:)을 붙여서 더블클릭 시 인식하게 함
+                        DisplayMessage($"[{senderLabel}]: 📂 FILE: {fileName} (더블클릭하여 다운로드){readStatus}", senderId == myId, timeString);
                     }
                     else
                     {
@@ -282,6 +306,60 @@ namespace kyg
             catch (Exception ex)
             {
                 MessageBox.Show("대화 기록을 불러오는 중 오류 발생: " + ex.Message, "DB 오류");
+            }
+        }
+
+        // ★★★ [신규] 채팅 로그 더블 클릭 시 파일 다운로드 처리 ★★★
+        private void RtbChatLog_DoubleClick(object sender, EventArgs e)
+        {
+            // 현재 커서가 위치한 줄의 텍스트를 가져옴
+            int lineIndex = rtbChatLog.GetLineFromCharIndex(rtbChatLog.SelectionStart);
+            if (lineIndex < 0 || lineIndex >= rtbChatLog.Lines.Length) return;
+
+            string lineText = rtbChatLog.Lines[lineIndex];
+
+            // "📂 FILE:" 태그가 있는지 확인
+            if (lineText.Contains("📂 FILE:"))
+            {
+                try
+                {
+                    // 텍스트 파싱: "📂 FILE:" 뒤의 파일명 추출
+                    // 형식 예: "[300]: 📂 FILE: cat.jpg (더블클릭하여 다운로드) (오전 10:00)"
+                    int fileStartIndex = lineText.IndexOf("📂 FILE:") + 8; // "📂 FILE:" 길이만큼 뒤로
+                    int fileEndIndex = lineText.IndexOf(" (더블클릭", fileStartIndex);
+
+                    if (fileEndIndex == -1) // 혹시 형식이 다를 경우를 대비해 괄호 전까지 자름
+                        fileEndIndex = lineText.LastIndexOf(" (");
+
+                    if (fileStartIndex > 0 && fileEndIndex > fileStartIndex)
+                    {
+                        string fileName = lineText.Substring(fileStartIndex, fileEndIndex - fileStartIndex).Trim();
+
+                        DialogResult dr = MessageBox.Show($"'{fileName}' 파일을 다운로드 하시겠습니까?", "파일 다운로드", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                        if (dr == DialogResult.Yes)
+                        {
+                            SaveFileDialog sfd = new SaveFileDialog();
+                            sfd.FileName = fileName;
+                            if (sfd.ShowDialog(this) == DialogResult.OK)
+                            {
+                                // 서버에 다운로드 요청 전송
+                                fileStream = new FileStream(sfd.FileName, FileMode.Create, FileAccess.Write);
+
+                                string reqMsg = $"FILE_DOWNLOAD_REQ:{myId}:{fileName}\0";
+                                byte[] reqData = Encoding.UTF8.GetBytes(reqMsg);
+                                stream.Write(reqData, 0, reqData.Length);
+                                stream.Flush();
+
+                                rtbChatLog.AppendText("\n>> 다운로드 요청 중...\n");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("파일 다운로드 요청 중 오류: " + ex.Message);
+                }
             }
         }
 
