@@ -114,7 +114,7 @@ namespace DBP_WinformChat
                 SELECT DISTINCT 
                     u.UserId, 
                     u.Name, 
-                    u.Nickname, 
+                    pr.Nickname, 
                     u.LoginId, 
                     u.DeptId, 
                     p.DeptName AS ParentDeptName,
@@ -123,6 +123,7 @@ namespace DBP_WinformChat
                 FROM User u
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
+                LEFT JOIN Profile pr ON u.UserId = pr.UserId AND pr.IsDefault = 1
                 WHERE u.Role = 'user' 
                 AND u.UserId != {ownerUserId}
                 AND (
@@ -162,12 +163,13 @@ namespace DBP_WinformChat
                 SELECT DISTINCT 
                     u.UserId, 
                     u.Name, 
-                    u.Nickname,
+                    pr.Nickname,
                     p.DeptName AS ParentDeptName,
                     d.DeptName AS DeptName
                 FROM User u
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
+                LEFT JOIN Profile pr ON u.UserId = pr.UserId AND pr.IsDefault = 1
                 WHERE u.Role = 'user' 
                 AND u.UserId != {userId}
                 AND (
@@ -204,12 +206,13 @@ namespace DBP_WinformChat
             try
             {
                 string sql = $@"
-                SELECT u.UserId, u.Name, u.Nickname, u.LoginId,
+                SELECT u.UserId, u.Name, pr.Nickname, u.LoginId,
                        p.DeptName AS ParentDeptName,
                        d.DeptName AS DeptName
                 FROM User u
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
+                LEFT JOIN Profile pr ON u.UserId = pr.UserId AND pr.IsDefault = 1
                 WHERE u.DeptId = {deptId} AND u.Role = 'user'
                 ORDER BY u.Name";
 
@@ -260,12 +263,13 @@ namespace DBP_WinformChat
             try
             {
                 string sql = $@"
-                SELECT u.UserId, u.Name, u.Nickname,
+                SELECT u.UserId, u.Name, pr.Nickname,
                        p.DeptName AS ParentDeptName,
                        d.DeptName AS DeptName
                 FROM User u
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
+                LEFT JOIN Profile pr ON u.UserId = pr.UserId AND pr.IsDefault = 1
                 WHERE u.UserId IN (
                     SELECT CASE 
                         WHEN UserAId = {userId} THEN UserBId 
@@ -299,16 +303,17 @@ namespace DBP_WinformChat
                 SELECT DISTINCT 
                     u.UserId, 
                     u.Name, 
-                    u.Nickname, 
+                    pr.Nickname, 
                     u.LoginId,
                     p.DeptName AS ParentDeptName,
                     d.DeptName AS DeptName
                 FROM User u
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
+                LEFT JOIN Profile pr ON u.UserId = pr.UserId AND pr.IsDefault = 1
                 WHERE u.Role = 'user' 
                 AND u.UserId != {ownerUserId}
-                AND (u.Name LIKE '%{searchKeyword}%' OR u.Nickname LIKE '%{searchKeyword}%' OR u.LoginId LIKE '%{searchKeyword}%')
+                AND (u.Name LIKE '%{searchKeyword}%' OR pr.Nickname LIKE '%{searchKeyword}%' OR u.LoginId LIKE '%{searchKeyword}%')
                 AND (
                     u.UserId IN (SELECT VisibleUserId FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId})
                     OR u.DeptId IN (SELECT DeptId FROM UserVisibleDept WHERE OwnerUserId = {ownerUserId})

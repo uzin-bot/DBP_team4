@@ -164,11 +164,11 @@ namespace DBP_Chat
             lBlist.Items.Clear();
 
             string sql = $@"
-                SELECT u.UserId, u.LoginId, u.Name, u.Nickname
+                SELECT u.UserId, u.LoginId, u.Name, p.Nickname
                 FROM Favorite f
-                JOIN User u ON f.FavoriteUserId = u.UserId      
+                JOIN User u ON f.FavoriteUserId = u.UserId
+                JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1
                 WHERE f.UserId = {currentUserId}";
-
             DataTable dt = DBconnector.GetInstance().Query(sql);
 
             foreach (DataRow row in dt.Rows)
