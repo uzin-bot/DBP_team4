@@ -77,12 +77,12 @@ namespace kyg
             */
             //if (niChatAlert != null) niChatAlert.Visible = true;
 
+            // 2주차 5-A: 서버 연결
+            ConnectToServer();
 
             // 3주차 5-C: 대화 기록 로드
             LoadChatHistory();
 
-            // 2주차 5-A: 서버 연결
-            ConnectToServer();
 
             // 이벤트 핸들러 연결
             //this.btnSearch.Click += btnSearch_Click;
@@ -484,11 +484,27 @@ namespace kyg
                                 if (CanMarkAsRead()) MarkMessagesAsRead();
                             });
                         }
-                        else if (type == "READ_CONFIRM")
+                        else if (parts[0] == "READ_CONFIRM" && parts.Length >= 3)
                         {
-                            this.Invoke((MethodInvoker)delegate {
-                                if (!this.IsDisposed) { rtbChatLog.Clear(); LoadChatHistory(); }
-                            });
+                            int readerId = Convert.ToInt32(parts[1]); // 읽은 사람
+                            int senderId = Convert.ToInt32(parts[2]); // 보낸 사람
+
+                            Console.WriteLine($"[ChatForm] READ_CONFIRM 수신 - readerId: {readerId}, senderId: {senderId}, myId: {myId}, partnerId: {partnerId}");
+
+                            // 내가 보낸 메시지를 상대방이 읽었을 때만
+                            if (senderId == myId && readerId == partnerId)
+                            {
+                                this.Invoke((MethodInvoker)delegate
+                                {
+                                    if (this.IsDisposed) return;
+
+                                    Console.WriteLine($"[ChatForm] 화면 갱신 시작");
+
+                                    // 화면 전체 다시 로드
+                                    rtbChatLog.Clear();
+                                    LoadChatHistory();
+                                });
+                            }
                         }
                     }
 
@@ -735,7 +751,7 @@ namespace kyg
 
                     DBconnector.GetInstance().NonQuery(updateRecent);
 
-                    System.Threading.Thread.Sleep(1000);
+                    //System.Threading.Thread.Sleep(1000);
                     SendReadConfirm();
                 }
 

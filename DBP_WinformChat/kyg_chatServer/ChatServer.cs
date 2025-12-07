@@ -197,7 +197,7 @@ public class kyg
                         Console.WriteLine($"[Server] 읽음 확인: {readerId}가 {originalSenderId}의 메시지 읽음");
 
                         // 원래 보낸 사람에게 읽음 확인 전달
-                        string confirmMsg = $"READ_CONFIRM:{readerId}::";
+                        string confirmMsg = $"READ_CONFIRM:{readerId}:{originalSenderId}:";
                         SendMessageToClient(originalSenderId, confirmMsg);
 
                         Console.WriteLine($"[Server] {originalSenderId}에게 읽음 확인 전달 완료");
