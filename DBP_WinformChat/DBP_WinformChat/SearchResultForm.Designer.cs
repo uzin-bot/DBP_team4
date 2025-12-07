@@ -23,8 +23,6 @@
             colName = new ColumnHeader();
             colDept = new ColumnHeader();
             colTeam = new ColumnHeader();
-            btnAddFavorite = new Button();
-            btnClose = new Button();
             panel1 = new Panel();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -43,7 +41,6 @@
             // 
             // lvResult
             // 
-            lvResult.CheckBoxes = true;
             lvResult.Columns.AddRange(new ColumnHeader[] { colId, colName, colDept, colTeam });
             lvResult.FullRowSelect = true;
             lvResult.Location = new Point(-1, 79);
@@ -75,32 +72,6 @@
             colTeam.Text = "팀";
             colTeam.Width = 120;
             // 
-            // btnAddFavorite
-            // 
-            btnAddFavorite.BackColor = Color.FromArgb(119, 136, 115);
-            btnAddFavorite.FlatStyle = FlatStyle.Flat;
-            btnAddFavorite.ForeColor = Color.White;
-            btnAddFavorite.Location = new Point(109, 406);
-            btnAddFavorite.Name = "btnAddFavorite";
-            btnAddFavorite.Size = new Size(160, 40);
-            btnAddFavorite.TabIndex = 3;
-            btnAddFavorite.Text = "즐겨찾기 추가";
-            btnAddFavorite.UseVisualStyleBackColor = false;
-            btnAddFavorite.Click += btnAddFavorite_Click;
-            // 
-            // btnClose
-            // 
-            btnClose.BackColor = Color.FromArgb(119, 136, 115);
-            btnClose.FlatStyle = FlatStyle.Flat;
-            btnClose.ForeColor = Color.White;
-            btnClose.Location = new Point(365, 406);
-            btnClose.Name = "btnClose";
-            btnClose.Size = new Size(160, 40);
-            btnClose.TabIndex = 0;
-            btnClose.Text = "닫기";
-            btnClose.UseVisualStyleBackColor = false;
-            btnClose.Click += btnClose_Click;
-            // 
             // panel1
             // 
             panel1.BackColor = Color.FromArgb(119, 136, 115);
@@ -113,11 +84,9 @@
             // SearchResultForm
             // 
             BackColor = Color.FromArgb(241, 243, 224);
-            ClientSize = new Size(643, 464);
-            Controls.Add(btnClose);
+            ClientSize = new Size(643, 394);
             Controls.Add(lvResult);
             Controls.Add(panel1);
-            Controls.Add(btnAddFavorite);
             Name = "SearchResultForm";
             Text = "직원검색결과";
             panel1.ResumeLayout(false);
@@ -133,9 +102,6 @@
         private ColumnHeader colName;
         private ColumnHeader colDept;
         private ColumnHeader colTeam;
-
-        private Button btnAddFavorite;
-        private Button btnClose;
         private Panel panel1;
     }
 }

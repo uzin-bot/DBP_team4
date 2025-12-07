@@ -65,7 +65,7 @@ namespace DBP_Chat
         //셀 클릭하면 자동으로 체크표시 되도록 변경했습니다!
         private void lvResult_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            e.Item.Checked = true;
+            // e.Item.Checked = true;
         }
 
         /*
@@ -166,10 +166,12 @@ namespace DBP_Chat
 
         private void lvResult_DoubleClick(object sender, EventArgs e)
         {
+            /*
             if (lvResult.SelectedItems.Count == 0) return;
 
             int targetUserId = Convert.ToInt32(lvResult.SelectedItems[0].Text);
             new ChatForm(currentUserId, targetUserId).Show();
+            */
         }
 
         private void btnAddFavorite_Click(object sender, EventArgs e)
@@ -178,7 +180,11 @@ namespace DBP_Chat
             {
                 if (item.Checked)
                 {
-                    int targetUserId = Convert.ToInt32(item.Text);
+                    int targetLoginId = Convert.ToInt32(item.Text);
+                    // LoginId로 UserId 찾기
+                    string findUserSql = $"SELECT UserId FROM User WHERE LoginId = '{targetLoginId}'";
+                    DataTable userDt = DBconnector.GetInstance().Query(findUserSql);
+                    int targetUserId = Convert.ToInt32(userDt.Rows[0]["UserId"]);
 
                     string sql = $@"
                         SELECT COUNT(*) 
@@ -250,8 +256,8 @@ namespace DBP_Chat
             this.lvResult.ForeColor = _darkText;
 
             // 버튼들 다크 테마
-            this.StyleButton(this.btnAddFavorite, _darkButton);
-            this.StyleButton(this.btnClose, _darkButton);
+            //this.StyleButton(this.btnAddFavorite, _darkButton);
+            //this.StyleButton(this.btnClose, _darkButton);
         }
 
         // 라이트 모드 적용
