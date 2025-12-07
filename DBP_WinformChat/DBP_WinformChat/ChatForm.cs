@@ -364,7 +364,11 @@ namespace kyg
                     int bytesRead = stream.Read(buffer, 0, buffer.Length);
                     if (bytesRead == 0) break;
 
-                    // [1] 파일 다운로드 모드 (바이너리 데이터 처리)
+                    // ============================================================
+                    // [중요] 파일 다운로드 모드 (ZIP 파일 0KB/깨짐 방지)
+                    // ============================================================
+                    // 파일 받는 중에는 절대 GetString()을 하지 않고 바이트 그대로 씁니다.
+                    // 그래야 ZIP 내부의 0x00 바이트가 문자열 종료로 인식되어 잘리는 것을 막습니다.
                     if (isDownloading && fileStream != null)
                     {
                         int writeSize = (int)Math.Min(bytesRead, remainingBytes);
@@ -377,17 +381,23 @@ namespace kyg
                             fileStream.Close();
                             fileStream = null;
                             isDownloading = false;
+
                             this.Invoke((MethodInvoker)delegate {
                                 MessageBox.Show("다운로드가 완료되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             });
                         }
+                        // 파일 데이터를 썼으면 이번 루프는 여기서 끝내고 다시 Read 대기
                         continue;
                     }
 
-                    // [2] 텍스트 메시지 처리
+                    // ============================================================
+                    // [텍스트 모드] 일반 채팅, 알림, 헤더 처리
+                    // ============================================================
                     string received = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     messageBuilder.Append(received);
                     string fullMessage = messageBuilder.ToString();
+
+                    // \0 기준으로 메시지 쪼개기
                     string[] messages = fullMessage.Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
 
                     bool lastMessageComplete = fullMessage.EndsWith("\0");
@@ -396,50 +406,56 @@ namespace kyg
                     for (int i = 0; i < messagesToProcess; i++)
                     {
                         string msg = messages[i].Trim();
+                        if (string.IsNullOrEmpty(msg)) continue;
 
-                        // ▼▼▼ [핵심 수정] 5가 아니라 4로 변경해야 내용이 안 잘립니다! ▼▼▼
-                        // 구조: TYPE : Sender : Receiver : Content(나머지 전체)
-                        string[] parts = msg.Split(new char[] { ':' }, 4);
-
+                        // 파싱 (최대 5개로 분할)
+                        string[] parts = msg.Split(new char[] { ':' }, 5);
                         if (parts.Length < 1) continue;
+
                         string type = parts[0];
 
-                        // [A] 파일 응답 헤더 처리 (FILE_RESP)
-                        // 서버 전송 포맷: FILE_RESP:SERVER:ReqID:FileName:Size
-                        // Split(4)를 했으므로 parts[3]에 "FileName:Size"가 들어있음
-                        if (type == "FILE_RESP" && parts.Length >= 4)
+                        // [A] 파일 다운로드 시작 헤더 (FILE_RESP)
+                        if (type == "FILE_RESP" && parts.Length >= 5)
                         {
-                            string filePayload = parts[3]; // "파일명:크기"
-                            int lastColonIndex = filePayload.LastIndexOf(':');
-
-                            if (lastColonIndex != -1)
+                            if (long.TryParse(parts[4], out long size))
                             {
-                                string sizeStr = filePayload.Substring(lastColonIndex + 1);
-                                if (long.TryParse(sizeStr, out long size))
-                                {
-                                    remainingBytes = size;
-                                    isDownloading = true;
-                                    continue;
-                                }
+                                remainingBytes = size;
+                                isDownloading = true;
+
+                                // 헤더 처리 끝났으니 빌더 비우고, 즉시 break하여
+                                // 다음 버퍼부터는 위쪽의 [파일 다운로드 모드] if문으로 들어가게 함
+                                messageBuilder.Clear();
+                                break;
                             }
                         }
-                        // [B] 채팅 및 알림 처리 (CHAT)
+
+                        // [B] 읽음 확인 (READ_CONFIRM)
+                        else if (type == "READ_CONFIRM")
+                        {
+                            this.Invoke((MethodInvoker)delegate {
+                                if (!this.IsDisposed) { rtbChatLog.Clear(); LoadChatHistory(); }
+                            });
+                        }
+
+                        // [C] 채팅 및 파일 수신 알림 (CHAT)
                         else if (type == "CHAT" && parts.Length >= 4)
                         {
                             int senderId = Convert.ToInt32(parts[1]);
-                            string content = parts[3]; // 이제 잘리지 않은 전체 내용이 들어옵니다.
+                            // parts[3]에 내용이 들어있음 (4조각으로 잘라도 되지만 5조각 로직 유지)
+                            string content = (parts.Length > 3) ? parts[3] : "";
+
+                            // 만약 5조각으로 잘라서 내용이 더 뒤에 있다면 이어붙임 (안전장치)
+                            if (parts.Length > 4) content += ":" + parts[4];
 
                             this.Invoke((MethodInvoker)delegate
                             {
                                 if (this.IsDisposed) return;
                                 string currentTime = DateTime.Now.ToString("tt hh:mm");
 
-                                // 파일 도착 알림 확인
                                 if (content.StartsWith("FILE_RECEIVED:"))
                                 {
                                     try
                                     {
-                                        // 내용 파싱: FILE_RECEIVED : 파일명 : 경로
                                         string[] fileInfo = content.Split(new char[] { ':' }, 3);
                                         string fileName = fileInfo.Length > 1 ? fileInfo[1] : "unknown";
 
@@ -451,26 +467,22 @@ namespace kyg
                                         {
                                             SaveFileDialog sfd = new SaveFileDialog();
                                             sfd.FileName = fileName;
-                                            sfd.Filter = "All Files (*.*)|*.*";
-
                                             if (sfd.ShowDialog(this) == DialogResult.OK)
                                             {
+                                                // ★★★ 핵심 수정: fileStream 먼저 생성 ★★★
                                                 fileStream = new FileStream(sfd.FileName, FileMode.Create, FileAccess.Write);
 
-                                                string reqMsg = $"FILE_DOWNLOAD_REQ:{myId}:{fileName}";
+                                                // 서버에 요청: FILE_DOWNLOAD_REQ:내ID:파일명
+                                                string reqMsg = $"FILE_DOWNLOAD_REQ:{myId}:{fileName}\0";  // ← \0 추가
                                                 byte[] reqData = Encoding.UTF8.GetBytes(reqMsg);
                                                 stream.Write(reqData, 0, reqData.Length);
                                                 stream.Flush();
                                             }
                                         }
                                     }
-                                    catch (Exception ex)
-                                    {
-                                        MessageBox.Show("오류: " + ex.Message);
-                                    }
+                                    catch (Exception ex) { MessageBox.Show("오류: " + ex.Message); }
 
-                                    // 채팅창에는 알림 문구만 출력
-                                    DisplayMessage($"[{senderId}]: 파일이 도착했습니다 ({content.Split(':')[1]})", false, currentTime);
+                                    DisplayMessage($"[{senderId}]: 파일 도착 알림 ({content.Split(':')[1]})", false, currentTime);
                                 }
                                 else if (content.StartsWith("EMOJI:"))
                                 {
@@ -481,41 +493,31 @@ namespace kyg
                                     DisplayMessage($"[{senderId}]: {content}", false, currentTime);
                                 }
 
-                                if (CanMarkAsRead()) MarkMessagesAsRead();
-                            });
-                        }
-                        else if (parts[0] == "READ_CONFIRM" && parts.Length >= 3)
-                        {
-                            int readerId = Convert.ToInt32(parts[1]); // 읽은 사람
-                            int senderId = Convert.ToInt32(parts[2]); // 보낸 사람
-
-                            Console.WriteLine($"[ChatForm] READ_CONFIRM 수신 - readerId: {readerId}, senderId: {senderId}, myId: {myId}, partnerId: {partnerId}");
-
-                            // 내가 보낸 메시지를 상대방이 읽었을 때만
-                            if (senderId == myId && readerId == partnerId)
-                            {
-                                this.Invoke((MethodInvoker)delegate
+                                // [1 사라짐 해결] 창이 보이고 최소화 상태가 아니면 즉시 읽음 처리
+                                if (this.Visible && this.WindowState != FormWindowState.Minimized)
                                 {
-                                    if (this.IsDisposed) return;
-
-                                    Console.WriteLine($"[ChatForm] 화면 갱신 시작");
-
-                                    // 화면 전체 다시 로드
-                                    rtbChatLog.Clear();
-                                    LoadChatHistory();
-                                });
-                            }
+                                    MarkMessagesAsRead();
+                                }
+                            });
                         }
                     }
 
-                    if (!lastMessageComplete && messages.Length > 0)
+                    // 남은 텍스트 데이터 처리 (다운로드 모드가 아닐 때만)
+                    if (!lastMessageComplete && messages.Length > 0 && !isDownloading)
                     {
                         messageBuilder.Clear();
                         messageBuilder.Append(messages[messages.Length - 1]);
                     }
-                    else { messageBuilder.Clear(); }
+                    else
+                    {
+                        messageBuilder.Clear();
+                    }
                 }
-                catch (Exception ex) { Console.WriteLine(ex.Message); break; }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    break;
+                }
             }
         }
 
