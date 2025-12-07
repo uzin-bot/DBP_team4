@@ -4,104 +4,109 @@ using System.Windows.Forms;
 
 namespace DBPAdmin
 {
-    /// <summary>
-    /// UI 생성 및 스타일 관리 헬퍼 클래스
-    /// </summary>
+    // ==================== 1. 색상 팔레트 (이것만 수정하면 전체 UI 색상 변경) ====================
+    public static class AppTheme
+    {
+        // 🎨 메인 팔레트 - 여기만 수정하세요!
+        public static readonly Color Color1 = ColorTranslator.FromHtml("#F1F3E0");  // 가장 밝은 색 (배경)
+        public static readonly Color Color2 = ColorTranslator.FromHtml("#D2DCB6");  // 밝은 색 (카드, 서브)
+        public static readonly Color Color3 = ColorTranslator.FromHtml("#A1BC98");  // 중간 색 (버튼, 강조)
+        public static readonly Color Color4 = ColorTranslator.FromHtml("#778873");  // 어두운 색 (사이드바, 헤더)
+
+        // 🔧 역할별 색상 매핑 (팔레트 기반 자동 적용)
+        public static readonly Color Background = Color1;       // 메인 배경
+        public static readonly Color CardBg = Color.White;      // 카드 배경
+        public static readonly Color SidebarBg = Color4;        // 사이드바 배경
+        public static readonly Color Primary = Color3;          // 주요 버튼, 강조
+        public static readonly Color Secondary = Color2;        // 보조 요소
+        public static readonly Color HeaderBg = Color4;         // 테이블 헤더
+
+        public static readonly Color TextDark = Color.FromArgb(50, 50, 50);     // 어두운 텍스트
+        public static readonly Color TextLight = Color.White;                    // 밝은 텍스트
+        public static readonly Color TextMuted = Color.FromArgb(120, 120, 120); // 흐린 텍스트
+
+        public static readonly Color Border = Color2;           // 테두리
+        public static readonly Color ButtonHover = Color2;      // 버튼 호버
+        public static readonly Color ActiveMenu = Color3;       // 활성 메뉴
+        public static readonly Color InactiveMenu = Color4;     // 비활성 메뉴
+    }
+
+    // ==================== 2. UIHelper (색상은 AppTheme에서 가져옴) ====================
     public static class UIHelper
     {
-        // ==================== 색상 팔레트 ====================
+        // 기존 코드 호환용 Colors 클래스
         public static class Colors
         {
-            public static readonly Color Primary = Color.FromArgb(49, 130, 206);
-            public static readonly Color DarkBg = Color.FromArgb(45, 55, 72);
-            public static readonly Color LightBg = Color.FromArgb(237, 242, 247);
-            public static readonly Color CardBg = Color.White;
-            public static readonly Color TextPrimary = Color.FromArgb(45, 55, 72);
-            public static readonly Color TextSecondary = Color.Gray;
-            public static readonly Color TextLight = Color.FromArgb(203, 213, 224);
-            public static readonly Color Border = Color.FromArgb(226, 232, 240);
-            public static readonly Color AccentLight = Color.FromArgb(247, 250, 252);
+            public static readonly Color Primary = AppTheme.Primary;
+            public static readonly Color DarkBg = AppTheme.SidebarBg;
+            public static readonly Color LightBg = AppTheme.Background;
+            public static readonly Color CardBg = AppTheme.CardBg;
+            public static readonly Color TextPrimary = AppTheme.TextDark;
+            public static readonly Color TextSecondary = AppTheme.TextMuted;
+            public static readonly Color TextLight = AppTheme.TextLight;
+            public static readonly Color Border = AppTheme.Border;
+            public static readonly Color AccentLight = AppTheme.Secondary;
         }
 
-        // ==================== 폰트 ====================
-        public static class Fonts
-        {
-            public static readonly Font Title = new Font("맑은 고딕", 16F, FontStyle.Bold);
-            public static readonly Font Heading = new Font("맑은 고딕", 11F, FontStyle.Bold);
-            public static readonly Font ButtonLarge = new Font("맑은 고딕", 10F, FontStyle.Bold);
-            public static readonly Font Normal = new Font("맑은 고딕", 9F);
-            public static readonly Font Small = new Font("맑은 고딕", 8F);
-            public static readonly Font Large = new Font("맑은 고딕", 28F, FontStyle.Bold);
-        }
-
-        // ==================== 간격 및 크기 ====================
-        public static class Spacing
-        {
-            public const int Small = 10;
-            public const int Medium = 20;
-            public const int Large = 30;
-        }
-
-        // ==================== 타이틀 레이블 생성 ====================
+        // 타이틀 레이블
         public static Label CreateTitle(string text)
         {
             return new Label
             {
                 Text = text,
-                Font = Fonts.Title,
-                ForeColor = Colors.TextPrimary,
+                Font = new Font("맑은 고딕", 14F, FontStyle.Bold),
+                ForeColor = AppTheme.TextDark,
                 AutoSize = true
             };
         }
 
-        // ==================== 일반 레이블 생성 ====================
-        public static Label CreateLabel(string text, int x, int y, int fontSize, Color color, bool bold = false)
+        // 일반 레이블
+        public static Label CreateLabel(string text, int x, int y, int fontSize = 9, Color? color = null, bool bold = false)
         {
             return new Label
             {
                 Text = text,
                 Location = new Point(x, y),
                 Font = new Font("맑은 고딕", fontSize, bold ? FontStyle.Bold : FontStyle.Regular),
-                ForeColor = color,
+                ForeColor = color ?? AppTheme.TextDark,
                 AutoSize = true
             };
         }
 
-        // ==================== 카드 패널 생성 ====================
+        // 카드 패널
         public static Panel CreateCard(int x, int y, int width, int height)
         {
             return new Panel
             {
                 Location = new Point(x, y),
                 Size = new Size(width, height),
-                BackColor = Colors.CardBg,
-                Padding = new Padding(10),
+                BackColor = AppTheme.CardBg,
                 BorderStyle = BorderStyle.FixedSingle
             };
         }
 
-        // ==================== 텍스트박스 생성 ====================
+        // 텍스트박스
         public static TextBox CreateTextBox(int x, int y, int width, int height, string name, string placeholder = "")
         {
             var txt = new TextBox
             {
                 Location = new Point(x, y),
                 Size = new Size(width, height),
-                Font = Fonts.Normal,
-                Name = name
+                Name = name,
+                Font = new Font("맑은 고딕", 9F)
             };
 
             if (!string.IsNullOrEmpty(placeholder))
             {
                 txt.Text = placeholder;
-                txt.ForeColor = Color.Gray;
+                txt.ForeColor = AppTheme.TextMuted;
 
                 txt.GotFocus += (s, e) =>
                 {
                     if (txt.Text == placeholder)
                     {
                         txt.Text = "";
-                        txt.ForeColor = Colors.TextPrimary;
+                        txt.ForeColor = AppTheme.TextDark;
                     }
                 };
 
@@ -110,7 +115,7 @@ namespace DBPAdmin
                     if (string.IsNullOrWhiteSpace(txt.Text))
                     {
                         txt.Text = placeholder;
-                        txt.ForeColor = Color.Gray;
+                        txt.ForeColor = AppTheme.TextMuted;
                     }
                 };
             }
@@ -118,49 +123,56 @@ namespace DBPAdmin
             return txt;
         }
 
-        // ==================== 콤보박스 생성 ====================
+        // 콤보박스
         public static ComboBox CreateComboBox(int x, int y, int width, int height, string name)
         {
             return new ComboBox
             {
                 Location = new Point(x, y),
                 Size = new Size(width, height),
-                Font = Fonts.Normal,
                 DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("맑은 고딕", 9F),
                 Name = name
             };
         }
 
-        // ==================== DateTimePicker 생성 ====================
+        // DateTimePicker
         public static DateTimePicker CreateDateTimePicker(int x, int y, int width, int height, string name)
         {
             return new DateTimePicker
             {
                 Location = new Point(x, y),
                 Size = new Size(width, height),
-                Font = Fonts.Normal,
                 Format = DateTimePickerFormat.Short,
+                Font = new Font("맑은 고딕", 9F),
                 Name = name
             };
         }
 
-        // ==================== 버튼 생성 ====================
+        // 메인 버튼 (Primary 색상)
         public static Button CreateBlueButton(string text, int x, int y, int width, int height)
         {
-            return new Button
+            var btn = new Button
             {
                 Text = text,
                 Location = new Point(x, y),
                 Size = new Size(width, height),
-                BackColor = Colors.Primary,
-                ForeColor = Color.White,
+                BackColor = AppTheme.Primary,
+                ForeColor = AppTheme.TextLight,
                 FlatStyle = FlatStyle.Flat,
-                Font = Fonts.ButtonLarge,
+                Font = new Font("맑은 고딕", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
+            btn.FlatAppearance.BorderSize = 0;
+
+            // 호버 효과
+            btn.MouseEnter += (s, e) => btn.BackColor = AppTheme.ButtonHover;
+            btn.MouseLeave += (s, e) => btn.BackColor = AppTheme.Primary;
+
+            return btn;
         }
 
-        // ==================== DataGridView 생성 ====================
+        // DataGridView
         public static DataGridView CreateDGV(int x, int y, int width, int height, string name)
         {
             var dgv = new DataGridView
@@ -175,29 +187,32 @@ namespace DBPAdmin
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
                 RowHeadersVisible = false,
-                BackgroundColor = Colors.CardBg,
+                BackgroundColor = AppTheme.CardBg,
                 BorderStyle = BorderStyle.FixedSingle,
                 ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing,
                 ColumnHeadersHeight = 35,
-                RowTemplate = { Height = 35 },
                 EnableHeadersVisualStyles = false
             };
+            dgv.RowTemplate.Height = 35;
 
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = Colors.DarkBg;
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgv.ColumnHeadersDefaultCellStyle.Font = Fonts.Heading;
+            // 헤더 스타일
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = AppTheme.HeaderBg;
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = AppTheme.TextLight;
+            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
             dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-            dgv.DefaultCellStyle.Font = Fonts.Normal;
-            dgv.DefaultCellStyle.SelectionBackColor = Colors.Primary;
-            dgv.DefaultCellStyle.SelectionForeColor = Color.White;
+            // 셀 스타일
+            dgv.DefaultCellStyle.Font = new Font("맑은 고딕", 9F);
+            dgv.DefaultCellStyle.SelectionBackColor = AppTheme.Primary;
+            dgv.DefaultCellStyle.SelectionForeColor = AppTheme.TextLight;
 
-            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
+            // 교대 행 색상
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = AppTheme.Secondary;
 
             return dgv;
         }
 
-        // ==================== 센터 정렬 계산 ====================
+        // 센터 정렬 계산
         public static int CalculateCenterX(int containerWidth, int elementWidth)
         {
             return (containerWidth - elementWidth) / 2;
@@ -213,14 +228,5 @@ namespace DBPAdmin
             int totalWidth = (elementWidth * count) + (spacing * (count - 1));
             return (containerWidth - totalWidth) / 2;
         }
-    }
-
-    // UIHelper.cs 파일의 namespace DBPAdmin 내부(또는 파일 끝)에 아래 클래스를 추가하세요.
-    public class ComboBoxItem
-    {
-        public string Text { get; set; } = string.Empty;
-        public string Value { get; set; } = string.Empty;
-
-        public override string ToString() => Text ?? string.Empty;
     }
 }

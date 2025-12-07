@@ -18,6 +18,9 @@ namespace leehaeun
         // 로그아웃 확인
         public static bool Logout { private get; set; } = false;
 
+
+        public static int LoginId { get; private set; } = 0;
+
         // 로그인 버튼
         private void LoginButton_Click(object sender, EventArgs e)
         {
@@ -47,6 +50,11 @@ namespace leehaeun
             {
                 // 로그인 성공
                 UserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
+
+                // DB에 로그인 기록 저장
+                string logQuery = $"INSERT INTO UserLog (UserId, ActionType, CreatedAt) VALUES ({UserId}, 'LOGIN', NOW())";
+                DBconnector.GetInstance().Query(logQuery);
+
                 string role = dt.Rows[0]["Role"].ToString();
                 UserInfo.GetInfo();
 
@@ -82,6 +90,7 @@ namespace leehaeun
         private void FormShow()
         {
             UserId = 0;
+            LoginId = 0;
             UserInfo.ResetDataTable();
             LoadConfig();
             this.Show();

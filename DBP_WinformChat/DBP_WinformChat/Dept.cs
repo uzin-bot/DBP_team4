@@ -15,7 +15,7 @@ namespace DBP_Chat
         private int currentUserId;
         private string currentUserName;
         private string currentUserNickname;
-
+        private PermissionManager permissionManager; // 어드민 추가
         public Dept(int userId, string name, string nickname)
         {
             InitializeComponent();
@@ -23,7 +23,7 @@ namespace DBP_Chat
             this.currentUserId = userId;
             this.currentUserName = name;
             this.currentUserNickname = nickname;
-
+            this.permissionManager = new PermissionManager(); // 어드민 추가
             this.Load += Dept_Load;
 
             //TreeView 직원 더블클릭 → 프로필 폼(현재 임시로 메시지만 뜸)
@@ -66,40 +66,61 @@ namespace DBP_Chat
             LoadFavoriteList();
         }
 
+        // 어드민 수정
         //회사 → 부서 → 직원 TreeView 로딩
         private void LoadTreeView()
         {
+
             tvdept.Nodes.Clear();
             TreeNode companyNode = new TreeNode("회사");
             tvdept.Nodes.Add(companyNode);
 
-            string sqlDept = "SELECT DeptId, DeptName FROM Department";
-            DataTable dtDept = DBconnector.GetInstance().Query(sqlDept);
+            // 1. 현재 사용자가 볼 수 있는 부서 목록 가져오기
+            DataTable visibleDepts = permissionManager.GetVisibleDepartments(currentUserId);
 
-            foreach (DataRow dept in dtDept.Rows)
+            // 권한 있는 부서가 없으면 기본 메시지 표시
+            if (visibleDepts == null || visibleDepts.Rows.Count == 0)
             {
-                TreeNode deptNode = new TreeNode(dept["DeptName"].ToString());
+                TreeNode noDeptNode = new TreeNode("(볼 수 있는 부서가 없습니다)");
+                companyNode.Nodes.Add(noDeptNode);
+                tvdept.ExpandAll();
+                return;
+            }
+
+            foreach (DataRow dept in visibleDepts.Rows)
+            {
+                // DeptPath 사용 (상위부서 > 하위부서 형태)
+                string deptDisplayName = dept["DeptPath"] != DBNull.Value
+                    ? dept["DeptPath"].ToString()
+                    : dept["DeptName"].ToString();
+
+                TreeNode deptNode = new TreeNode($"{deptDisplayName} ({dept["UserCount"]}명)");
                 deptNode.Tag = dept["DeptId"];
                 companyNode.Nodes.Add(deptNode);
 
-                // 관리자 안보이도록 수정
-                // 닉네임 관련 쿼리 수정
-                string sql = $@"
-                    SELECT u.UserId, u.LoginId, u.Name, p.Nickname
-                    FROM User u
-                    JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1
-                    WHERE u.DeptId = {dept["DeptId"]}
-                    AND u.Role != 'admin'";
+                // 2. 해당 부서의 사용자 중 볼 수 있는 사용자만 표시
+                DataTable deptUsers = permissionManager.GetUsersByDepartment(Convert.ToInt32(dept["DeptId"]));
 
-
-                DataTable dtUser = DBconnector.GetInstance().Query(sql);
-
-                foreach (DataRow user in dtUser.Rows)
+                foreach (DataRow user in deptUsers.Rows)
                 {
+                    int userId = Convert.ToInt32(user["UserId"]);
+
+                    // 본인은 항상 표시, 다른 사용자는 권한 체크
+                    if (userId != currentUserId && !permissionManager.CanViewUser(currentUserId, userId))
+                        continue;
+
                     string text = $"({user["LoginId"]}) {user["Name"]} ({user["Nickname"]})";
 
+                    if (userId == currentUserId)
+                        text += " (나)";
+
+                    // 대화 차단된 사용자 표시
+                    if (userId != currentUserId && !permissionManager.CanChat(currentUserId, userId))
+                        text += " 🚫";
+
                     TreeNode userNode = new TreeNode(text);
-                    userNode.Tag = user["UserId"]; // 태그에는 유저 아이디 저장
+                    userNode.Tag = user["UserId"]; // UserId로 통일
+
                     deptNode.Nodes.Add(userNode);
                 }
             }
@@ -135,42 +156,62 @@ namespace DBP_Chat
             s.Show();
         }
 
+
+        // 어드민 수정
         //즐겨찾기 로딩
         private void LoadFavoriteList()
         {
             lBlist.Items.Clear();
 
-            // 닉네임 관련 쿼리 수정
             string sql = $@"
-                SELECT u.UserId, u.Name, p.Nickname
+                SELECT u.UserId, u.LoginId, u.Name, u.Nickname
                 FROM Favorite f
-                JOIN User u ON f.FavoriteUserId = u.UserId
-                JOIN Profile p ON u.UserId = p.UserId AND p.IsDefault = 1
+                JOIN User u ON f.FavoriteUserId = u.UserId      
                 WHERE f.UserId = {currentUserId}";
 
             DataTable dt = DBconnector.GetInstance().Query(sql);
 
             foreach (DataRow row in dt.Rows)
             {
-                lBlist.Items.Add($"{row["UserId"]} - {row["Name"]} ({row["Nickname"]})");
+                int userId = Convert.ToInt32(row["UserId"]);
+
+                // 권한 있는 사용자만 표시
+                if (!permissionManager.CanViewUser(currentUserId, userId))
+                    continue;
+
+                string displayText = $"{row["UserId"]} - {row["Name"]} ({row["Nickname"]})";
+
+                // 대화 차단 표시
+                if (!permissionManager.CanChat(currentUserId, userId))
+                    displayText += " 🚫";
+
+                lBlist.Items.Add(displayText);
             }
         }
 
+        // 어드민 수정
         //즐겨찾기 추가
         private void btnadd_Click(object sender, EventArgs e)
         {
-            string userId = txtID.Text.Trim();
-            if (userId == "")
+            string userIdText = txtID.Text.Trim();
+            if (userIdText == "")
             {
                 MessageBox.Show("직원을 선택하세요!");
                 return;
             }
 
-            int targetUserId = int.Parse(userId);
+            int targetUserId = int.Parse(userIdText);
+
+            // 권한 체크 추가
+            if (!permissionManager.CanViewUser(currentUserId, targetUserId))
+            {
+                MessageBox.Show("해당 사용자를 볼 수 있는 권한이 없습니다.");
+                return;
+            }
 
             string checkSql = $@"
-                SELECT COUNT(*) 
-                FROM Favorite 
+                SELECT COUNT(*)
+                FROM Favorite
                 WHERE UserId = {currentUserId} AND FavoriteUserId = {targetUserId}";
 
             DataTable dt = DBconnector.GetInstance().Query(checkSql);
@@ -211,28 +252,37 @@ namespace DBP_Chat
             LoadFavoriteList();
         }
 
+
+        // 어드민 수정
         //즐겨찾기 OR TreeView 직원 선택 → 채팅하기
         private void btnChat_Click(object sender, EventArgs e)
         {
-            //즐겨찾기 선택
+            int targetUserId = -1;
+
             if (lBlist.SelectedItem != null)
             {
                 string userIdText = lBlist.SelectedItem.ToString().Split('-')[0].Trim();
-                int targetUserId = Convert.ToInt32(userIdText);
-
-                new ChatForm(currentUserId, targetUserId).Show();
-                return;
+                targetUserId = Convert.ToInt32(userIdText);
             }
-
-            //TreeView에서 직원 선택한 경우
-            if (tvdept.SelectedNode != null && tvdept.SelectedNode.Level == 2)
+            else if (tvdept.SelectedNode != null && tvdept.SelectedNode.Level == 2)
             {
-                int targetUserId = Convert.ToInt32(tvdept.SelectedNode.Tag);
-                new ChatForm(currentUserId, targetUserId).Show();
+                targetUserId = Convert.ToInt32(tvdept.SelectedNode.Tag);
+            }
+            else
+            {
+                MessageBox.Show("대화할 직원을 선택하세요!");
                 return;
             }
 
-            MessageBox.Show("대화할 직원을 선택하세요!");
+            // 어드민 권한 체크 추가
+            var result = permissionManager.CanSendMessage(currentUserId, targetUserId);
+            if (!result.CanSend)
+            {
+                MessageBox.Show(result.Reason, "채팅 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            new ChatForm(currentUserId, targetUserId).Show();
         }
 
 

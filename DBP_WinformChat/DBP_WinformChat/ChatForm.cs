@@ -29,12 +29,23 @@ namespace kyg
 
         private ResourceManager formResourceManager; // 폼 리소스 접근용
         private Dictionary<string, Image> emojiMap = new Dictionary<string, Image>(); // 5-E: 이모티콘 맵
+        private PermissionManager permissionManager; // 어드민 추가
 
         public ChatForm(int myId, int partnerId) // 생성자 수정
         {
             InitializeComponent();
             this.myId = myId;
             this.partnerId = partnerId;
+            this.permissionManager = new PermissionManager(); // 어드민 추가
+
+            // 어드민: 채팅창 열기 전 권한 체크
+            var result = permissionManager.CanSendMessage(myId, partnerId);
+            if (!result.CanSend)
+            {
+                MessageBox.Show(result.Reason, "채팅 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Load += (s, e) => this.Close(); // 폼 로드 후 바로 닫기
+                return;
+            }
 
             // 상대방 이름 가져오기 (수정)
             string partnerName = GetUserName(partnerId);
@@ -177,6 +188,15 @@ namespace kyg
 
             try
             {
+
+                // 어드민: 전송 전 권한 체크 추가
+                var result = permissionManager.CanSendMessage(myId, partnerId);
+                if (!result.CanSend)
+                {
+                    MessageBox.Show(result.Reason, "전송 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 // 1. 이미지 존재 여부 확인 (로드 실패 방지)
                 if (!emojiMap.ContainsKey(emojiCode) || emojiMap[emojiCode] == null)
                 {
@@ -299,6 +319,14 @@ namespace kyg
             {
                 string content = txtInput.Text;
                 if (string.IsNullOrWhiteSpace(content)) return;
+
+                // 어드민: 전송 전 권한 체크 추가
+                var result = permissionManager.CanSendMessage(myId, partnerId);
+                if (!result.CanSend)
+                {
+                    MessageBox.Show(result.Reason, "전송 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
                 if (client == null || !client.Connected) { return; }
 
@@ -570,6 +598,15 @@ namespace kyg
         private void btnSendFile_Click(object sender, EventArgs e)
         {
             if (isSending) return;
+
+            // 어드민: 전송 전 권한 체크 추가
+            var result = permissionManager.CanSendMessage(myId, partnerId);
+            if (!result.CanSend)
+            {
+                MessageBox.Show(result.Reason, "파일 전송 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             isSending = true;
 
             OpenFileDialog ofd = new OpenFileDialog();
