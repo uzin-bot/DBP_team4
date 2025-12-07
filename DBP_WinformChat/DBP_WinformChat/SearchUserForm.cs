@@ -18,14 +18,16 @@ namespace leehaeun
             SearchUser();
         }
 
+        /*
         // 멀티프로필 매핑 안된 유저 검색(쿼리 수정)
         private void SearchUser()
         {
             string query = $@"
                 SELECT 
-                    u.UserId, 
+                    u.UserId,
+                    u.LoginId, 
                     u.Name, 
-                    p.Nickname, 
+                    p.Nickname,
                     p.ProfileId, 
                     d.DeptName
                 FROM User u
@@ -53,16 +55,73 @@ namespace leehaeun
             DataTable dt = DBconnector.GetInstance().Query(query);
 
             // 데이터를 리스트로 변환
-            List<(int, string, string, string)> users = new List<(int, string, string, string)>();
+            List<(int, string, string, string, string)> users = new List<(int, string, string, string, string)>();
 
             foreach (DataRow row in dt.Rows)
             {
-                int userId = int.Parse(row["UserId"].ToString());
+                int userId = Convert.ToInt32(row["UserId"]);
+                string loginId = row["LoginId"].ToString();
                 string name = row["Name"].ToString();
                 string nickname = row["Nickname"].ToString();
                 string deptName = row["DeptName"].ToString();
 
-                users.Add((userId, name, nickname, deptName));
+                users.Add((loginId, name, nickname, deptName));
+            }
+
+            // 커스텀 패널에 로드
+            SearchUserFormUIHelper.LoadUsers(this, users);
+        }
+        */
+
+        // 멀티프로필 매핑 안된 유저 검색(쿼리 수정)
+        private void SearchUser()
+        {
+            string query = $@"
+                SELECT
+                    u.UserId,
+                    u.LoginId,
+                    u.Name,
+                    COALESCE(custom_p.Nickname, default_p.Nickname) AS Nickname,
+                    d.DeptName
+                FROM User u
+                LEFT JOIN UserProfileMap upm
+                    ON upm.OwnerUserId = u.UserId
+                    AND upm.TargetUserId = {LoginForm.UserId}
+                LEFT JOIN Profile custom_p
+                    ON custom_p.ProfileId = upm.ProfileId
+                INNER JOIN Profile default_p
+                    ON default_p.UserId = u.UserId 
+                    AND default_p.IsDefault = 1
+                LEFT JOIN Department d
+                    ON d.DeptId = u.DeptId
+                WHERE u.UserId != {LoginForm.UserId}
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM UserProfileMap already
+                    WHERE already.OwnerUserId = {LoginForm.UserId}
+                    AND already.TargetUserId = u.UserId
+                )
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM UserVisibleUser uvu
+                    WHERE uvu.OwnerUserId = {LoginForm.UserId}
+                    AND uvu.VisibleUserId = u.UserId
+                );";
+
+            DataTable dt = DBconnector.GetInstance().Query(query);
+
+            // 데이터를 리스트로 변환
+            List<(int, string, string, string, string)> users = new List<(int, string, string, string, string)>();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                int userId = Convert.ToInt32(row["UserId"]);
+                string loginId = row["LoginId"].ToString();
+                string name = row["Name"].ToString();
+                string nickname = row["Nickname"].ToString();
+                string deptName = row["DeptName"] != DBNull.Value ? row["DeptName"].ToString() : "";
+
+                users.Add((userId, loginId, name, nickname, deptName));
             }
 
             // 커스텀 패널에 로드

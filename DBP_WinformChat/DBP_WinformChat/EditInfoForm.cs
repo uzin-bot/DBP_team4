@@ -104,6 +104,8 @@ namespace leehaeun
         // 멀티 프로필 리스트 로딩
         private void LoadMulProfileList()
         {
+            ProfileFLP.Controls.Clear();
+
             // 기본 프로필 제외
             for (int i = 1; i < UserInfo.Profile.Rows.Count; i++)
             {

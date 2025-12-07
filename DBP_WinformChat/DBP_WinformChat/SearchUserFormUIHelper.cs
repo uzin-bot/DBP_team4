@@ -167,7 +167,7 @@ namespace leehaeun.UIHelpers
         /// <summary>
         /// 사용자 아이템 추가
         /// </summary>
-        public static Panel CreateUserItem(int userId, string name, string nickname, string dept, bool isChecked = false)
+        public static Panel CreateUserItem(int userId, string loginId, string name, string nickname, string dept, bool isChecked = false)
         {
             Panel itemPanel = new Panel
             {
@@ -175,7 +175,7 @@ namespace leehaeun.UIHelpers
                 Height = 50,
                 BackColor = ColorSchemes.White,
                 Margin = new Padding(0, 0, 0, 0),
-                Tag = userId
+                Tag = loginId
             };
 
             // 체크박스 (PictureBox로 커스텀)
@@ -261,7 +261,7 @@ namespace leehaeun.UIHelpers
             // UserId 라벨
             Label userIdLabel = new Label
             {
-                Text = userId.ToString(),
+                Text = loginId.ToString(),
                 Location = new Point(40, 15),
                 Size = new Size(60, 20),
                 Font = new Font("맑은 고딕", 11F),
@@ -340,7 +340,7 @@ namespace leehaeun.UIHelpers
         /// <summary>
         /// 사용자 목록 로드
         /// </summary>
-        public static void LoadUsers(SearchUserForm form, System.Collections.Generic.List<(int userId, string name, string nickname, string dept)> users)
+        public static void LoadUsers(SearchUserForm form, System.Collections.Generic.List<(int userId, string loginId, string name, string nickname, string dept)> users)
         {
             Panel scrollPanel = null;
 
@@ -368,7 +368,7 @@ namespace leehaeun.UIHelpers
             int yPos = 0;
             foreach (var user in users)
             {
-                Panel userItem = CreateUserItem(user.userId, user.name, user.nickname, user.dept);
+                Panel userItem = CreateUserItem(user.userId, user.loginId, user.name, user.nickname, user.dept);
                 userItem.Location = new Point(0, yPos);
                 scrollPanel.Controls.Add(userItem);
                 yPos += 50;
