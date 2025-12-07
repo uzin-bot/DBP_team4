@@ -57,6 +57,7 @@ namespace leehaeun
                 UserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
                 string role = dt.Rows[0]["Role"].ToString();
                 UserInfo.GetInfo();
+                AddLog(1);
 
                 // 채팅 리스트 폼
                 FormHide();
@@ -77,7 +78,11 @@ namespace leehaeun
 
                 // 채팅 리스트 폼이 닫혔을 때
                 // 로그아웃인지 프로그램 종료인지 확인
-                if (Logout) FormShow();
+                if (Logout)
+                {
+                    AddLog(0);
+                    FormShow();
+                }
                 else this.Close();
             }
             else
@@ -104,6 +109,20 @@ namespace leehaeun
             Logout = false;
             this.Hide();
         }
+
+        private void AddLog(int index)
+        {
+            string action = "";
+            if (index == 0) action = "LOGOUT";
+            else if (index == 1) action = "LOGIN";
+
+            string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            string query = $"INSERT INTO UserLog (UserId, ActionType, CreatedAt) VALUES({UserId}, '{action}', '{now}');";
+
+            DBconnector.GetInstance().NonQuery(query);
+        }
+
 
         // 로그인 설정 저장
         public void SaveConfig()

@@ -44,9 +44,14 @@ namespace DBP_WinformChat
                 lv.BorderStyle = BorderStyle.None;
                 lv.FullRowSelect = true;
                 lv.HideSelection = false;
+                lv.HotTracking = false;
+                lv.HoverSelection = false;
 
                 lv.BackColor = Color.White;
                 lv.ForeColor = Color.FromArgb(119, 136, 115);
+
+                // ✅ 마우스 이벤트 완전 차단
+                lv.MouseMove += (s, e) => { };
 
                 // --- 컬럼 헤더 ---
                 lv.DrawColumnHeader += (s, e) =>
@@ -66,12 +71,15 @@ namespace DBP_WinformChat
                     );
                 };
 
-                // --- 행 배경 ---
+                // --- 행 배경 (호버 무시) ---
                 lv.DrawItem += (s, e) =>
                 {
                     e.DrawDefault = false;
 
-                    Color bg = e.Item.Selected ? Color.FromArgb(210, 220, 182) : Color.FromArgb(241, 243, 224);
+                    // ✅ Selected 상태만 체크
+                    Color bg = e.Item.Selected
+                        ? Color.FromArgb(210, 220, 182)
+                        : Color.FromArgb(241, 243, 224);
 
                     using (SolidBrush br = new SolidBrush(bg))
                     {
@@ -82,22 +90,19 @@ namespace DBP_WinformChat
                 // --- 행 텍스트 & 아이콘 ---
                 lv.DrawSubItem += (s, e) =>
                 {
-                    // 첫 번째 컬럼 = 아이콘 컬럼
+                    // ✅ 배경 먼저 그리기 (Selected 상태만 확인)
+                    Color cellBg = e.Item.Selected
+                        ? Color.FromArgb(210, 220, 182)
+                        : Color.FromArgb(241, 243, 224);
+
+                    using (SolidBrush bgBrush = new SolidBrush(cellBg))
+                    {
+                        e.Graphics.FillRectangle(bgBrush, e.Bounds);
+                    }
+
+                    // 첫 번째 컬럼(빨간점)은 chatlist.cs에서 처리
                     if (e.ColumnIndex == 0)
                     {
-                        var item = e.Item;
-
-                        if (item.ImageIndex >= 0 && lv.SmallImageList != null)
-                        {
-                            Image img = lv.SmallImageList.Images[item.ImageIndex];
-                            if (img != null)
-                            {
-                                int x = e.Bounds.X + 8;
-                                int y = e.Bounds.Y + (e.Bounds.Height - img.Height) / 2;
-
-                                e.Graphics.DrawImage(img, x, y, img.Width, img.Height);
-                            }
-                        }
                         return;
                     }
 

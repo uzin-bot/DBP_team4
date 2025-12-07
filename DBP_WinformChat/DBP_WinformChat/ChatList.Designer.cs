@@ -40,6 +40,7 @@
             columnHeaderIcon = new ColumnHeader();
             columnHeader1 = new ColumnHeader();
             columnHeader2 = new ColumnHeader();
+            columnHeader5 = new ColumnHeader();
             columnHeader3 = new ColumnHeader();
             columnHeaderMessage = new ColumnHeader();
             columnHeader4 = new ColumnHeader();
@@ -67,7 +68,7 @@
             // 
             // lvlist
             // 
-            lvlist.Columns.AddRange(new ColumnHeader[] { columnHeaderIcon, columnHeader1, columnHeader2, columnHeader3, columnHeaderMessage, columnHeader4 });
+            lvlist.Columns.AddRange(new ColumnHeader[] { columnHeaderIcon, columnHeader1, columnHeader2, columnHeader5, columnHeader3, columnHeaderMessage, columnHeader4 });
             lvlist.ContextMenuStrip = contextMenuStrip1;
             lvlist.Dock = DockStyle.Fill;
             lvlist.FullRowSelect = true;
@@ -79,6 +80,7 @@
             lvlist.UseCompatibleStateImageBehavior = false;
             lvlist.View = View.Details;
             lvlist.DoubleClick += lvlist_DoubleClick;
+            lvlist.HotTracking = false;
             // 
             // columnHeaderIcon
             // 
@@ -94,6 +96,10 @@
             // 
             columnHeader2.Text = "이름";
             columnHeader2.Width = 110;
+            // 
+            // columnHeader5
+            // 
+            columnHeader5.Text = "별명";
             // 
             // columnHeader3
             // 
@@ -187,5 +193,7 @@
         }
 
         #endregion
+
+        private ColumnHeader columnHeader5;
     }
 }

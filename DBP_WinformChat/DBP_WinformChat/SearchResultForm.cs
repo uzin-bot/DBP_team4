@@ -1,11 +1,12 @@
 ﻿using DBP_WinformChat;
 using kyg;
+using leehaeun;
 using MySqlConnector;
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Windows.Forms;
 using 남예솔;
 
 namespace DBP_Chat
@@ -67,6 +68,7 @@ namespace DBP_Chat
             e.Item.Checked = true;
         }
 
+        /*
         // 팀 컬럼(DeptPath의 마지막 세그먼트) 추가 조회 및 표시
         private void LoadResult()
         {
@@ -102,6 +104,62 @@ namespace DBP_Chat
                 item.SubItems.Add(row["DeptName"].ToString()); // 상위 부서
                 item.SubItems.Add(row["TeamName"].ToString()); // 팀(자식 부서)
                 item.SubItems.Add(row["Nickname"].ToString());
+                lvResult.Items.Add(item);
+            }
+        }
+        */
+
+        private void LoadResult()
+        {
+            string sql = $@"
+        SELECT 
+            u.UserId,
+            u.LoginId,
+            u.Name, 
+            p.DeptName AS DeptName,      -- 상위 부서명
+            d.DeptName AS TeamName      -- 팀명(자식 부서 DeptName)
+        FROM User u 
+        JOIN Department d ON u.DeptId = d.DeptId
+        LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
+        WHERE 1=1 
+        AND u.UserId NOT IN (
+            SELECT VisibleUserId 
+            FROM UserVisibleUser 
+            WHERE OwnerUserId = {this.currentUserId}
+        )
+        AND d.DeptId NOT IN (
+            SELECT DeptId
+            FROM UserVisibleDept
+            WHERE OwnerUserId = {LoginForm.UserId}
+        )
+        AND (p.DeptId IS NULL OR p.DeptId NOT IN (
+            SELECT DeptId
+            FROM UserVisibleDept
+            WHERE OwnerUserId = {LoginForm.UserId}
+        ))";
+
+            // 검색 조건 추가
+            if (!string.IsNullOrEmpty(id))
+                sql += $" AND u.LoginId LIKE '%{id}%' ";
+
+            if (!string.IsNullOrEmpty(name))
+                sql += $" AND u.Name LIKE '%{name}%' ";
+
+            // Dept.cs에서 '전체'를 선택하면 dept가 ""(빈값)으로 넘어오므로 이 조건문은 건너뛰게 됩니다.
+            if (!string.IsNullOrEmpty(dept))
+                sql += $" AND p.DeptName = '{dept}' ";
+
+            DataTable dt = DBconnector.GetInstance().Query(sql);
+
+            lvResult.Items.Clear();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                ListViewItem item = new ListViewItem(row["LoginId"].ToString());
+                item.SubItems.Add(row["Name"].ToString());
+                item.SubItems.Add(row["DeptName"].ToString()); // 상위 부서
+                item.SubItems.Add(row["TeamName"].ToString()); // 팀(자식 부서)
+                //item.SubItems.Add(row["Nickname"].ToString());
                 lvResult.Items.Add(item);
             }
         }

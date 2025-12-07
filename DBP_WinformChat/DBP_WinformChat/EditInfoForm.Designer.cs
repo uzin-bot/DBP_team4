@@ -147,6 +147,7 @@
             CancleIButton.Name = "CancleIButton";
             CancleIButton.Size = new Size(62, 23);
             CancleIButton.TabIndex = 27;
+            CancleIButton.Tag = "1";
             CancleIButton.Text = "취소";
             CancleIButton.UseVisualStyleBackColor = true;
             CancleIButton.Click += CancleIButton_Click;
@@ -321,6 +322,7 @@
             CancelPButton.Name = "CancelPButton";
             CancelPButton.Size = new Size(51, 22);
             CancelPButton.TabIndex = 1;
+            CancelPButton.Tag = "0";
             CancelPButton.Text = "취소";
             CancelPButton.UseVisualStyleBackColor = true;
             CancelPButton.Click += CancelPButton_Click;

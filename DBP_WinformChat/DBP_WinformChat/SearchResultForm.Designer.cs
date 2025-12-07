@@ -23,7 +23,6 @@
             colName = new ColumnHeader();
             colDept = new ColumnHeader();
             colTeam = new ColumnHeader();
-            colNickname = new ColumnHeader();
             btnAddFavorite = new Button();
             btnClose = new Button();
             panel1 = new Panel();
@@ -38,14 +37,14 @@
             label1.ForeColor = Color.White;
             label1.Location = new Point(32, 26);
             label1.Name = "label1";
-            label1.Size = new Size(140, 25);
+            label1.Size = new Size(109, 20);
             label1.TabIndex = 0;
             label1.Text = "직원 검색 결과";
             // 
             // lvResult
             // 
             lvResult.CheckBoxes = true;
-            lvResult.Columns.AddRange(new ColumnHeader[] { colId, colName, colDept, colTeam, colNickname });
+            lvResult.Columns.AddRange(new ColumnHeader[] { colId, colName, colDept, colTeam });
             lvResult.FullRowSelect = true;
             lvResult.Location = new Point(-1, 79);
             lvResult.Name = "lvResult";
@@ -75,11 +74,6 @@
             // 
             colTeam.Text = "팀";
             colTeam.Width = 120;
-            // 
-            // colNickname
-            // 
-            colNickname.Text = "닉네임";
-            colNickname.Width = 80;
             // 
             // btnAddFavorite
             // 
@@ -139,7 +133,6 @@
         private ColumnHeader colName;
         private ColumnHeader colDept;
         private ColumnHeader colTeam;
-        private ColumnHeader colNickname;
 
         private Button btnAddFavorite;
         private Button btnClose;

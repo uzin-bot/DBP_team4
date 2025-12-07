@@ -56,6 +56,7 @@ namespace DBP_Chat
             ThemeManager.ThemeChanged += mode => this.OnThemeChanged(mode);
         }
 
+        /*
         private void Dept_Load(object sender, EventArgs e)
         {
             this.AutoScaleMode = AutoScaleMode.None;
@@ -124,6 +125,93 @@ namespace DBP_Chat
                 rbDarkMode.Checked = false;
                 this.ApplyLightHelper();
             }
+        }
+        */
+
+        private void Dept_Load(object sender, EventArgs e)
+        {
+            this.AutoScaleMode = AutoScaleMode.None;
+
+            // 폰트 스타일 초기화
+            label1.Font = label3.Font;
+            txtname.Font = txtID.Font;
+
+            ApplyLightHelper();
+
+            try
+            {
+                var visibleDepts = this.permissionManager.GetVisibleDepartments(this.currentUserId);
+                cbDept.Items.Clear();
+
+                // [수정 1] 콤보박스 최상단에 '전체' 옵션 추가
+                cbDept.Items.Add("전체");
+
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (DataRow dept in visibleDepts.Rows)
+                {
+                    string deptPath = dept["DeptPath"]?.ToString()?.Trim() ?? string.Empty;
+                    string deptName = dept["DeptName"]?.ToString()?.Trim() ?? string.Empty;
+
+                    string topLevelDept =
+                        !string.IsNullOrEmpty(deptPath)
+                            ? deptPath.Split('>')[0].Trim()
+                            : deptName;
+
+                    if (string.IsNullOrEmpty(topLevelDept)) continue;
+
+                    if (seen.Add(topLevelDept))
+                        cbDept.Items.Add(topLevelDept);
+                }
+
+                // [수정 2] 기본 선택값을 '전체'(인덱스 0)로 설정
+                if (cbDept.Items.Count > 0)
+                    cbDept.SelectedIndex = 0;
+            }
+            catch
+            {
+                // 예외 무시
+            }
+
+            // TreeView 로드
+            this.LoadTreeView();
+
+            // 즐겨찾기 목록 로드
+            this.LoadFavoriteList();
+
+            // 테마 설정
+            this.ApplyLightHelper();
+
+            rbDarkMode.AutoCheck = false;
+            rbDarkMode.Click += this.rbDarkMode_Click;
+
+            if (ThemeManager.CurrentMode == ThemeMode.Dark)
+            {
+                rbDarkMode.Checked = true;
+                this.ApplyTheme(true);
+            }
+            else
+            {
+                rbDarkMode.Checked = false;
+                this.ApplyLightHelper();
+            }
+        }
+
+        private void btnsearch_Click(object sender, EventArgs e)
+        {
+            string id = this.txtID.Text.Trim();
+            string name = this.txtname.Text.Trim();
+
+            // [수정 3] '전체' 선택 시 부서 검색 조건을 빈 문자열로 처리하여 모든 부서 검색
+            string dept = this.cbDept.SelectedItem?.ToString()?.Trim() ?? string.Empty;
+            if (dept == "전체")
+            {
+                dept = "";
+            }
+
+            // SearchResultForm 생성 시 currentUserId가 넘어가므로, 
+            // SearchResultForm 내부 쿼리에서 필터링을 수행해야 합니다.
+            SearchResultForm s = new SearchResultForm(id, name, dept, this.currentUserId, this);
+            s.Show();
         }
 
         // ThemeManager.ThemeChanged에서 호출되는 핸들러
@@ -230,10 +318,11 @@ namespace DBP_Chat
                         continue;
 
                     string uname = user["Name"].ToString();
-                    string nick = user["Nickname"].ToString();
+                    //string nick = user["Nickname"].ToString();
                     string loginId = user["LoginId"].ToString();
 
-                    string text = $"({loginId}) {uname} ({nick})";
+                    //string text = $"({loginId}) {uname} ({nick})";
+                    string text = $"({loginId}) {uname}";
 
                     TreeNode userNode = new TreeNode(text);
                     userNode.Tag = uid;
@@ -270,6 +359,7 @@ namespace DBP_Chat
             f.Show();
         }
 
+        /*
         private void btnsearch_Click(object sender, EventArgs e)
         {
             string id = this.txtID.Text.Trim();
@@ -279,6 +369,7 @@ namespace DBP_Chat
             SearchResultForm s = new SearchResultForm(id, name, dept, this.currentUserId, this);
             s.Show();
         }
+        */
 
         private void LoadFavoriteList()
         {
@@ -411,7 +502,20 @@ namespace DBP_Chat
         private void logout_button_Click(object sender, EventArgs e)
         {
             LoginForm.Logout = true;
-            this.Close();
+            CloseAllForms();
+        }
+
+        private void CloseAllForms()
+        {
+            Form[] openForms = Application.OpenForms.Cast<Form>().ToArray();
+
+            foreach (Form form in openForms)
+            {
+                if (form.GetType() != typeof(LoginForm))
+                {
+                    form.Close();
+                }
+            }
         }
 
         private void change_profile_button_Click(object sender, EventArgs e)

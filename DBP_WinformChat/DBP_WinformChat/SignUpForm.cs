@@ -17,7 +17,7 @@ namespace leehaeun
         // 부서아이디 로드 해오기
         private void LoadDepartments()
         {
-            string query = "SELECT DeptId, DeptName FROM Department";
+            string query = "SELECT DeptId, DeptName FROM Department WHERE ParentDeptId IS NOT NULL;";
             DataTable dt = DBconnector.GetInstance().Query(query);
 
             DeptBox.DataSource = dt;

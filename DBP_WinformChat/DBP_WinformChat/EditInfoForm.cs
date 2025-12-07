@@ -16,6 +16,11 @@ namespace leehaeun
         {
             InitializeComponent();
             EditInfoFormUIHelper.ApplyStyles(this);
+            LoadAll();
+        }
+
+        private void LoadAll()
+        {
             LoadUserInfo();
             LoadProfileInfo();
             LoadMulProfileList();
@@ -29,6 +34,7 @@ namespace leehaeun
             ZipCodeBox.Text = UserInfo.User["ZipCode"].ToString();
             AddressBox.Text = UserInfo.User["address"].ToString();
             DeptBox.Text = UserInfo.User["DeptName"].ToString();
+            PwBox.Text = "";
         }
 
         // 프로필 정보 로딩
@@ -312,6 +318,10 @@ namespace leehaeun
         private void SavePButton_Click(object sender, EventArgs e)
         {
             SaveProfileInfo();
+            UserInfo.GetInfo();
+            DataRow[] rows = UserInfo.Profile.Select($"ProfileId = {NicknameBox.Tag}");
+            if (rows.Length > 0) CurrProfile = rows[0];
+            LoadAll();
         }
 
         // 프로필 저장
@@ -344,8 +354,6 @@ namespace leehaeun
             }
 
             MessageBox.Show("프로필 저장 완료");
-            //UserInfo.GetProfileInfo();
-            //LoadProfileInfo();
         }
 
         // 멤버 추가 버튼
@@ -368,7 +376,7 @@ namespace leehaeun
         // 취소 버튼
         private void CancelPButton_Click(object sender, EventArgs e)
         {
-            CancelCheck();
+            CancelCheck(0);
         }
 
         // 멀티 프로필 탭 컨트롤
@@ -413,12 +421,14 @@ namespace leehaeun
         private void SaveIButton_Click(object sender, EventArgs e)
         {
             SaveUserInfo();
+            UserInfo.GetInfo();
+            LoadAll();
         }
 
         // 취소 버튼
         private void CancleIButton_Click(object sender, EventArgs e)
         {
-            CancelCheck();
+            CancelCheck(1);
         }
 
         // 사용자 정보 저장
@@ -451,23 +461,55 @@ namespace leehaeun
             }
 
             MessageBox.Show("변경 완료");
-
-            UserInfo.GetUserInfo();
-            LoadUserInfo();
         }
 
-        private void CancelCheck()
+        private void CancelCheck(int index)
         {
-            DialogResult result = MessageBox.Show("변경 내용을 취소하시겠습니까?",
-                "확인",
-                MessageBoxButtons.OKCancel,
-                MessageBoxIcon.Question
-                );
-            if (result == DialogResult.OK)
+            bool flag = false;
+            string pwHash = Sha256.Instance.HashSHA256(PwBox.Text);
+
+            if (index == 0)
             {
-                // 수정 전 정보
-                LoadUserInfo();
-                LoadProfileInfo();
+                if (NicknameBox.Text != CurrProfile["Nickname"].ToString() ||
+                    StatusBox.Text != CurrProfile["StatusMessage"].ToString() ||
+                    (!string.IsNullOrEmpty(ProfileImagePBox.Tag.ToString()) &&
+                        ProfileImagePBox.Tag.ToString() != CurrProfile["ProfileImage"].ToString()))
+                {
+                    flag = true;
+                }
+            }
+            else if (index == 1)
+            {
+                if (NameBox.Text != UserInfo.User["Name"].ToString() ||
+                    (!string.IsNullOrEmpty(PwBox.Text) &&
+                    pwHash != UserInfo.User["PasswordHash"].ToString()) ||
+                    AddressBox.Text != UserInfo.User["Address"].ToString() ||
+                    ZipCodeBox.Text != UserInfo.User["ZipCode"].ToString())
+                {
+                    flag = true;
+                }
+            }
+
+            if (flag)
+            {
+                DialogResult result = MessageBox.Show(
+                    "변경 내용을 취소하시겠습니까?",
+                    "확인",
+                    MessageBoxButtons.OKCancel,
+                    MessageBoxIcon.Question
+                );
+
+                if (result == DialogResult.OK)
+                {
+                    // 수정 전 정보로 되돌리기
+                    if (index == 0) LoadProfileInfo(); 
+                    else if (index == 1) LoadUserInfo();
+                }
+            }
+            else
+            {
+                // 변경 사항이 없을 때
+                MessageBox.Show("변경된 내용이 없습니다.");
             }
         }
     }

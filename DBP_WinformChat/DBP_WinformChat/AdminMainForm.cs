@@ -561,6 +561,7 @@ namespace DBPAdmin
             LoadUserData("", null);
         }
 
+        /*
         private void LoadUserData(string searchKeyword, string deptId)
         {
             var dgv = pnlContent.Controls.Find("dgvUsers", true).FirstOrDefault() as DataGridView;
@@ -614,6 +615,70 @@ namespace DBPAdmin
                     );
                 }
                 
+                Console.WriteLine($"[사용자 관리] DataGridView에 {dgv.Rows.Count}개 행 추가됨");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[사용자 관리 ERROR] {ex.Message}");
+                MessageBox.Show($"사용자 목록 로드 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        */
+
+        private void LoadUserData(string searchKeyword, string deptId)
+        {
+            var dgv = pnlContent.Controls.Find("dgvUsers", true).FirstOrDefault() as DataGridView;
+            if (dgv == null) return;
+
+            dgv.Rows.Clear();
+
+            Console.WriteLine($"[사용자 관리] LoadUserData 호출 - 검색어: '{searchKeyword}', 부서ID: '{deptId ?? "전체"}'");
+
+            // [수정됨] LEFT JOIN 부분에 AND pf.IsDefault = 1 추가
+            // 이렇게 하면 여러 프로필 중 '기본 프로필(IsDefault=1)'인 행 하나만 조인되어 중복이 제거됩니다.
+            string sql = $@"
+        SELECT u.UserId, u.Name, u.LoginId, pf.Nickname AS Nickname, u.DeptId,
+               CASE 
+                   WHEN u.DeptId IS NULL THEN '미배정'
+                   WHEN d.ParentDeptId IS NULL THEN d.DeptName
+                   ELSE CONCAT(p.DeptName, ' > ', d.DeptName)
+               END AS DeptPath
+        FROM `User` u
+        LEFT JOIN Profile pf ON pf.UserId = u.UserId AND pf.IsDefault = 1
+        LEFT JOIN Department d ON u.DeptId = d.DeptId
+        LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
+        WHERE u.Role = 'user' AND (u.Name LIKE '%{searchKeyword}%' OR u.LoginId LIKE '%{searchKeyword}%')";
+
+            // deptId 필터링 추가
+            if (!string.IsNullOrEmpty(deptId) && deptId != "0")
+            {
+                sql += $" AND u.DeptId = {deptId}";
+                Console.WriteLine($"[사용자 관리] 부서 필터 적용: DeptId = {deptId}");
+            }
+            else
+            {
+                Console.WriteLine("[사용자 관리] 부서 필터 없음 (전체 표시)");
+            }
+
+            sql += " ORDER BY u.Name";
+
+            try
+            {
+                var dt = db.Query(sql);
+                Console.WriteLine($"[사용자 관리] 조회된 사용자 수: {dt.Rows.Count}명");
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    dgv.Rows.Add(
+                        row["UserId"],
+                        row["Name"],
+                        row["LoginId"],
+                        row["Nickname"] == DBNull.Value ? "" : row["Nickname"],
+                        row["DeptPath"],
+                        row["DeptId"] == DBNull.Value ? null : row["DeptId"]
+                    );
+                }
+
                 Console.WriteLine($"[사용자 관리] DataGridView에 {dgv.Rows.Count}개 행 추가됨");
             }
             catch (Exception ex)

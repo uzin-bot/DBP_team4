@@ -36,11 +36,18 @@ namespace leehaeun
                     ON p.ProfileId = upm.ProfileId
                 LEFT JOIN Department d
                     ON d.DeptId = u.DeptId
-                WHERE NOT EXISTS (
+                WHERE u.UserId != {LoginForm.UserId}
+                AND NOT EXISTS (
                     SELECT 1
                     FROM UserProfileMap already
                     WHERE already.OwnerUserId = {LoginForm.UserId}
                     AND already.TargetUserId = u.UserId
+                )
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM UserVisibleUser uvu
+                    WHERE uvu.OwnerUserId = {LoginForm.UserId}
+                    AND uvu.VisibleUserId = u.UserId
                 );";
 
             DataTable dt = DBconnector.GetInstance().Query(query);

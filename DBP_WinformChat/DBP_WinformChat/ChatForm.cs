@@ -66,9 +66,18 @@ namespace kyg
                 return;
             }
 
+            // ✅ 멀티프로필 닉네임 가져오기
+            string partnerNickname = GetNicknameForUser(partnerId);
+            string partnerName = GetUserName(partnerId);
+
+            // ✅ 타이틀 변경: name(nickname) 님 형식
+            this.Text = $"{partnerName}({partnerNickname}) 님과의 채팅 ({myId})";
+
+            /*
             // 상대방 이름 가져오기 (수정)
             string partnerName = GetUserName(partnerId);
             this.Text = $"{partnerName} 님과의 채팅 ({myId})";
+            */
 
             // 5-E: 이모지 맵 초기화 (Resources 폴더 직접 참조)
             LoadEmojisFromDirectory();
@@ -150,6 +159,61 @@ namespace kyg
                 MessageBox.Show("사용자 이름 조회 중 오류: " + ex.Message);
             }
             return "Unknown";
+        }
+
+        // ✅ 멀티프로필을 고려한 닉네임 가져오기 메서드 (새로 추가)
+        private string GetNicknameForUser(int targetUserId)
+        {
+            try
+            {
+                // 1. UserProfileMap 확인 (상대방이 나에게 보여주는 멀티프로필)
+                string mapQuery = $@"
+            SELECT ProfileId 
+            FROM UserProfileMap 
+            WHERE OwnerUserId = {targetUserId} 
+            AND TargetUserId = {myId}";
+
+                DataTable mapDt = DBconnector.GetInstance().Query(mapQuery);
+
+                if (mapDt != null && mapDt.Rows.Count > 0)
+                {
+                    // 멀티프로필이 있는 경우
+                    int profileId = Convert.ToInt32(mapDt.Rows[0]["ProfileId"]);
+
+                    string profileQuery = $@"
+                SELECT Nickname 
+                FROM Profile 
+                WHERE ProfileId = {profileId}";
+
+                    DataTable profileDt = DBconnector.GetInstance().Query(profileQuery);
+
+                    if (profileDt != null && profileDt.Rows.Count > 0)
+                    {
+                        return profileDt.Rows[0]["Nickname"].ToString();
+                    }
+                }
+
+                // 2. 멀티프로필이 없으면 기본 프로필 사용
+                string defaultQuery = $@"
+            SELECT Nickname 
+            FROM Profile 
+            WHERE UserId = {targetUserId} 
+            AND IsDefault = 1";
+
+                DataTable defaultDt = DBconnector.GetInstance().Query(defaultQuery);
+
+                if (defaultDt != null && defaultDt.Rows.Count > 0)
+                {
+                    return defaultDt.Rows[0]["Nickname"].ToString();
+                }
+
+                return "Unknown";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GetNicknameForUser] 오류: {ex.Message}");
+                return "Unknown";
+            }
         }
 
         // 5-E: 개별 이모지 버튼 클릭 이벤트
@@ -248,6 +312,9 @@ namespace kyg
 
                 if (history == null) return;
 
+                // ✅ 상대방 닉네임 미리 가져오기
+                string partnerNickname = GetNicknameForUser(partnerId);
+
                 foreach (DataRow row in history.Rows)
                 {
                     int senderId = Convert.ToInt32(row["FromUserId"]); // string -> int 로 수정
@@ -267,12 +334,18 @@ namespace kyg
 
                     if (content.StartsWith("EMOJI:"))
                     {
-                        DisplayEmoji(senderId, content.Substring(6), timeString, readStatus);
+                        DisplayEmojiWithNickname(senderId, partnerNickname, content.Substring(6), timeString, readStatus);
+                        //DisplayEmoji(senderId, content.Substring(6), timeString, readStatus);
                     }
                     else
                     {
+                        /*
                         // DisplayMessage에 timeString 전달
                         string senderLabel = senderId == myId ? "나" : senderId.ToString();
+                        DisplayMessage($"[{senderLabel}]: {content}{readStatus}", senderId == myId, timeString);
+                        */
+                        // ✅ 일반 메시지도 닉네임으로 표시
+                        string senderLabel = senderId == myId ? "나" : partnerNickname;
                         DisplayMessage($"[{senderLabel}]: {content}{readStatus}", senderId == myId, timeString);
                     }
                 }
@@ -619,6 +692,8 @@ namespace kyg
                                 if (this.IsDisposed) return;
                                 string currentTime = DateTime.Now.ToString("tt hh:mm");
 
+                                string partnerNickname = GetNicknameForUser(partnerId);
+
                                 if (content.StartsWith("FILE_RECEIVED:"))
                                 {
                                     try
@@ -657,7 +732,8 @@ namespace kyg
                                 }
                                 else
                                 {
-                                    DisplayMessage($"[{senderId}]: {content}", false, currentTime);
+                                    //DisplayMessage($"[{senderId}]: {content}", false, currentTime);
+                                    DisplayMessage($"[{partnerNickname}]: {content}", false, currentTime);
                                 }
 
                                 // [1 사라짐 해결] 창이 보이고 최소화 상태가 아니면 즉시 읽음 처리
@@ -728,6 +804,7 @@ namespace kyg
             MessageBox.Show($"{matches}개의 결과를 찾았습니다.", "검색 완료");
         }
 
+        /*
         // 4주차 5-E 구현: RichTextBox에 이미지를 삽입하는 메서드
         private void DisplayEmoji(int senderId, string emojiCode, string timeString, string readStatus = "")
         {
@@ -763,6 +840,45 @@ namespace kyg
             }
 
             // 4. 줄바꿈 및 자동 스크롤
+            rtbChatLog.AppendText("\n");
+            rtbChatLog.ScrollToCaret();
+        }
+        */
+
+        private void DisplayEmoji(int senderId, string emojiCode, string timeString, string readStatus = "")
+        {
+            string partnerNickname = GetNicknameForUser(partnerId);
+            DisplayEmojiWithNickname(senderId, partnerNickname, emojiCode, timeString, readStatus);
+        }
+
+        // ✅ 새로운 메서드 추가
+        private void DisplayEmojiWithNickname(int senderId, string partnerNickname, string emojiCode, string timeString, string readStatus = "")
+        {
+            rtbChatLog.SelectionStart = rtbChatLog.TextLength;
+            rtbChatLog.SelectionLength = 0;
+
+            // ✅ 닉네임으로 표시
+            string senderLabel = senderId == myId ? "나" : partnerNickname;
+            rtbChatLog.AppendText($"[{senderLabel}] ({timeString}){readStatus}: ");
+
+            Image img = null;
+            if (emojiMap.TryGetValue(emojiCode, out img) && img != null)
+            {
+                try
+                {
+                    Clipboard.SetImage(img);
+                    rtbChatLog.Paste();
+                }
+                catch (Exception)
+                {
+                    rtbChatLog.AppendText($"(이모티콘:{emojiCode} - UI 삽입 실패)");
+                }
+            }
+            else
+            {
+                rtbChatLog.AppendText($"(이모티콘:{emojiCode} - 이미지 로드 실패)");
+            }
+
             rtbChatLog.AppendText("\n");
             rtbChatLog.ScrollToCaret();
         }

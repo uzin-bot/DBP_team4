@@ -35,6 +35,11 @@ namespace 남예솔
         {
             InitializeComponent();
 
+            // ✅ ListView 호버 효과 완전 차단 (이 부분을 추가)
+            lvlist.HotTracking = false;
+            lvlist.HoverSelection = false;
+            lvlist.Activation = ItemActivation.Standard;
+
             // 전역 테마 적용 및 구독
             ApplyTheme(DBP_WinformChat.ThemeService.IsDarkMode);
             DBP_WinformChat.ThemeService.Subscribe(this, ApplyTheme);
@@ -558,6 +563,7 @@ namespace 남예솔
             }
         }
         */
+        /*
         // 기존 것을 삭제하고 1번 문서 것으로 완전히 교체
         private void LoadRecentChat()
         {
@@ -623,6 +629,134 @@ namespace 남예솔
             catch (Exception ex)
             {
                 MessageBox.Show($"채팅 목록 로드 실패: {ex.Message}\n\n{ex.StackTrace}");
+            }
+        }
+        */
+
+        // 기존 것을 삭제하고 1번 문서 것으로 완전히 교체
+        private void LoadRecentChat()
+        {
+            lvlist.Items.Clear();
+
+            // ✅ UnreadCount 추가된 쿼리
+            string sql = $@"
+        SELECT 
+            rc.PartnerUserId,
+            u.Name,
+            u.LoginId,
+            d.DeptName,
+            cm.Content AS LastMessage,       
+            rc.LastMessageAt,
+            rc.is_pinned,
+            rc.UnreadCount
+        FROM RecentChat rc
+        JOIN User u ON rc.PartnerUserId = u.UserId
+        JOIN Department d ON u.DeptId = d.DeptId
+        JOIN ChatMessage cm ON rc.LastMessageId = cm.MessageId 
+        WHERE rc.UserId = {currentUserId}
+        ORDER BY rc.is_pinned DESC, rc.LastMessageAt DESC";
+
+            try
+            {
+                DataTable dt = DBconnector.GetInstance().Query(sql);
+
+                if (dt == null || dt.Rows.Count == 0)
+                {
+                    return;
+                }
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    bool isPinned = Convert.ToInt32(row["is_pinned"]) == 1;
+                    int unreadCount = Convert.ToInt32(row["UnreadCount"]);
+                    int partnerUserId = Convert.ToInt32(row["PartnerUserId"]);
+
+                    // ✅ 멀티프로필 닉네임 가져오기
+                    string nickname = GetNicknameForUser(partnerUserId);
+                    string name = row["Name"].ToString();
+
+                    // ✅ 읽지 않은 메시지 표시
+                    string indicator = unreadCount > 0 ? "●" : "";
+                    ListViewItem item = new ListViewItem(indicator);
+
+                    item.ImageIndex = isPinned ? 0 : -1;
+
+                    item.SubItems.Add(row["LoginId"].ToString());
+                    item.SubItems.Add(name); // ✅ 이름 추가
+                    item.SubItems.Add(nickname); // ✅ 닉네임 추가
+                    item.SubItems.Add(row["DeptName"].ToString());
+
+                    string msg = row["LastMessage"].ToString();
+                    if (msg.Length > 20)
+                        msg = msg.Substring(0, 20) + "…";
+                    item.SubItems.Add(msg);
+
+                    item.SubItems.Add(row["LastMessageAt"].ToString());
+
+                    // ✅ Tag에 UserId 저장
+                    item.Tag = row["PartnerUserId"].ToString();
+
+                    lvlist.Items.Add(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"채팅 목록 로드 실패: {ex.Message}\n\n{ex.StackTrace}");
+            }
+        }
+
+        // ✅ 멀티프로필을 고려한 닉네임 가져오기 메서드 (LoadRecentChat 바로 아래에 추가)
+        private string GetNicknameForUser(int targetUserId)
+        {
+            try
+            {
+                // 1. UserProfileMap 확인 (내가 상대방에게 설정한 멀티프로필)
+                string mapQuery = $@"
+            SELECT ProfileId 
+            FROM UserProfileMap 
+            WHERE OwnerUserId = {targetUserId} 
+            AND TargetUserId = {currentUserId}";
+
+                DataTable mapDt = DBconnector.GetInstance().Query(mapQuery);
+
+                if (mapDt != null && mapDt.Rows.Count > 0)
+                {
+                    // 멀티프로필이 있는 경우
+                    int profileId = Convert.ToInt32(mapDt.Rows[0]["ProfileId"]);
+
+                    string profileQuery = $@"
+                SELECT Nickname 
+                FROM Profile 
+                WHERE ProfileId = {profileId}";
+
+                    DataTable profileDt = DBconnector.GetInstance().Query(profileQuery);
+
+                    if (profileDt != null && profileDt.Rows.Count > 0)
+                    {
+                        return profileDt.Rows[0]["Nickname"].ToString();
+                    }
+                }
+
+                // 2. 멀티프로필이 없으면 기본 프로필 사용
+                string defaultQuery = $@"
+            SELECT Nickname 
+            FROM Profile 
+            WHERE UserId = {targetUserId} 
+            AND IsDefault = 1";
+
+                DataTable defaultDt = DBconnector.GetInstance().Query(defaultQuery);
+
+                if (defaultDt != null && defaultDt.Rows.Count > 0)
+                {
+                    return defaultDt.Rows[0]["Nickname"].ToString();
+                }
+
+                return "-";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GetNicknameForUser] 오류: {ex.Message}");
+                return "-";
             }
         }
 
