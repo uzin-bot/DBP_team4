@@ -27,7 +27,8 @@ namespace DBP_Chat
 
             InitializeComponent();
 
-            DBP_WinformChat.SearchResultUIHelper.Apply(this);
+            // 다크모드 해제 시 반드시 false로 호출
+            DBP_WinformChat.SearchResultUIHelper.Apply(this, false);
 
             this.id = id;
             this.name = name;

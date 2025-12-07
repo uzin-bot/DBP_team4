@@ -12,7 +12,7 @@ namespace DBP_WinformChat
         public static void Apply(Form form)
         {
             form.BackColor = Color.White;
-            form.Font = new Font("맑은 고딕", 10);
+            // 폰트는 디자이너 배치에 영향을 주므로 변경하지 않음
 
             foreach (Control c in form.Controls)
                 StyleControl(c);
@@ -31,7 +31,6 @@ namespace DBP_WinformChat
             if (ctrl is Label lbl && lbl.Name == "headerLabel")
             {
                 lbl.ForeColor = Color.White;
-                lbl.Font = new Font("맑은 고딕", 14, FontStyle.Bold);
                 lbl.BackColor = Color.Transparent;
             }
 
@@ -40,7 +39,6 @@ namespace DBP_WinformChat
             if (ctrl is Label lbl2)
             {
                 lbl2.ForeColor = Color.FromArgb(119, 136, 115);
-                lbl2.Font = new Font("맑은 고딕", 10, FontStyle.Bold);
             }
 
             // ===================== GROUPBOX =====================
@@ -48,7 +46,6 @@ namespace DBP_WinformChat
             {
                 gb.BackColor = Color.FromArgb(241, 243, 224);
                 gb.ForeColor = Color.FromArgb(119, 136, 115);
-                gb.Font = new Font("맑은 고딕", 10, FontStyle.Bold);
             }
 
             // ===================== PANEL =====================
@@ -63,7 +60,6 @@ namespace DBP_WinformChat
                 tb.BackColor = Color.White;
                 tb.ForeColor = Color.Black;
                 tb.BorderStyle = BorderStyle.FixedSingle;
-                tb.Font = new Font("맑은 고딕", 10);
             }
 
             // ===================== LISTBOX =====================
@@ -72,7 +68,6 @@ namespace DBP_WinformChat
                 lb.BackColor = Color.White;
                 lb.ForeColor = Color.Black;
                 lb.BorderStyle = BorderStyle.FixedSingle;
-                lb.Font = new Font("맑은 고딕", 10);
             }
 
             // ===================== TREEVIEW =====================
@@ -81,7 +76,16 @@ namespace DBP_WinformChat
                 tv.BackColor = Color.FromArgb(241, 243, 224);
                 tv.ForeColor = Color.Black;
                 tv.BorderStyle = BorderStyle.None;
-                tv.Font = new Font("맑은 고딕", 10);
+            }
+
+            // ===================== COMBOBOX =====================
+            if (ctrl is ComboBox cb)
+            {
+                cb.BackColor = Color.White;                 // 흰색 배경
+                cb.ForeColor = Color.Black;                 // 검은색 텍스트
+                cb.FlatStyle = FlatStyle.Standard;
+                cb.DrawMode = DrawMode.Normal;              // 라이트 모드에서는 기본 드로잉
+                cb.DrawItem -= null;                        // 이벤트 핸들러 제거 (있다면)
             }
 
             // ===================== BUTTON =====================
@@ -92,7 +96,6 @@ namespace DBP_WinformChat
 
                 btn.BackColor = Color.FromArgb(161, 188, 152);
                 btn.ForeColor = Color.White;
-                btn.Font = new Font("맑은 고딕", 10, FontStyle.Bold);
                 btn.Cursor = Cursors.Hand;
 
                 Color ClickColor = Color.FromArgb(190, 200, 160);

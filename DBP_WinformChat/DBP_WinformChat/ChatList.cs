@@ -30,21 +30,33 @@ namespace 남예솔
 
         public chatlist()
         {
-
             InitializeComponent();
 
-            DBP_WinformChat.chatlistUIHelper.Apply(this);
+            // 전역 테마 적용 및 구독
+            ApplyTheme(DBP_WinformChat.ThemeService.IsDarkMode);
+            DBP_WinformChat.ThemeService.Subscribe(this, ApplyTheme);
 
-            btndept.Click += btndept_Click; //클릭시 DeptForm으로 이동 
+            btndept.Click += btndept_Click;
 
-            // NotifyIcon 초기화 추가 (수정사항)
             niChatAlert = new NotifyIcon();
-            niChatAlert.Icon = SystemIcons.Information; // 기본 정보 아이콘
+            niChatAlert.Icon = SystemIcons.Information;
             niChatAlert.Visible = true;
             niChatAlert.Text = "채팅 알림";
 
             this.FormClosing += OnFormClosing;
+        }
 
+        private void ApplyTheme(bool isDark)
+        {
+            if (isDark)
+            {
+                // 필요 시 다크 헬퍼 사용 (현재 컨텍스트엔 라이트만 있으므로 생략 또는 구현)
+                // 예: DarkChatListUIHelper.Apply(this);
+            }
+            else
+            {
+                DBP_WinformChat.chatlistUIHelper.Apply(this);
+            }
         }
 
         private void chatlist_Load(object sender, EventArgs e)

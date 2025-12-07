@@ -5,69 +5,81 @@ namespace DBP_WinformChat
 {
     internal class SearchResultUIHelper
     {
-        //메인 적용
-        public static void Apply(Form form)
+        public static void Apply(Form form, bool darkMode = false)
         {
-            //전체 배경
-            form.BackColor = Color.FromArgb(241, 243, 224);
+            form.SuspendLayout();
+
+            form.BackColor = darkMode ? Color.FromArgb(32, 32, 32) : Color.FromArgb(241, 243, 224);
 
             foreach (Control c in form.Controls)
             {
-                StyleControl(c);
+                StyleControl(c, darkMode);
             }
+
+            // 모든 ListView 항목/헤더 색 재설정 (다크모드 해제 시 검정 배경 잔존 방지)
+            foreach (var lv in form.Controls)
+            {
+                if (lv is ListView list)
+                {
+                    list.OwnerDraw = false; // 커스텀 그리기 해제
+                    foreach (ListViewItem it in list.Items)
+                    {
+                        it.BackColor = darkMode ? Color.FromArgb(40, 40, 40) : Color.White;
+                        it.ForeColor = darkMode ? Color.White : Color.Black;
+                        foreach (ListViewItem.ListViewSubItem sub in it.SubItems)
+                        {
+                            sub.ForeColor = it.ForeColor;
+                            sub.BackColor = it.BackColor;
+                        }
+                    }
+                }
+            }
+
+            form.ResumeLayout(true);
         }
 
-        private static void StyleControl(Control ctrl)
+        private static void StyleControl(Control ctrl, bool darkMode)
         {
-            //Panel  
             if (ctrl is Panel pnl)
             {
-                pnl.BackColor = Color.FromArgb(119, 136, 115);
+                pnl.BackColor = darkMode ? Color.FromArgb(45, 45, 45) : Color.FromArgb(119, 136, 115);
             }
 
-            //Label  
             if (ctrl is Label lbl)
             {
-                lbl.BackColor = Color.FromArgb(119, 136, 115);
+                lbl.BackColor = darkMode ? Color.FromArgb(45, 45, 45) : Color.FromArgb(119, 136, 115);
                 lbl.ForeColor = Color.White;
             }
 
-            //Button
             if (ctrl is Button btn)
             {
                 btn.FlatStyle = FlatStyle.Flat;
                 btn.UseVisualStyleBackColor = false;
-
-                btn.BackColor = Color.FromArgb(119, 136, 115);
+                btn.BackColor = darkMode ? Color.FromArgb(60, 60, 60) : Color.FromArgb(119, 136, 115);
                 btn.ForeColor = Color.White;
-
-                btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(119, 136, 115);
-                btn.FlatAppearance.MouseDownBackColor = Color.FromArgb(119, 136, 115);
-                btn.FlatAppearance.CheckedBackColor = Color.FromArgb(119, 136, 115);
-                btn.FlatAppearance.BorderColor = Color.FromArgb(119, 136, 115);
-
+                var accent = darkMode ? Color.FromArgb(60, 60, 60) : Color.FromArgb(119, 136, 115);
+                btn.FlatAppearance.MouseOverBackColor = accent;
+                btn.FlatAppearance.MouseDownBackColor = accent;
+                btn.FlatAppearance.CheckedBackColor = accent;
+                btn.FlatAppearance.BorderColor = accent;
                 btn.FlatAppearance.BorderSize = 0;
                 btn.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             }
 
-            //ListView
             if (ctrl is ListView lv)
             {
-                lv.BackColor = Color.White;
-                lv.ForeColor = Color.Black;
+                lv.OwnerDraw = false; // 다크모드 해제 시 시스템 렌더러 사용
+                lv.BackColor = darkMode ? Color.FromArgb(40, 40, 40) : Color.White;
+                lv.ForeColor = darkMode ? Color.White : Color.Black;
                 lv.BorderStyle = BorderStyle.FixedSingle;
-
                 lv.FullRowSelect = true;
                 lv.HideSelection = false;
 
-                // 폼 폭에 맞게 ListView 폭 확장 (우측 여백 고려)
                 if (lv.Parent != null)
                 {
-                    // 너무 과도하게 넓어지지 않도록 여백을 조금 더 둔다
                     lv.Width = Math.Max(lv.Width, lv.Parent.ClientSize.Width - 40);
                 }
 
-                // 컬럼 폭 조정: 텍스트 기준 매칭
                 foreach (ColumnHeader ch in lv.Columns)
                 {
                     var text = (ch.Text ?? string.Empty).Trim();
@@ -84,9 +96,8 @@ namespace DBP_WinformChat
                 }
             }
 
-            //자식 컨트롤에도 동일 적용 (재귀)
             foreach (Control child in ctrl.Controls)
-                StyleControl(child);
+                StyleControl(child, darkMode);
         }
     }
 }

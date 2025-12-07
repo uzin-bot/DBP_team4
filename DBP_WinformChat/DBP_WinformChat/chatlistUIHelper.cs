@@ -7,7 +7,6 @@ namespace DBP_WinformChat
 {
     internal class chatlistUIHelper
     {
-
         public static void Apply(Form form)
         {
             form.BackColor = Color.White;
@@ -63,7 +62,7 @@ namespace DBP_WinformChat
                         new Font("맑은 고딕", 10, FontStyle.Bold),
                         e.Bounds,
                         Color.FromArgb(119, 136, 115),
-                    TextFormatFlags.VerticalCenter | TextFormatFlags.Left
+                        TextFormatFlags.VerticalCenter | TextFormatFlags.Left
                     );
                 };
 
@@ -83,7 +82,7 @@ namespace DBP_WinformChat
                 // --- 행 텍스트 & 아이콘 ---
                 lv.DrawSubItem += (s, e) =>
                 {
-                    //첫 번째 컬럼 = 아이콘 컬럼
+                    // 첫 번째 컬럼 = 아이콘 컬럼
                     if (e.ColumnIndex == 0)
                     {
                         var item = e.Item;
@@ -102,7 +101,7 @@ namespace DBP_WinformChat
                         return;
                     }
 
-                    //기본 텍스트 출력
+                    // 기본 텍스트 출력
                     TextRenderer.DrawText(
                         e.Graphics,
                         e.SubItem.Text,

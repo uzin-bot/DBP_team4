@@ -18,6 +18,10 @@ namespace DBP_Chat
         private string currentUserNickname;
         private PermissionManager permissionManager;
 
+        // 폼별 테마 상태(실제 전환은 ThemeManager.CurrentMode 기반으로)
+        private bool _isDarkMode = false;
+
+        // 이 폼만의 다크모드 색상(ThemeManager와는 별개 로컬 스타일)
         private Color _darkBack = Color.FromArgb(32, 32, 32);
         private Color _darkPanel = Color.FromArgb(45, 45, 45);
         private Color _darkHeader = Color.FromArgb(64, 64, 64);
@@ -28,14 +32,12 @@ namespace DBP_Chat
         {
             InitializeComponent();   // 디자이너 생성 코드 호출
 
-            ThemeManager.ThemeChanged += mode => this.OnThemeChanged(mode);
-
             this.currentUserId = userId;
             this.currentUserName = name;
             this.currentUserNickname = nickname;
             this.permissionManager = new PermissionManager();
 
-            // 폼 Load 이벤트는 여기서 한 번만 연결
+            // Load 이벤트
             this.Load += this.Dept_Load;
 
             // TreeView & 버튼 이벤트 – Designer에 안 걸어놨다면 여기서만 등록
@@ -49,12 +51,23 @@ namespace DBP_Chat
             btnChat.Click += this.btnChat_Click;
             btnchatlist.Click += this.btnchatlist_Click;
             lBlist.SelectedIndexChanged += this.lBlist_SelectedIndexChanged;
+
+            // 전역 테마 변경 이벤트 구독 (한 번만)
+            ThemeManager.ThemeChanged += mode => this.OnThemeChanged(mode);
         }
 
         private void Dept_Load(object sender, EventArgs e)
         {
-            this.LoadTreeView();
-            this.LoadFavoriteList();
+            this.AutoScaleMode = AutoScaleMode.None;
+
+            // '이름' 라벨의 폰트를 'ID' 또는 '부서' 라벨과 동일하게 맞춤
+            label1.Font = label3.Font;         // 또는: label1.Font = label2.Font;
+
+            // 텍스트박스도 라벨들과 동일한 폰트계열로 맞추려면
+            txtname.Font = txtID.Font;         // 동일 계열 유지
+
+            // 나머지 초기화
+            ApplyLightHelper();
 
             try
             {
@@ -86,21 +99,34 @@ namespace DBP_Chat
                 // 예외는 무시
             }
 
+            // TreeView 로드
+            this.LoadTreeView();
+
+            // 즐겨찾기 목록 로드
+            this.LoadFavoriteList();
+
+            // 기본은 라이트 스타일
             this.ApplyLightHelper();
 
             // 다크 모드 라디오 버튼 설정
-            rbDarkMode.AutoCheck = false;
-            // Click은 여기서만 등록
-            rbDarkMode.Click += this.rbDarkMode_Click;
-            // CheckedChanged는 Designer에서 이미 연결했으므로 여기서는 다시 안 건다.
-            // rbDarkMode.CheckedChanged += this.rbDarkMode_CheckedChanged;
+            rbDarkMode.AutoCheck = false;                // 자동 체크 방지
+            rbDarkMode.Click += this.rbDarkMode_Click;   // 클릭할 때 수동 토글
+            // CheckedChanged는 Designer에서 이미 연결되어 있음
 
+            // 현재 전역 테마 상태에 맞춰 초기 적용
             if (ThemeManager.CurrentMode == ThemeMode.Dark)
+            {
+                rbDarkMode.Checked = true;       // CheckedChanged 발생 → ThemeManager.SetTheme(Dark) 다시 호출해도 동일 상태라 무시됨
                 this.ApplyTheme(true);
+            }
             else
+            {
+                rbDarkMode.Checked = false;
                 this.ApplyLightHelper();
+            }
         }
 
+        // ThemeManager.ThemeChanged에서 호출되는 핸들러
         private void OnThemeChanged(ThemeMode mode)
         {
             if (mode == ThemeMode.Dark)
@@ -115,21 +141,25 @@ namespace DBP_Chat
             }
         }
 
+        // 라디오버튼을 토글 스위치처럼 사용
         private void rbDarkMode_Click(object sender, EventArgs e)
         {
             rbDarkMode.Checked = !rbDarkMode.Checked;
         }
 
+        // Checked 변경 시 전역 테마 상태도 함께 변경
         private void rbDarkMode_CheckedChanged(object sender, EventArgs e)
         {
             if (this.rbDarkMode.Checked)
             {
+                // 다크 모드 ON
                 ThemeManager.SetTheme(ThemeMode.Dark);
-                this.ApplyTheme(true);
+                // ThemeManager 내부에서 CurrentMode 변경 + 모든 폼 ApplyTheme + ThemeChanged 이벤트
             }
             else
             {
-                this.ApplyLightHelper();
+                // 라이트 모드 ON
+                ThemeManager.SetTheme(ThemeMode.Light);
             }
         }
 
@@ -284,7 +314,7 @@ namespace DBP_Chat
 
             if (Convert.ToInt32(dt.Rows[0][0]) > 0)
             {
-                MessageBox.Show("이미 즐겨찾기에 등록되어 있습니다!");
+                   MessageBox.Show("이미 즐겨찾리에 등록되어 있습니다!");
                 return;
             }
 
@@ -369,6 +399,7 @@ namespace DBP_Chat
             editForm.ShowDialog();
         }
 
+        // 이 폼 전용 다크모드 스타일 적용
         private void ApplyTheme(bool isDark)
         {
             if (!isDark)
@@ -409,10 +440,43 @@ namespace DBP_Chat
             this.txtname.BackColor = Color.FromArgb(30, 30, 30);
             this.txtname.ForeColor = text;
 
-            this.cbDept.BackColor = Color.FromArgb(30, 30, 30);
-            this.cbDept.ForeColor = text;
+            // 콤보박스 다크모드 적용 수정 - 완전 어둡게
+            this.cbDept.BackColor = Color.FromArgb(30, 30, 30);  // 더 어두운 배경 (텍스트박스와 동일)
+            this.cbDept.ForeColor = Color.White;                 // 흰색 텍스트
             this.cbDept.FlatStyle = FlatStyle.Flat;
-
+            
+            // 드롭다운도 어둡게 만들기 위한 추가 설정
+            this.cbDept.DrawMode = DrawMode.OwnerDrawFixed;
+            this.cbDept.DrawItem += (s, e) => {
+                if (e.Index < 0) return;
+                
+                e.DrawBackground();
+                
+                // 배경색을 어둡게
+                using (var brush = new SolidBrush(Color.FromArgb(30, 30, 30)))
+                {
+                    e.Graphics.FillRectangle(brush, e.Bounds);
+                }
+                
+                // 선택된 아이템 하이라이트
+                if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
+                {
+                    using (var brush = new SolidBrush(Color.FromArgb(60, 60, 60)))
+                    {
+                        e.Graphics.FillRectangle(brush, e.Bounds);
+                    }
+                }
+                
+                // 텍스트 그리기
+                using (var brush = new SolidBrush(Color.White))
+                {
+                    e.Graphics.DrawString(this.cbDept.Items[e.Index].ToString(), 
+                        e.Font, brush, e.Bounds, StringFormat.GenericDefault);
+                }
+            };
+            
+            this.cbDept.Refresh();                               // 즉시 다시 그리기
+            
             this.lBlist.BackColor = Color.FromArgb(30, 30, 30);
             this.lBlist.ForeColor = text;
 
@@ -436,13 +500,10 @@ namespace DBP_Chat
 
         private void ApplyLightHelper()
         {
+            // Dept 전용 라이트 스타일
             DeptUIHelper.Apply(this);
             this.ResetLabelBackgrounds(this);
             headerLabel.BackColor = Color.Transparent;
-
-            this.cbDept.BackColor = SystemColors.Window;
-            this.cbDept.ForeColor = SystemColors.ControlText;
-            this.cbDept.FlatStyle = FlatStyle.Standard;
 
             this.rbDarkMode.ForeColor = SystemColors.ControlText;
         }
