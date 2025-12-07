@@ -17,7 +17,9 @@ public class kyg
     private static Dictionary<string, List<TcpClient>> clients = new Dictionary<string, List<TcpClient>>();
     private const int PORT = 12345;
     // 서버 측 파일 저장 디렉토리 (4주차 5-F 검정)
-    private const string FILE_STORAGE_PATH = "C:\\DBP_ChatFiles\\";
+    //private const string FILE_STORAGE_PATH = "C:\\DBP_ChatFiles\\";
+    private static readonly string FILE_STORAGE_PATH = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ChatFiles");
+
 
     public static void StartServer()
     {
@@ -64,7 +66,7 @@ public class kyg
         byte[] buffer = new byte[1024];
         string userId = string.Empty;
 
-        // 5-F: 파일 전송 상태 관리 변수
+        // 5-F: 파일 전송 상태 관리 변수 (클라이언트 -> 서버 업로드용)
         bool isReceivingFile = false;
         long fileSize = 0;
         string fileName = string.Empty;
@@ -85,99 +87,89 @@ public class kyg
 
                 if (isReceivingFile)
                 {
-                    // 1. 파일 데이터 수신 모드
+                    // ========================================================
+                    // [모드 1] 클라이언트가 보낸 파일을 서버가 받는 중 (업로드)
+                    // ========================================================
                     if (fileStream == null)
                     {
-                        // FileStream 열기 (첫 파일 데이터 Read 시점)
+                        // 저장 경로: 실행파일위치/ChatFiles/받는사람ID/파일명
                         string saveDir = Path.Combine(FILE_STORAGE_PATH, receiverId);
-                        Directory.CreateDirectory(saveDir);
+                        if (!Directory.Exists(saveDir)) Directory.CreateDirectory(saveDir);
+
                         fullPath = Path.Combine(saveDir, fileName);
                         fileStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write);
                         remainingBytes = fileSize;
                     }
 
-                    // 현재 버퍼의 데이터를 파일에 쓰고 남은 크기 업데이트
                     int writeSize = (int)Math.Min(bytesRead, remainingBytes);
                     fileStream.Write(buffer, 0, writeSize);
                     remainingBytes -= writeSize;
 
                     if (remainingBytes <= 0)
                     {
-                        // 파일 전송 완료
+                        // 업로드 완료
                         fileStream.Dispose();
                         fileStream = null;
                         isReceivingFile = false;
 
-                        // 2. 파일 전송 완료 알림 중계 및 DB 저장
+                        // 수신자에게 "파일 왔다" 알림 전송 (경로는 서버 내부 경로지만 식별용으로 보냄)
                         string fileNotifyContent = $"FILE_RECEIVED:{fileName}:{fullPath}";
                         string fileNotifyMsg = $"CHAT:{senderId}:{receiverId}:{fileNotifyContent}";
 
                         SendMessageToClient(receiverId, fileNotifyMsg);
-                        SaveChatMessageAndRecentChat(senderId, receiverId, $"[파일 전송 완료] {fileName}");
+                        SaveChatMessageAndRecentChat(senderId, receiverId, $"[파일 전송 완료] {fileName}", true, fullPath);
 
                         Console.WriteLine($"[File Success] {fileName} saved at {fullPath}");
                     }
-
                     continue;
                 }
                 else
                 {
-                    // 2. 텍스트 데이터 수신 모드 (LOGIN, CHAT, FILE_HEADER)
+                    // ========================================================
+                    // [모드 2] 일반 텍스트 명령어 처리
+                    // ========================================================
                     string receivedMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead).TrimEnd('\0');
-                    Console.WriteLine($"[Received Raw] {receivedMessage}");
+                    // Console.WriteLine($"[Received Raw] {receivedMessage}"); // 디버깅용 로그
 
-                    // FILE_HEADER는 ':' 많이 포함되므로 5개로 Split
+                    // 1. 파일 업로드 헤더 감지
                     if (receivedMessage.StartsWith("FILE_HEADER:"))
                     {
                         string[] fh = receivedMessage.Split(new char[] { ':' }, 5);
-
                         if (fh.Length == 5)
                         {
                             senderId = fh[1];
                             receiverId = fh[2];
                             fileName = fh[3];
-
                             if (long.TryParse(fh[4], out fileSize))
                             {
                                 isReceivingFile = true;
-                                Console.WriteLine($"[FileHeader] {fileName} ({fileSize} bytes) From {senderId} -> {receiverId}");
+                                Console.WriteLine($"[FileHeader] Upload Start: {fileName} ({fileSize} bytes)");
                                 continue;
                             }
                         }
                     }
 
-                    string[] parts = receivedMessage.Split(new char[] { ':' }, 4);  // 중요: max 4 -> content에 ':' 포함 가능
-                                                                                    //if (parts.Length < 2) continue;
-
+                    // 2. 일반 명령어 파싱
+                    string[] parts = receivedMessage.Split(new char[] { ':' }, 4);
                     string type = parts[0];
 
                     if (type == "LOGIN")
                     {
-                        // 클라이언트 ID 등록
-                        //userId = parts[1];
                         userId = parts.Length > 1 ? parts[1] : string.Empty;
                         lock (clients)
                         {
-                            if (!clients.ContainsKey(userId))
-                            {
-                                clients[userId] = new List<TcpClient>();
-                            }
+                            if (!clients.ContainsKey(userId)) clients[userId] = new List<TcpClient>();
                             clients[userId].Add(tcpClient);
-                            Console.WriteLine($"[Server] User logged in: {userId} (총 연결 수: {clients[userId].Count})");
+                            Console.WriteLine($"[Server] User logged in: {userId}");
                         }
                     }
                     else if (type == "CHAT" && parts.Length >= 4)
                     {
-                        // 2주차 5-A: 일반/이모티콘 메시지 중계 및 DB 저장
                         senderId = parts[1];
                         receiverId = parts[2];
-                        // parts[3]에는 content 전체(예: "EMOJI:EMO1" 또는 "plain text: with colon")가 들어옵니다
                         string content = parts[3];
 
-                        System.Threading.Thread.Sleep(1000);
-
                         // 중계 및 DB 저장
-                        //SenderID와 ReceiverID가 다를 때만 전송(나와의 채팅 시 중복 방지)
                         if (senderId != receiverId)
                         {
                             SendMessageToClient(receiverId, receivedMessage);
@@ -185,22 +177,65 @@ public class kyg
                         SaveChatMessageAndRecentChat(senderId, receiverId, content);
                         Console.WriteLine($"[Chat] {senderId} -> {receiverId}: {content}");
                     }
-                    // 읽음 관련 처리
                     else if (type == "READ_CONFIRM" && parts.Length >= 3)
                     {
-                        // 읽음 확인 처리
-                        string readerId = parts[1];   // 읽은 사람
-                        string originalSenderId = parts[2];   // 원래 보낸 사람
+                        string readerId = parts[1];
+                        string originalSenderId = parts[2];
+                        Console.WriteLine($"[Server] Read Confirm: {readerId} read {originalSenderId}'s message");
 
-                        System.Threading.Thread.Sleep(1000);
-
-                        Console.WriteLine($"[Server] 읽음 확인: {readerId}가 {originalSenderId}의 메시지 읽음");
-
-                        // 원래 보낸 사람에게 읽음 확인 전달
                         string confirmMsg = $"READ_CONFIRM:{readerId}::";
                         SendMessageToClient(originalSenderId, confirmMsg);
+                    }
+                    // ========================================================
+                    // [추가된 부분] 파일 다운로드 요청 처리
+                    // ========================================================
+                    else if (type == "FILE_DOWNLOAD_REQ")
+                    {
+                        // 요청 포맷: FILE_DOWNLOAD_REQ:요청자ID:파일명
+                        // (클라이언트가 '예'를 눌렀을 때 보내는 메시지)
+                        string requesterId = parts.Length > 1 ? parts[1] : "Unknown";
+                        string targetFileName = parts.Length > 2 ? parts[2] : "Unknown";
 
-                        Console.WriteLine($"[Server] {originalSenderId}에게 읽음 확인 전달 완료");
+                        // 파일 찾기: 파일은 '수신자(requesterId)'의 폴더에 저장되어 있음
+                        string userFileDir = Path.Combine(FILE_STORAGE_PATH, requesterId);
+                        string targetFilePath = Path.Combine(userFileDir, targetFileName);
+
+                        if (File.Exists(targetFilePath))
+                        {
+                            try
+                            {
+                                long len = new FileInfo(targetFilePath).Length;
+
+                                // 1. 응답 헤더 전송 (5파트로 구성하여 파싱 호환성 유지)
+                                // 형식: FILE_RESP:SERVER:RequesterID:FileName:Size
+                                string header = $"FILE_RESP:SERVER:{requesterId}:{targetFileName}:{len}";
+                                byte[] headerBytes = Encoding.UTF8.GetBytes(header);
+
+                                lock (tcpClient)
+                                {
+                                    stream.Write(headerBytes, 0, headerBytes.Length);
+                                    stream.Flush();
+
+                                    // 헤더와 파일 데이터가 붙지 않도록 잠시 대기
+                                    Thread.Sleep(200);
+
+                                    // 2. 실제 파일 데이터 전송
+                                    byte[] fileData = File.ReadAllBytes(targetFilePath);
+                                    stream.Write(fileData, 0, fileData.Length);
+                                    stream.Flush();
+                                }
+                                Console.WriteLine($"[Server] Sent file '{targetFileName}' to {requesterId}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"[Error] File send failed: {ex.Message}");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[Error] File not found: {targetFilePath}");
+                            // 필요하다면 에러 메시지를 클라이언트로 전송하는 로직 추가 가능
+                        }
                     }
                 }
             }
@@ -212,7 +247,6 @@ public class kyg
         finally
         {
             fileStream?.Dispose();
-
             if (!string.IsNullOrEmpty(userId))
             {
                 lock (clients)
@@ -220,18 +254,11 @@ public class kyg
                     if (clients.ContainsKey(userId))
                     {
                         clients[userId].Remove(tcpClient);
-                        int remainingConnections = clients[userId].Count;
-
-                        if (remainingConnections == 0)
-                        {
-                            clients.Remove(userId);
-                        }
-
-                        Console.WriteLine($"[Server] User logged out: {userId} (남은 연결 수: {remainingConnections})");
+                        if (clients[userId].Count == 0) clients.Remove(userId);
+                        Console.WriteLine($"[Server] User logged out: {userId}");
                     }
                 }
             }
-
             tcpClient?.Close();
         }
     }

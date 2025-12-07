@@ -33,6 +33,7 @@
             addpin = new ToolStripMenuItem();
             deletepin = new ToolStripMenuItem();
             imageList1 = new ImageList(components);
+            btnNewChatList = new Button();
             panel1.SuspendLayout();
             contextMenuStrip1.SuspendLayout();
             SuspendLayout();
@@ -40,6 +41,7 @@
             // panel1
             // 
             panel1.BackColor = SystemColors.GradientInactiveCaption;
+            panel1.Controls.Add(btnNewChatList);
             panel1.Controls.Add(btndept);
             panel1.Controls.Add(label1);
             panel1.Controls.Add(lvlist);
@@ -142,6 +144,16 @@
             imageList1.TransparentColor = Color.Transparent;
             imageList1.Images.SetKeyName(0, "pin");
             // 
+            // btnNewChatList
+            // 
+            btnNewChatList.Location = new Point(555, 22);
+            btnNewChatList.Name = "btnNewChatList";
+            btnNewChatList.Size = new Size(94, 29);
+            btnNewChatList.TabIndex = 2;
+            btnNewChatList.Text = "새로고침";
+            btnNewChatList.UseVisualStyleBackColor = true;
+            btnNewChatList.Click += btnNewChatList_Click;
+            // 
             // chatlist
             // 
             ClientSize = new Size(851, 846);
@@ -171,5 +183,6 @@
 		private ToolStripMenuItem addpin;
 		private ToolStripMenuItem deletepin;
 		private Button btndept;
-	}
+        private Button btnNewChatList;
+    }
 }

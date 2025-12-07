@@ -14,13 +14,13 @@ using System.Threading.Tasks;
 
 namespace 남예솔
 {
-	public partial class chatlist : Form
-	{
-		//현재 로그인한 사용자 정보(UserInfo에서 가져옴)
-		//User.Rows[0] -> User
-		private int currentUserId = Convert.ToInt32(UserInfo.User["UserId"]);
-		private string currentUserName = UserInfo.User["Name"].ToString();
-		private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
+    public partial class chatlist : Form
+    {
+        //현재 로그인한 사용자 정보(UserInfo에서 가져옴)
+        //User.Rows[0] -> User
+        private int currentUserId = Convert.ToInt32(UserInfo.User["UserId"]);
+        private string currentUserName = UserInfo.User["Name"].ToString();
+        private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
 
         // 알람용 TCP 클라이언트
         private TcpClient alertClient;
@@ -53,7 +53,7 @@ namespace 남예솔
 
 
             refreshTimer = new System.Windows.Forms.Timer();
-            refreshTimer.Interval = 3000;
+            refreshTimer.Interval = 1000;
             refreshTimer.Tick += (s, e) => LoadRecentChat();
 
             LoadRecentChat();
@@ -80,7 +80,7 @@ namespace 남예솔
 
             Console.WriteLine($"[chatlist] chatlist_Load 완료");
         }
-        
+
 
         private void RefreshTimer_Tick(object sender, EventArgs e)
         {
@@ -134,7 +134,7 @@ namespace 남예솔
                 // 연결 실패 시 재연결 시도 (3초 후)
                 Task.Run(() =>
                 {
-                    Thread.Sleep(3000);
+                    Thread.Sleep(1000);
                     if (!this.IsDisposed)
                     {
                         this.Invoke((MethodInvoker)delegate
@@ -200,7 +200,7 @@ namespace 남예솔
                                     try
                                     {
 
-                                        
+
                                         // UI 스레드에 업데이트 요청
                                         this.BeginInvoke((MethodInvoker)delegate
                                         {
@@ -257,7 +257,7 @@ namespace 남예솔
             // 재연결 (기존 로직 유지)
             Task.Run(() =>
             {
-                Thread.Sleep(3000);
+                Thread.Sleep(1000);
                 try
                 {
                     if (!this.IsDisposed)
@@ -377,7 +377,7 @@ namespace 남예솔
 
 
                     item.ImageIndex = isPinned ? 0 : -1;
-                     
+
                     item.SubItems.Add(row["LoginId"].ToString()); // 로그인 아이디로 수정
                     item.SubItems.Add(row["Name"].ToString());
                     item.SubItems.Add(row["DeptName"].ToString());
@@ -403,21 +403,21 @@ namespace 남예솔
             }
         }
 
-		//우클릭 자동 선택
-		private void lvlist_MouseDown(object sender, MouseEventArgs e)
-		{
-			if (e.Button == MouseButtons.Right)
-			{
-				ListViewItem item = lvlist.GetItemAt(e.X, e.Y);
-				if (item != null)
-					item.Selected = true;
-			}
-		}
+        //우클릭 자동 선택
+        private void lvlist_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                ListViewItem item = lvlist.GetItemAt(e.X, e.Y);
+                if (item != null)
+                    item.Selected = true;
+            }
+        }
 
-		//더블클릭 → 채팅창 열기
-		private void lvlist_DoubleClick(object sender, EventArgs e)
-		{
-			if (lvlist.SelectedItems.Count == 0) return;
+        //더블클릭 → 채팅창 열기
+        private void lvlist_DoubleClick(object sender, EventArgs e)
+        {
+            if (lvlist.SelectedItems.Count == 0) return;
 
             // 수정
             int targetUserId = Convert.ToInt32(lvlist.SelectedItems[0].Tag);
@@ -436,58 +436,58 @@ namespace 남예솔
             LoadRecentChat();
         }
 
-		//고정하기
-		private void PinChat(int partnerUserId)
-		{
-			string sql = $@"
+        //고정하기
+        private void PinChat(int partnerUserId)
+        {
+            string sql = $@"
                 UPDATE RecentChat 
                 SET is_pinned = 1
                 WHERE UserId = {currentUserId} AND PartnerUserId = {partnerUserId}";
 
-			DBconnector.GetInstance().NonQuery(sql);
-		}
+            DBconnector.GetInstance().NonQuery(sql);
+        }
 
-		//고정 해제
-		private void UnpinChat(int partnerUserId)
-		{
-			string sql = $@"
+        //고정 해제
+        private void UnpinChat(int partnerUserId)
+        {
+            string sql = $@"
                 UPDATE RecentChat 
                 SET is_pinned = 0 
                 WHERE UserId = {currentUserId} AND PartnerUserId = {partnerUserId}";
 
-			DBconnector.GetInstance().NonQuery(sql);
-		}
+            DBconnector.GetInstance().NonQuery(sql);
+        }
 
-		//우클릭 메뉴 → 고정하기
-		private void addpin_Click(object sender, EventArgs e)
-		{
-			if (lvlist.SelectedItems.Count == 0) return;
+        //우클릭 메뉴 → 고정하기
+        private void addpin_Click(object sender, EventArgs e)
+        {
+            if (lvlist.SelectedItems.Count == 0) return;
 
             // 수정
             int partnerUserId = Convert.ToInt32(lvlist.SelectedItems[0].Tag);
 
             PinChat(partnerUserId);
-			LoadRecentChat();
-		}
+            LoadRecentChat();
+        }
 
-		//우클릭 메뉴 → 고정 해제
-		private void deletepin_Click(object sender, EventArgs e)
-		{
-			if (lvlist.SelectedItems.Count == 0) return;
+        //우클릭 메뉴 → 고정 해제
+        private void deletepin_Click(object sender, EventArgs e)
+        {
+            if (lvlist.SelectedItems.Count == 0) return;
 
             // 수정
             int partnerUserId = Convert.ToInt32(lvlist.SelectedItems[0].Tag);
             UnpinChat(partnerUserId);
-			LoadRecentChat();
-		}
+            LoadRecentChat();
+        }
 
-		//btndept → 친구 목록(DeptForm)으로 이동
-		private void btndept_Click(object sender, EventArgs e)
-		{
-            
-			Dept deptForm = new Dept(currentUserId, currentUserName, currentUserNickname);
+        //btndept → 친구 목록(DeptForm)으로 이동
+        private void btndept_Click(object sender, EventArgs e)
+        {
+
+            Dept deptForm = new Dept(currentUserId, currentUserName, currentUserNickname);
             deptForm.Show(); // ✅ 먼저 Dept 열고
-            
+
         }
 
         // 컬럼 헤더는 기본 방식으로
@@ -538,9 +538,14 @@ namespace 남예솔
         private void NiChatAlert_BalloonTipClicked(object sender, EventArgs e)
         {
 
-             new ChatForm(currentUserId, lastMessageSenderId).Show();
-             this.Show(); // chatlist도 보여주기
-            
+            new ChatForm(currentUserId, lastMessageSenderId).Show();
+            this.Show(); // chatlist도 보여주기
+
+        }
+
+        private void btnNewChatList_Click(object sender, EventArgs e)
+        {
+            LoadRecentChat();
         }
     }
 }
