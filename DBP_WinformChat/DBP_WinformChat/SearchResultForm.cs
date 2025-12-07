@@ -5,6 +5,7 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Windows.Forms;
+using System.Drawing;
 using 남예솔;
 
 namespace DBP_Chat
@@ -14,6 +15,13 @@ namespace DBP_Chat
         string id, name, dept;
         int currentUserId;
         Dept parentForm;
+
+        // 다크모드 색상 정의
+        private Color _darkBack = Color.FromArgb(32, 32, 32);
+        private Color _darkPanel = Color.FromArgb(45, 45, 45);
+        private Color _darkHeader = Color.FromArgb(64, 64, 64);
+        private Color _darkButton = Color.FromArgb(80, 100, 90);
+        private Color _darkText = Color.White;
 
         public SearchResultForm(string id, string name, string dept, int userId, Dept parent)
         {
@@ -27,9 +35,6 @@ namespace DBP_Chat
 
             InitializeComponent();
 
-            // 다크모드 해제 시 반드시 false로 호출
-            DBP_WinformChat.SearchResultUIHelper.Apply(this, false);
-
             this.id = id;
             this.name = name;
             this.dept = dept;
@@ -38,6 +43,19 @@ namespace DBP_Chat
 
             //셀 클릭 시 자동 체크되도록 이벤트 연결
             lvResult.ItemSelectionChanged += lvResult_ItemSelectionChanged;
+
+            // 전역 테마 변경 이벤트 구독
+            ThemeManager.ThemeChanged += mode => this.OnThemeChanged(mode);
+
+            // 현재 테마 상태에 따라 초기 스타일 적용
+            if (ThemeManager.CurrentMode == ThemeMode.Dark)
+            {
+                this.ApplyTheme(true);
+            }
+            else
+            {
+                this.ApplyLightTheme();
+            }
 
             LoadResult();
         }
@@ -137,6 +155,60 @@ namespace DBP_Chat
         {
             // 선택된 항목이 변경될 때 실행할 코드 작성
             // 예시: 아무 동작도 하지 않음
+        }
+
+        // ThemeManager.ThemeChanged에서 호출되는 핸들러
+        private void OnThemeChanged(ThemeMode mode)
+        {
+            if (mode == ThemeMode.Dark)
+            {
+                this.ApplyTheme(true);
+            }
+            else
+            {
+                this.ApplyLightTheme();
+            }
+        }
+
+        // 다크 모드 적용
+        private void ApplyTheme(bool isDark)
+        {
+            if (!isDark)
+            {
+                this.ApplyLightTheme();
+                return;
+            }
+
+            // 폼 배경
+            this.BackColor = _darkBack;
+
+            // 헤더 패널
+            this.panel1.BackColor = _darkHeader;
+            this.label1.ForeColor = Color.White;
+            this.label1.BackColor = Color.Transparent;
+
+            // ListView 다크 테마
+            this.lvResult.BackColor = Color.FromArgb(30, 30, 30);
+            this.lvResult.ForeColor = _darkText;
+
+            // 버튼들 다크 테마
+            this.StyleButton(this.btnAddFavorite, _darkButton);
+            this.StyleButton(this.btnClose, _darkButton);
+        }
+
+        // 라이트 모드 적용
+        private void ApplyLightTheme()
+        {
+            // SearchResultUIHelper 사용하여 라이트 테마 적용
+            DBP_WinformChat.SearchResultUIHelper.Apply(this, false);
+        }
+
+        // 버튼 스타일 적용
+        private void StyleButton(Button b, Color back)
+        {
+            b.BackColor = back;
+            b.ForeColor = Color.White;
+            b.FlatStyle = FlatStyle.Flat;
         }
     }
 }

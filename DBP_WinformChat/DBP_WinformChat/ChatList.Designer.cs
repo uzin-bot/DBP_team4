@@ -78,6 +78,7 @@
             lvlist.TabIndex = 0;
             lvlist.UseCompatibleStateImageBehavior = false;
             lvlist.View = View.Details;
+            lvlist.DoubleClick += lvlist_DoubleClick;
             // 
             // columnHeaderIcon
             // 

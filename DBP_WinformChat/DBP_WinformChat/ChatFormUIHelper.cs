@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -36,7 +35,8 @@ namespace kyg
         // 3. 둥근 모서리 적용 메서드
         public static void ApplyRoundCorners(Control control, int radius = 15)
         {
-            if (control == null) return;
+            if (control == null || control.IsDisposed || !control.IsHandleCreated) 
+                return;
 
             IntPtr rgn = CreateRoundRectRgn(0, 0, control.Width, control.Height, radius, radius);
             SetWindowRgn(control.Handle, rgn, true);
@@ -61,31 +61,19 @@ namespace kyg
         }
 
         /// <summary>
-        /// 컨트롤에 가장 밝은 배경색(ColorLightest)과 Darkest 텍스트 색상을 적용합니다. (rtbChatLog용)
-        /// </summary>
-        public static void ApplyLightestStyle(Control control)
-        {
-            if (control != null)
-            {
-                control.BackColor = ColorLightest;
-                control.ForeColor = ColorDarkest;
-            }
-        }
-
-        /// <summary>
         /// 버튼에 테마 스타일을 적용합니다. (배경: Medium, 텍스트: White, 둥근 모서리 적용)
         /// </summary>
         public static void ApplyButtonStyle(Button button, int radius = 15)
         {
-            if (button != null)
-            {
-                button.BackColor = ColorMedium;
-                button.ForeColor = ColorWhite;
-                button.FlatStyle = FlatStyle.Flat;
-                button.FlatAppearance.BorderSize = 0;
+            if (button == null || button.IsDisposed) 
+                return;
 
-                ApplyRoundCorners(button, radius);
-            }
+            button.BackColor = ColorMedium;
+            button.ForeColor = ColorWhite;
+            button.FlatStyle = FlatStyle.Flat;
+            button.FlatAppearance.BorderSize = 0;
+
+            ApplyRoundCorners(button, radius);
         }
 
         /// <summary>
@@ -94,15 +82,13 @@ namespace kyg
         /// </summary>
         public static void ApplyInputStyle(TextBoxBase control, int radius = 15)
         {
-            if (control != null)
-            {
-                // === 변경된 부분: ColorLight 대신 ColorLightest 사용 ===
-                control.BackColor = ColorLightest;
-                // =======================================================
-                control.ForeColor = ColorDarkest;
+            if (control == null || control.IsDisposed) 
+                return;
 
-                ApplyRoundCorners(control, radius);
-            }
+            control.BackColor = ColorLightest;
+            control.ForeColor = ColorDarkest;
+
+            ApplyRoundCorners(control, radius);
         }
 
         /// <summary>
@@ -110,11 +96,23 @@ namespace kyg
         /// </summary>
         public static void ApplyDisplayStyle(Control control)
         {
-            if (control != null)
-            {
-                control.BackColor = ColorLight;
-                control.ForeColor = ColorDarkest;
-            }
+            if (control == null || control.IsDisposed) 
+                return;
+
+            control.BackColor = ColorLight;
+            control.ForeColor = ColorDarkest;
+        }
+
+        /// <summary>
+        /// 컨트롤에 가장 밝은 배경색(ColorLightest)과 Darkest 텍스트 색상을 적용합니다. (rtbChatLog용)
+        /// </summary>
+        public static void ApplyLightestStyle(Control control)
+        {
+            if (control == null || control.IsDisposed) 
+                return;
+
+            control.BackColor = ColorLightest;
+            control.ForeColor = ColorDarkest;
         }
     }
 }
@@ -131,7 +129,7 @@ namespace kyg
     /// </summary>
     public static class ChatFormUIHelper
     {
-        // 1. Windows API 함수 Import (PInvoke) - 둥근 모서리 구현용
+        // 1. Windows API 함수 Import (PInvoke) - 둥글게 모서리 구현용
         [DllImport("gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
         private static extern IntPtr CreateRoundRectRgn(
             int nLeftRect,
@@ -153,7 +151,7 @@ namespace kyg
         public static readonly Color ColorDarkest = ColorTranslator.FromHtml("#778873");  // 텍스트 색상
         public static readonly Color ColorWhite = Color.White; // 버튼 텍스트 색상
 
-        // 3. 둥근 모서리 적용 메서드
+        // 3. 둥글게 모서리 적용 메서드
         /// <summary>
         /// 컨트롤의 모서리를 둥글게 만듭니다. (TextBoxBase 컨트롤에 대해 BorderStyle=None 설정)
         /// </summary>
@@ -166,12 +164,12 @@ namespace kyg
 
             if (control is TextBoxBase textBox)
             {
-                // 둥근 모서리를 위해 BorderStyle을 None으로 설정합니다.
+                // 둥글게 모서리를 위해 BorderStyle을 None으로 설정합니다.
                 textBox.BorderStyle = BorderStyle.None;
             }
         }
 
-        // 4. 스타일 적용 메서드 (둥근 모서리 호출 코드는 Load 이벤트에서 별도 호출을 위해 제거됨)
+        // 4. 스타일 적용 메서드 (둥글게 모서리 호출 코드는 Load 이벤트에서 별도 호출을 위해 제거됨)
 
         /// <summary>
         /// 폼의 기본 테마 스타일 (ColorLightest)을 적용합니다.
@@ -185,7 +183,7 @@ namespace kyg
         }
 
         /// <summary>
-        /// 버튼에 테마 스타일을 적용합니다. (배경: Medium, 텍스트: White, 둥근 모서리 적용)
+        /// 버튼에 테마 스타일을 적용합니다. (배경: Medium, 텍스트: White, 둥글게 모서리 적용)
         /// </summary>
         public static void ApplyButtonStyle(Button button, int radius = 15)
         {
@@ -196,14 +194,14 @@ namespace kyg
                 button.FlatStyle = FlatStyle.Flat;
                 button.FlatAppearance.BorderSize = 0;
 
-                // 둥근 모서리 적용
+                // 둥글게 모서리 적용
                 ApplyRoundCorners(button, radius);
             }
         }
 
         /// <summary>
         /// 텍스트 박스 또는 리치 텍스트 박스에 테마 스타일을 적용합니다. 
-        /// (배경: ColorLight, 텍스트: Darkest. 둥근 모서리는 Load 이벤트에서 별도 호출 필요)
+        /// (배경: ColorLight, 텍스트: Darkest. 둥글게 모서리는 Load 이벤트에서 별도 호출 필요)
         /// </summary>
         public static void ApplyInputStyle(TextBoxBase control, int radius = 15)
         {
@@ -218,7 +216,7 @@ namespace kyg
 
         /// <summary>
         /// 일반 컨트롤에 중간 밝은 배경색(ColorLight)을 적용합니다. 
-        /// (rtbChatLog의 원래 배경색으로 사용. 둥근 모서리는 Load 이벤트에서 별도 호출 필요)
+        /// (rtbChatLog의 원래 배경색으로 사용. 둥글게 모서리는 Load 이벤트에서 별도 호출 필요)
         /// </summary>
         public static void ApplyDisplayStyle(Control control)
         {

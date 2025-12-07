@@ -36,27 +36,22 @@ namespace kyg
         {
             InitializeComponent();
             
-            // ✅ UIHelper 스타일 적용
-            ChatFormUIHelper.ApplyDisplayStyle(this);
-            ChatFormUIHelper.ApplyLightestStyle(rtbChatLog);
-            ChatFormUIHelper.ApplyInputStyle(txtInput);
-            ChatFormUIHelper.ApplyInputStyle(txtSearch);
-            ChatFormUIHelper.ApplyButtonStyle(btnSend);
-            ChatFormUIHelper.ApplyButtonStyle(btnSearch);
-            ChatFormUIHelper.ApplyButtonStyle(btnSendFile);
-            ChatFormUIHelper.ApplyButtonStyle(btnEmojiSmiley);
-            ChatFormUIHelper.ApplyButtonStyle(btnEmojiCrying);
-            ChatFormUIHelper.ApplyButtonStyle(btnEmojiHeart);
-
-            // ✅ 테마 적용만 유지 (라디오 버튼 생성 제거)
-            ThemeManager.ApplyTheme(this);
-            ThemeManager.ThemeChanged += _ => ThemeManager.ApplyTheme(this);
-
-            this.Load += (s, e) => ThemeManager.ApplyTheme(this);
             this.myId = myId;
             this.partnerId = partnerId;
             this.permissionManager = new PermissionManager(); // 어드민 추가
 
+            // 전역 테마 변경 이벤트 구독
+            ThemeManager.ThemeChanged += mode => this.OnThemeChanged(mode);
+
+            // 현재 테마 상태에 따라 초기 스타일 적용
+            if (ThemeManager.CurrentMode == ThemeMode.Dark)
+            {
+                this.ApplyDarkTheme();
+            }
+            else
+            {
+                this.ApplyChatFormUIHelper();
+            }
             // 어드민: 채팅창 열기 전 권한 체크
             var result = permissionManager.CanSendMessage(myId, partnerId);
             if (!result.CanSend)
@@ -742,6 +737,68 @@ namespace kyg
         {
             base.OnActivated(e);
             MarkMessagesAsRead();
+        }
+
+        // ThemeManager.ThemeChanged에서 호출되는 핸들러
+        private void OnThemeChanged(ThemeMode mode)
+        {
+            if (mode == ThemeMode.Dark)
+            {
+                this.ApplyDarkTheme();
+            }
+            else
+            {
+                this.ApplyChatFormUIHelper();
+            }
+        }
+
+        // 다크 모드 스타일 적용
+        private void ApplyDarkTheme()
+        {
+            // 폼 배경
+            this.BackColor = Color.FromArgb(32, 32, 32);
+
+            // RichTextBox (채팅 로그)
+            rtbChatLog.BackColor = Color.FromArgb(30, 30, 30);
+            rtbChatLog.ForeColor = Color.White;
+
+            // TextBox들 (입력창, 검색창)
+            txtInput.BackColor = Color.FromArgb(45, 45, 45);
+            txtInput.ForeColor = Color.White;
+            txtSearch.BackColor = Color.FromArgb(45, 45, 45);
+            txtSearch.ForeColor = Color.White;
+
+            // 버튼들
+            StyleDarkButton(btnSend);
+            StyleDarkButton(btnSearch);
+            StyleDarkButton(btnSendFile);
+            StyleDarkButton(btnEmojiSmiley);
+            StyleDarkButton(btnEmojiCrying);
+            StyleDarkButton(btnEmojiHeart);
+        }
+
+        // ChatFormUIHelper 스타일 적용 (라이트 모드)
+        private void ApplyChatFormUIHelper()
+        {
+            ChatFormUIHelper.ApplyDisplayStyle(this);
+            ChatFormUIHelper.ApplyLightestStyle(rtbChatLog);
+            ChatFormUIHelper.ApplyInputStyle(txtInput);
+            ChatFormUIHelper.ApplyInputStyle(txtSearch);
+            ChatFormUIHelper.ApplyButtonStyle(btnSend);
+            ChatFormUIHelper.ApplyButtonStyle(btnSearch);
+            ChatFormUIHelper.ApplyButtonStyle(btnSendFile);
+            ChatFormUIHelper.ApplyButtonStyle(btnEmojiSmiley);
+            ChatFormUIHelper.ApplyButtonStyle(btnEmojiCrying);
+            ChatFormUIHelper.ApplyButtonStyle(btnEmojiHeart);
+        }
+
+        // 다크 모드 버튼 스타일
+        private void StyleDarkButton(Button button)
+        {
+            button.BackColor = Color.FromArgb(80, 100, 90);
+            button.ForeColor = Color.White;
+            button.FlatStyle = FlatStyle.Flat;
+            button.FlatAppearance.BorderSize = 0;
         }
     }
 }
