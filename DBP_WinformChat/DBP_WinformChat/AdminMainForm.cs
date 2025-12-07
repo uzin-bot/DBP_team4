@@ -1230,11 +1230,50 @@ private void LoadDeptPermissionData(string userId)
 
     if (string.IsNullOrEmpty(userId) || userId == "0")
     {
-        MessageBox.Show("사용자를 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        // "전체" 선택 시 - 모든 사용자와 모든 부서의 권한 상태를 표시
+        string sqlAll = @"
+            SELECT 
+                u.UserId,
+                u.Name AS UserName,
+                d.DeptId,
+                d.DeptName,
+                (SELECT COUNT(*) FROM Department WHERE ParentDeptId = d.DeptId) AS TeamCount,
+                CASE 
+                    WHEN uvd.DeptId IS NOT NULL THEN 1 
+                    ELSE 0 
+                END AS IsRestricted
+            FROM User u
+            CROSS JOIN Department d
+            LEFT JOIN UserVisibleDept uvd ON uvd.OwnerUserId = u.UserId AND uvd.DeptId = d.DeptId
+            WHERE u.Role = 'user' AND d.ParentDeptId IS NULL
+            ORDER BY u.Name, d.DeptName";
+
+        try
+        {
+            var dtAll = db.Query(sqlAll);
+            foreach (DataRow row in dtAll.Rows)
+            {
+                int teamCount = Convert.ToInt32(row["TeamCount"]);
+                bool isRestricted = Convert.ToInt32(row["IsRestricted"]) == 1;
+                string userName = row["UserName"].ToString();
+                
+                dgv.Rows.Add(
+                    row["UserId"], // OwnerUserId
+                    row["DeptId"],
+                    "👤 " + userName + " → 🏢 " + row["DeptName"].ToString(),
+                    teamCount + "개",
+                    isRestricted ? "🚫 제한됨 (하위 팀 포함)" : "✅ 보임"
+                );
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"권한 목록 로드 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
         return;
     }
 
-    // 부서(최상위)만 표시
+    // 특정 사용자 선택 시 - 해당 사용자의 부서별 권한만 표시
     string sql = $@"
         SELECT 
             {userId} AS OwnerUserId,
@@ -1281,8 +1320,24 @@ private void DgvDeptPerm_CellClick(object sender, DataGridViewCellEventArgs e)
     if (dgv.Columns[e.ColumnIndex].Name == "Toggle")
     {
         int ownerUserId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["OwnerUserId"].Value);
+        
+        // "전체" 모드에서는 OwnerUserId가 0일 수 없으므로 체크
+        if (ownerUserId == 0)
+        {
+            MessageBox.Show("사용자를 선택한 후 권한을 변경할 수 있습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        
         int deptId = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["DeptId"].Value);
-        string deptName = dgv.Rows[e.RowIndex].Cells["DeptName"].Value.ToString().Replace("🏢 ", "");
+        string deptName = dgv.Rows[e.RowIndex].Cells["DeptName"].Value.ToString();
+        
+        // 부서명에서 이모지 및 사용자 정보 제거
+        deptName = deptName.Replace("🏢 ", "").Replace("👤 ", "");
+        if (deptName.Contains(" → "))
+        {
+            deptName = deptName.Substring(deptName.IndexOf("→") + 2).Trim();
+        }
+        
         string status = dgv.Rows[e.RowIndex].Cells["Status"].Value.ToString();
         bool isRestricted = status.Contains("제한됨");
 
@@ -1320,7 +1375,11 @@ private void AddDeptPermission(int ownerUserId, int deptId)
         // 부서만 제한 (하위 팀은 자동으로 적용됨)
         db.NonQuery($"INSERT INTO UserVisibleDept (OwnerUserId, DeptId) VALUES ({ownerUserId}, {deptId})");
         
-        LoadDeptPermissionData(ownerUserId.ToString());
+        // 현재 선택된 사용자 콤보박스 값 가져오기
+        var cboUser = pnlContent.Controls.Find("cboPermUser", true).FirstOrDefault() as ComboBox;
+        string currentUserId = (cboUser?.SelectedItem as ComboBoxItem)?.Value ?? "0";
+        
+        LoadDeptPermissionData(currentUserId);
         MessageBox.Show("부서 보기가 제한되었습니다. (하위 팀 포함)", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
     catch (Exception ex)
@@ -1335,7 +1394,11 @@ private void DeleteDeptPermission(int ownerUserId, int deptId)
     {
         db.NonQuery($"DELETE FROM UserVisibleDept WHERE OwnerUserId = {ownerUserId} AND DeptId = {deptId}");
         
-        LoadDeptPermissionData(ownerUserId.ToString());
+        // 현재 선택된 사용자 콤보박스 값 가져오기
+        var cboUser = pnlContent.Controls.Find("cboPermUser", true).FirstOrDefault() as ComboBox;
+        string currentUserId = (cboUser?.SelectedItem as ComboBoxItem)?.Value ?? "0";
+        
+        LoadDeptPermissionData(currentUserId);
         MessageBox.Show("부서 보기 제한이 해제되었습니다. (하위 팀 포함)", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
     catch (Exception ex)

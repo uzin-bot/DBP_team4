@@ -50,21 +50,59 @@ namespace DBP_WinformChat
         {
             try
             {
-                // 1. UserVisibleUser 테이블에서 개별 사용자 권한 확인
-                string sql1 = $"SELECT COUNT(*) FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = {targetUserId}";
-
-                var dt1 = db.Query(sql1);
-                if (dt1.Rows.Count > 0 && Convert.ToInt32(dt1.Rows[0][0]) > 0)
+                // 1. 본인은 항상 볼 수 있음
+                if (ownerUserId == targetUserId)
                     return true;
 
-                // 2. UserVisibleDept 테이블에서 부서/팀 기반 권한 확인
-                string sql2 = $"SELECT COUNT(*) FROM UserVisibleDept uvd INNER JOIN User u ON u.DeptId = uvd.DeptId WHERE uvd.OwnerUserId = {ownerUserId} AND u.UserId = {targetUserId}";
+                // 2. UserVisibleUser 테이블 체크 (있으면 명시적 허용)
+                string checkVisibleUserSql = $"SELECT COUNT(*) FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId}";
+                var dtCheck = db.Query(checkVisibleUserSql);
+                int visibleUserCount = Convert.ToInt32(dtCheck.Rows[0][0]);
 
-                var dt2 = db.Query(sql2);
-                if (dt2.Rows.Count > 0 && Convert.ToInt32(dt2.Rows[0][0]) > 0)
-                    return true;
+                // UserVisibleUser에 데이터가 있으면 명시적으로 허용된 사용자만 볼 수 있음
+                if (visibleUserCount > 0)
+                {
+                    string sql = $"SELECT COUNT(*) FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = {targetUserId}";
+                    var dt = db.Query(sql);
+                    return Convert.ToInt32(dt.Rows[0][0]) > 0;
+                }
 
-                return false;
+                // 3. 부서 권한 체크 (UserVisibleDept에 있으면 제한됨)
+                string deptCheckSql = $@"
+                    SELECT u.DeptId, d.ParentDeptId
+                    FROM User u
+                    LEFT JOIN Department d ON u.DeptId = d.DeptId
+                    WHERE u.UserId = {targetUserId}";
+                var dtDept = db.Query(deptCheckSql);
+
+                if (dtDept.Rows.Count > 0 && dtDept.Rows[0]["DeptId"] != DBNull.Value)
+                {
+                    int targetDeptId = Convert.ToInt32(dtDept.Rows[0]["DeptId"]);
+                    
+                    // 제한된 부서인지 확인
+                    string restrictedSql = $@"
+                        SELECT COUNT(*) FROM UserVisibleDept 
+                        WHERE OwnerUserId = {ownerUserId} AND DeptId = {targetDeptId}";
+                    var dtRestricted = db.Query(restrictedSql);
+                    
+                    if (Convert.ToInt32(dtRestricted.Rows[0][0]) > 0)
+                        return false; // 제한된 부서
+                    
+                    // 상위 부서가 제한되었는지 확인
+                    if (dtDept.Rows[0]["ParentDeptId"] != DBNull.Value)
+                    {
+                        int parentDeptId = Convert.ToInt32(dtDept.Rows[0]["ParentDeptId"]);
+                        string parentRestrictedSql = $@"
+                            SELECT COUNT(*) FROM UserVisibleDept 
+                            WHERE OwnerUserId = {ownerUserId} AND DeptId = {parentDeptId}";
+                        var dtParentRestricted = db.Query(parentRestrictedSql);
+                        
+                        if (Convert.ToInt32(dtParentRestricted.Rows[0][0]) > 0)
+                            return false; // 상위 부서가 제한됨
+                    }
+                }
+
+                return true; // 제한 없음
             }
             catch
             {
@@ -121,20 +159,21 @@ namespace DBP_WinformChat
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
                 WHERE u.Role = 'user' 
-                AND u.UserId != {ownerUserId}
-                AND (
-                    u.UserId IN (
-                        SELECT VisibleUserId 
-                        FROM UserVisibleUser 
-                        WHERE OwnerUserId = {ownerUserId}
-                    )
-                    OR
-                    u.DeptId IN (
-                        SELECT DeptId 
-                        FROM UserVisibleDept 
-                        WHERE OwnerUserId = {ownerUserId}
-                    )
-                )
+                  AND u.UserId != {ownerUserId}
+                  -- 부서 권한 체크: UserVisibleDept에 있으면 제한됨 (안 보임)
+                  AND NOT EXISTS (
+                    SELECT 1 FROM UserVisibleDept uvd
+                    WHERE uvd.OwnerUserId = {ownerUserId}
+                      AND (
+                        uvd.DeptId = u.DeptId
+                        OR uvd.DeptId = d.ParentDeptId
+                      )
+                  )
+                  -- 사용자별 권한 체크
+                  AND (
+                    NOT EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId})
+                    OR EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = u.UserId)
+                  )
                 ORDER BY u.Name";
 
                 var dt = db.Query(sql);
@@ -166,20 +205,24 @@ namespace DBP_WinformChat
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
                 WHERE u.Role = 'user' 
-                AND u.UserId != {userId}
-                AND (
-                    u.UserId IN (SELECT VisibleUserId FROM UserVisibleUser WHERE OwnerUserId = {userId})
-                    OR u.DeptId IN (SELECT DeptId FROM UserVisibleDept WHERE OwnerUserId = {userId})
-                )
-                AND u.UserId NOT IN (
-                    SELECT CASE 
-                        WHEN UserAId = {userId} THEN UserBId 
-                        ELSE UserAId 
-                    END
-                    FROM ChatPermission
-                    WHERE (UserAId = {userId} OR UserBId = {userId})
-                    AND IsBlocked = 1
-                )
+                  AND u.UserId != {userId}
+                  -- 부서 권한 체크: UserVisibleDept에 있으면 제한됨
+                  AND NOT EXISTS (
+                    SELECT 1 FROM UserVisibleDept uvd
+                    WHERE uvd.OwnerUserId = {userId}
+                      AND (uvd.DeptId = u.DeptId OR uvd.DeptId = d.ParentDeptId)
+                  )
+                  -- 사용자별 권한 체크
+                  AND (
+                    NOT EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {userId})
+                    OR EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {userId} AND VisibleUserId = u.UserId)
+                  )
+                  -- 대화 차단 체크
+                  AND NOT EXISTS (
+                    SELECT 1 FROM ChatPermission
+                    WHERE ((UserAId = {userId} AND UserBId = u.UserId) OR (UserAId = u.UserId AND UserBId = {userId}))
+                      AND IsBlocked = 1
+                  )
                 ORDER BY u.Name";
 
                 var dt = db.Query(sql);
@@ -222,21 +265,28 @@ namespace DBP_WinformChat
 
         // ==================== 6. 사용자가 볼 수 있는 부서 목록 ====================
         /// <summary>
-        /// 사용자에게 권한이 있는 부서/팀 목록
+        /// 사용자에게 권한이 있는 부서/팀 목록 (제한되지 않은 부서)
         /// </summary>
         public DataTable GetVisibleDepartments(int userId)
         {
             try
             {
+                // UserVisibleDept에 없는 부서 = 볼 수 있는 부서
                 string sql = $@"
-                SELECT DISTINCT d.DeptId, d.DeptName,
+                SELECT d.DeptId, d.DeptName, d.ParentDeptId,
                        p.DeptName AS ParentDeptName,
                        (SELECT COUNT(*) FROM User WHERE DeptId = d.DeptId AND Role = 'user') AS UserCount
                 FROM Department d
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
-                WHERE d.DeptId IN (
-                    SELECT DeptId FROM UserVisibleDept WHERE OwnerUserId = {userId}
-                )";
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM UserVisibleDept uvd
+                    WHERE uvd.OwnerUserId = {userId}
+                      AND (
+                        uvd.DeptId = d.DeptId
+                        OR uvd.DeptId = d.ParentDeptId
+                      )
+                )
+                ORDER BY IFNULL(p.DeptId, d.DeptId), d.ParentDeptId IS NULL DESC, d.DeptName";
 
                 var dt = db.Query(sql);
                 AddDeptPathColumn(dt, "ParentDeptName", "DeptName", sortByDeptPath: true);
@@ -292,6 +342,8 @@ namespace DBP_WinformChat
         {
             try
             {
+                var safeKeyword = searchKeyword.Replace("'", "''");
+                
                 string sql = $@"
                 SELECT DISTINCT 
                     u.UserId, 
@@ -304,12 +356,19 @@ namespace DBP_WinformChat
                 LEFT JOIN Department d ON u.DeptId = d.DeptId
                 LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
                 WHERE u.Role = 'user' 
-                AND u.UserId != {ownerUserId}
-                AND (u.Name LIKE '%{searchKeyword}%' OR u.Nickname LIKE '%{searchKeyword}%' OR u.LoginId LIKE '%{searchKeyword}%')
-                AND (
-                    u.UserId IN (SELECT VisibleUserId FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId})
-                    OR u.DeptId IN (SELECT DeptId FROM UserVisibleDept WHERE OwnerUserId = {ownerUserId})
-                )
+                  AND u.UserId != {ownerUserId}
+                  AND (u.Name LIKE '%{safeKeyword}%' OR u.Nickname LIKE '%{safeKeyword}%' OR u.LoginId LIKE '%{safeKeyword}%')
+                  -- 부서 권한 체크
+                  AND NOT EXISTS (
+                    SELECT 1 FROM UserVisibleDept uvd
+                    WHERE uvd.OwnerUserId = {ownerUserId}
+                      AND (uvd.DeptId = u.DeptId OR uvd.DeptId = d.ParentDeptId)
+                  )
+                  -- 사용자별 권한 체크
+                  AND (
+                    NOT EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId})
+                    OR EXISTS (SELECT 1 FROM UserVisibleUser WHERE OwnerUserId = {ownerUserId} AND VisibleUserId = u.UserId)
+                  )
                 ORDER BY u.Name
                 LIMIT 50";
 
@@ -338,7 +397,7 @@ namespace DBP_WinformChat
                 var dt1 = db.Query(sql1);
                 info.VisibleUserCount = dt1.Rows.Count > 0 ? Convert.ToInt32(dt1.Rows[0][0]) : 0;
 
-                // 볼 수 있는 부서 수
+                // 제한된 부서 수
                 string sql2 = $"SELECT COUNT(DISTINCT DeptId) FROM UserVisibleDept WHERE OwnerUserId = {userId}";
                 var dt2 = db.Query(sql2);
                 info.VisibleDeptCount = dt2.Rows.Count > 0 ? Convert.ToInt32(dt2.Rows[0][0]) : 0;
@@ -366,29 +425,37 @@ namespace DBP_WinformChat
 
             try
             {
-                // 1. 볼 수 있는 사용자인지 확인
-                if (!CanViewUser(fromUserId, toUserId))
+                // 1. 본인에게는 메시지 불가
+                if (fromUserId == toUserId)
                 {
                     result.CanSend = false;
-                    result.Reason = "상대방을 볼 수 있는 권한이 없습니다.";
+                    result.Reason = "자기 자신에게는 메시지를 보낼 수 없습니다.";
                     return result;
                 }
 
-                // 2. 대화 차단 여부 확인
+                // 2. 상대방이 존재하는지 확인
+                string userCheckSql = $"SELECT COUNT(*) FROM User WHERE UserId = {toUserId} AND Role = 'user'";
+                var dtUser = db.Query(userCheckSql);
+                if (dtUser.Rows.Count == 0 || Convert.ToInt32(dtUser.Rows[0][0]) == 0)
+                {
+                    result.CanSend = false;
+                    result.Reason = "상대방이 존재하지 않습니다.";
+                    return result;
+                }
+
+                // 3. 볼 수 있는 사용자인지 확인
+                if (!CanViewUser(fromUserId, toUserId))
+                {
+                    result.CanSend = false;
+                    result.Reason = "해당 사용자를 볼 수 있는 권한이 없습니다.";
+                    return result;
+                }
+
+                // 4. 대화 차단 여부 확인
                 if (!CanChat(fromUserId, toUserId))
                 {
                     result.CanSend = false;
                     result.Reason = "관리자에 의해 대화가 차단되었습니다.";
-                    return result;
-                }
-
-                // 3. 상대방이 존재하는지 확인
-                string sql = $"SELECT COUNT(*) FROM User WHERE UserId = {toUserId} AND Role = 'user'";
-                var dt = db.Query(sql);
-                if (dt.Rows.Count == 0 || Convert.ToInt32(dt.Rows[0][0]) == 0)
-                {
-                    result.CanSend = false;
-                    result.Reason = "상대방이 존재하지 않습니다.";
                     return result;
                 }
 
