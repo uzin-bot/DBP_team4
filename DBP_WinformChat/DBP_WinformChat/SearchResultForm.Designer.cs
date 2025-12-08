@@ -1,17 +1,17 @@
 ﻿namespace DBP_Chat
 {
-    partial class SearchResultForm
-    {
-        private System.ComponentModel.IContainer components = null;
+	partial class SearchResultForm
+	{
+		private System.ComponentModel.IContainer components = null;
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && (components != null))
+			{
+				components.Dispose();
+			}
+			base.Dispose(disposing);
+		}
 
 		#region Windows Form Designer generated code
 
@@ -24,8 +24,6 @@
 			colDept = new ColumnHeader();
 			colTeam = new ColumnHeader();
 			panel1 = new Panel();
-			btnAddFavorite = new Button();
-			btnClose = new Button();
 			panel1.SuspendLayout();
 			SuspendLayout();
 			// 
@@ -81,34 +79,10 @@
 			panel1.Size = new Size(723, 81);
 			panel1.TabIndex = 2;
 			// 
-			// btnAddFavorite
-			// 
-			btnAddFavorite.BackColor = Color.FromArgb(119, 136, 115);
-			btnAddFavorite.FlatStyle = FlatStyle.Flat;
-			btnAddFavorite.Location = new Point(136, 422);
-			btnAddFavorite.Name = "btnAddFavorite";
-			btnAddFavorite.Size = new Size(169, 34);
-			btnAddFavorite.TabIndex = 3;
-			btnAddFavorite.Text = "즐겨찾기 추가";
-			btnAddFavorite.UseVisualStyleBackColor = false;
-			// 
-			// btnClose
-			// 
-			btnClose.BackColor = Color.FromArgb(119, 136, 115);
-			btnClose.FlatStyle = FlatStyle.Flat;
-			btnClose.Location = new Point(371, 422);
-			btnClose.Name = "btnClose";
-			btnClose.Size = new Size(112, 34);
-			btnClose.TabIndex = 4;
-			btnClose.Text = "닫기";
-			btnClose.UseVisualStyleBackColor = false;
-			// 
 			// SearchResultForm
 			// 
 			BackColor = Color.FromArgb(241, 243, 224);
-			ClientSize = new Size(643, 479);
-			Controls.Add(btnClose);
-			Controls.Add(btnAddFavorite);
+			ClientSize = new Size(643, 393);
 			Controls.Add(lvResult);
 			Controls.Add(panel1);
 			Name = "SearchResultForm";
@@ -121,13 +95,11 @@
 		#endregion
 
 		private Label label1;
-        private ListView lvResult;
-        private ColumnHeader colId;
-        private ColumnHeader colName;
-        private ColumnHeader colDept;
-        private ColumnHeader colTeam;
-        private Panel panel1;
-		private Button btnAddFavorite;
-		private Button btnClose;
+		private ListView lvResult;
+		private ColumnHeader colId;
+		private ColumnHeader colName;
+		private ColumnHeader colDept;
+		private ColumnHeader colTeam;
+		private Panel panel1;
 	}
 }
