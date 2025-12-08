@@ -426,7 +426,7 @@ namespace DBP_Chat
 
             if (Convert.ToInt32(dt.Rows[0][0]) > 0)
             {
-                   MessageBox.Show("이미 즐겨찾리에 등록되어 있습니다!");
+                   MessageBox.Show("이미 즐겨찾기에 등록되어 있습니다!");
                 return;
             }
 
@@ -614,7 +614,7 @@ namespace DBP_Chat
                 }
             };
             
-            this.cbDept.Refresh();                               // 즉시 다시 그리기
+            this.cbDept.Refresh();                               //즉시 다시 그리기
             
             this.lBlist.BackColor = Color.FromArgb(30, 30, 30);
             this.lBlist.ForeColor = text;
