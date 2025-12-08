@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;   // HashSet 사용
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using 남예솔;
 
