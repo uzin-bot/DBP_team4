@@ -32,7 +32,7 @@ namespace leehaeun
             IdBox.Text = UserInfo.User["LoginId"].ToString();
             NameBox.Text = UserInfo.User["Name"].ToString();
             ZipCodeBox.Text = UserInfo.User["ZipCode"].ToString();
-            AddressBox.Text = UserInfo.User["address"].ToString();
+            AddressBox.Text = UserInfo.User["Address"].ToString();
             DeptBox.Text = UserInfo.User["DeptName"].ToString();
             PwBox.Text = "";
         }
@@ -176,7 +176,7 @@ namespace leehaeun
                 if (result == DialogResult.OK)
                 {
                     // DB에서 해당 프로필, 해당 프로필과 연결된 맵 삭제
-                    int profileId = Convert.ToInt32(row["ProfileID"]);
+                    int profileId = Convert.ToInt32(row["ProfileId"]);
                     string query = $"DELETE FROM Profile WHERE ProfileId = {profileId};";
                     DBconnector.GetInstance().NonQuery(query);
                     string mquery = $"DELETE FROM UserProfileMap WHERE OwnerUserId = {LoginForm.UserId} AND ProfileId = {profileId}";
@@ -396,7 +396,7 @@ namespace leehaeun
             // 기본 정보로 새로운 프로필 생성
             string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             string iquery = $@"INSERT INTO
-                    Profile(UserId, NickName, IsDefault, CreatedAt)
+                    Profile(UserId, Nickname, IsDefault, CreatedAt)
                     VALUES({LoginForm.UserId}, '새 프로필', 0, '{now}');";
             DBconnector.GetInstance().NonQuery(iquery);
 
