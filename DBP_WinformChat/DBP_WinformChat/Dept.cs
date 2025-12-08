@@ -14,6 +14,8 @@ namespace DBP_Chat
 {
     public partial class Dept : Form
     {
+
+        private Dictionary<int, ChatForm> openChatForms = new Dictionary<int, ChatForm>();
         private int currentUserId;
         private string currentUserName;
         private string currentUserNickname;
@@ -50,7 +52,6 @@ namespace DBP_Chat
             btnadd.Click += this.btnadd_Click;
             btndelete.Click += this.btndelete_Click;
             btnChat.Click += this.btnChat_Click;
-            btnchatlist.Click += this.btnchatlist_Click;
             lBlist.SelectedIndexChanged += this.lBlist_SelectedIndexChanged;
 
             // 전역 테마 변경 이벤트 구독 (한 번만)
@@ -272,12 +273,6 @@ namespace DBP_Chat
                 }
             }
         }
-
-        private void btnchatlist_Click(object sender, EventArgs e)
-        {
-            new chatlist().Show();
-        }
-
         public void RefreshFavorites()
         {
             this.LoadFavoriteList();
@@ -474,37 +469,78 @@ namespace DBP_Chat
             this.LoadFavoriteList();
         }
 
-        private void btnChat_Click(object sender, EventArgs e)
-        {
-            int targetUserId = -1;
+		private void btnChat_Click(object sender, EventArgs e)
+		{
+			int targetUserId = -1;
 
-            if (this.lBlist.SelectedItem != null)
-            {
-                string userIdText = this.lBlist.SelectedItem.ToString().Split('-')[0].Trim();
-                targetUserId = Convert.ToInt32(userIdText);
-            }
-            else if (this.tvdept.SelectedNode != null && this.tvdept.SelectedNode.Level == 2)
-            {
-                targetUserId = Convert.ToInt32(this.tvdept.SelectedNode.Tag);
-            }
-            else
-            {
-                MessageBox.Show("대화할 직원을 선택하세요!");
-                return;
-            }
+			// 즐겨찾기에서 선택한 경우
+			if (this.lBlist.SelectedItem != null)
+			{
+				string selectedText = this.lBlist.SelectedItem.ToString();
 
-            var result = this.permissionManager.CanSendMessage(this.currentUserId, targetUserId);
-            if (!result.CanSend)
-            {
-                MessageBox.Show(result.Reason, "채팅 불가",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+				int startIdx = selectedText.IndexOf('(') + 1;
+				int endIdx = selectedText.IndexOf(')');
+				string loginId = selectedText.Substring(startIdx, endIdx - startIdx);
 
-            new ChatForm(this.currentUserId, targetUserId).Show();
-        }
+				string sql = $"SELECT UserId FROM User WHERE LoginId = '{loginId}'";
+				DataTable dt = DBconnector.GetInstance().Query(sql);
 
-        private void tvdept_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+				if (dt.Rows.Count > 0)
+					targetUserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
+			}
+			// 조직도(TreeView)에서 선택한 경우
+			else if (this.tvdept.SelectedNode != null && this.tvdept.SelectedNode.Level == 2)
+			{
+				targetUserId = Convert.ToInt32(this.tvdept.SelectedNode.Tag);
+			}
+			else
+			{
+				MessageBox.Show("대화할 직원을 선택하세요!");
+				return;
+			}
+
+			// 채팅 권한 체크
+			var result = this.permissionManager.CanSendMessage(this.currentUserId, targetUserId);
+			if (!result.CanSend)
+			{
+				MessageBox.Show(result.Reason, "채팅 불가",
+					MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				return;
+			}
+
+			// 이미 열린 채팅창 있으면 재사용
+			if (openChatForms.ContainsKey(targetUserId))
+			{
+				ChatForm openedForm = openChatForms[targetUserId];
+
+				if (openedForm.IsDisposed)
+				{
+					openChatForms.Remove(targetUserId);
+				}
+				else
+				{
+					openedForm.Activate();
+					openedForm.Focus();
+					return;
+				}
+			}
+
+			// 없으면 새로 열기
+			ChatForm chatForm = new ChatForm(this.currentUserId, targetUserId);
+			openChatForms[targetUserId] = chatForm;
+
+			// 채팅창 닫히면 Dictionary에서 제거
+			chatForm.FormClosed += (s, args) =>
+			{
+				if (openChatForms.ContainsKey(targetUserId))
+					openChatForms.Remove(targetUserId);
+			};
+
+			chatForm.Show();
+		}
+
+
+		private void tvdept_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             this.lBlist.ClearSelected();
         }
@@ -624,7 +660,6 @@ namespace DBP_Chat
             this.StyleButton(this.btnadd, button);
             this.StyleButton(this.btndelete, button);
             this.StyleButton(this.btnChat, button);
-            this.StyleButton(this.btnchatlist, button);
             this.StyleButton(this.change_profile_button, button);
             this.StyleButton(this.logout_button, button);
 

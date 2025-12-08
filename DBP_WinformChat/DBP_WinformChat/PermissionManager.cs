@@ -256,46 +256,67 @@ namespace DBP_WinformChat
             }
         }
 
-        // ==================== 6. 사용자가 볼 수 있는 부서 목록 ====================
-        /// <summary>
-        /// 사용자에게 권한이 있는 부서/팀 목록 (제한되지 않은 부서)
-        /// </summary>
-        public DataTable GetVisibleDepartments(int userId)
-        {
-            try
-            {
-                // UserVisibleDept에 없는 부서 = 볼 수 있는 부서
-                string sql = $@"
-                SELECT d.DeptId, d.DeptName, d.ParentDeptId,
-                       p.DeptName AS ParentDeptName,
-                       (SELECT COUNT(*) FROM User WHERE DeptId = d.DeptId AND Role = 'user') AS UserCount
-                FROM Department d
-                LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM UserVisibleDept uvd
-                    WHERE uvd.OwnerUserId = {userId}
-                      AND (
-                        uvd.DeptId = d.DeptId
-                        OR uvd.DeptId = d.ParentDeptId
-                      )
+		// ==================== 6. 사용자가 볼 수 있는 부서 목록 ====================
+		/// <summary>
+		/// 사용자에게 권한이 있는 부서/팀 목록 (제한되지 않은 부서)
+		/// </summary>
+		public DataTable GetVisibleDepartments(int userId)
+		{
+			try
+			{
+				string sql = $@"
+        SELECT 
+            d.DeptId,
+            d.DeptName,
+            d.ParentDeptId,
+            p.DeptName AS ParentDeptName,
+
+            (
+                SELECT COUNT(*)
+                FROM User u
+                JOIN Department d2 ON u.DeptId = d2.DeptId
+                WHERE (
+                    d2.DeptId = d.DeptId          -- 자기 부서
+                    OR d2.ParentDeptId = d.DeptId -- 자식 팀
                 )
-                ORDER BY IFNULL(p.DeptId, d.DeptId), d.ParentDeptId IS NULL DESC, d.DeptName";
+                AND u.Role = 'user'
+            ) AS UserCount
 
-                var dt = db.Query(sql);
-                AddDeptPathColumn(dt, "ParentDeptName", "DeptName", sortByDeptPath: true);
-                return dt;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"부서 목록 조회 실패: {ex.Message}");
-            }
-        }
+        FROM Department d
+        LEFT JOIN Department p ON d.ParentDeptId = p.DeptId
+        WHERE NOT EXISTS (
+            SELECT 1 
+            FROM UserVisibleDept uvd
+            WHERE uvd.OwnerUserId = {userId}
+              AND (
+                  uvd.DeptId = d.DeptId
+                  OR uvd.DeptId = d.ParentDeptId
+              )
+        )
+        ORDER BY 
+            IFNULL(p.DeptId, d.DeptId),
+            d.ParentDeptId IS NULL DESC,
+            d.DeptName";
 
-        // ==================== 7. 차단된 사용자 목록 ====================
-        /// <summary>
-        /// 현재 사용자가 대화할 수 없는(차단된) 사용자 목록
-        /// </summary>
-        public DataTable GetBlockedUsers(int userId)
+				var dt = db.Query(sql);
+
+				// DeptPath 컬럼 생성 
+				AddDeptPathColumn(dt, "ParentDeptName", "DeptName", sortByDeptPath: true);
+
+				return dt;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception($"부서 목록 조회 실패: {ex.Message}");
+			}
+		}
+
+
+		// ==================== 7. 차단된 사용자 목록 ====================
+		/// <summary>
+		/// 현재 사용자가 대화할 수 없는(차단된) 사용자 목록
+		/// </summary>
+		public DataTable GetBlockedUsers(int userId)
         {
             try
             {

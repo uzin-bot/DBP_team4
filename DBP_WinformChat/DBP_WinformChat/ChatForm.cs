@@ -25,6 +25,7 @@ namespace kyg
         private NetworkStream stream;
         private int myId;           // string → int 변경
         private int partnerId;      // string → int 변경
+        public int PartnerUserId { get; private set; } //1208추가
         private bool isSending = false; // 중복 전송 방지 플래그
         private DateTime lastEmojiSendTime = DateTime.MinValue; // 이모지 마지막 전송 시간
 
@@ -44,6 +45,7 @@ namespace kyg
             this.myId = myId;
             this.partnerId = partnerId;
             this.permissionManager = new PermissionManager(); // 어드민 추가
+            this.PartnerUserId = partnerId;
 
             // 전역 테마 변경 이벤트 구독
             ThemeManager.ThemeChanged += mode => this.OnThemeChanged(mode);
