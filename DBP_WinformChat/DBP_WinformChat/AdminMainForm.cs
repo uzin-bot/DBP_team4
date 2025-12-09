@@ -945,14 +945,13 @@ namespace DBPAdmin
 
             try
             {
-                // Role 조건 없이 모든 사용자 조회
-                var dt = db.Query("SELECT UserId, Name, Role FROM User ORDER BY Name");
+                // ✅ 수정: Role이 'user'인 사용자만 조회 (관리자 제외)
+                var dt = db.Query("SELECT UserId, Name, Role FROM User WHERE Role = 'user' ORDER BY Name");
                 foreach (DataRow row in dt.Rows)
                 {
-                    string roleTag = row["Role"].ToString() == "admin" ? " [관리자]" : "";
                     cbo.Items.Add(new ComboBoxItem
                     {
-                        Text = row["Name"].ToString() + roleTag,
+                        Text = row["Name"].ToString(),
                         Value = row["UserId"].ToString()
                     });
                 }
