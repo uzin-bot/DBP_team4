@@ -56,8 +56,8 @@ namespace leehaeun
                 // 로그인 성공
                 UserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
                 string role = dt.Rows[0]["Role"].ToString();
-                UserInfo.GetInfo();
-                AddLog(1);
+                //UserInfo.GetInfo();
+                //AddLog(1);
 
                 // 채팅 리스트 폼
                 FormHide();
@@ -66,12 +66,15 @@ namespace leehaeun
                 if (role.Equals("admin"))
                 {
                     // 어드민 폼
+                    AddLog(1);
                     var adminForm = new AdminMainForm();
                     adminForm.ShowDialog();
                 }
                 else
                 {
                     // 일반 사용자 - 채팅 리스트 폼
+                    UserInfo.GetInfo();
+                    AddLog(1);
                     var chatListForm = new 남예솔.chatlist();
                     chatListForm.ShowDialog();
                 }
@@ -83,7 +86,11 @@ namespace leehaeun
                     AddLog(0);
                     FormShow();
                 }
-                else this.Close();
+                else
+                {
+                    AddLog(0);
+                    this.Close();
+                } 
             }
             else
             {
