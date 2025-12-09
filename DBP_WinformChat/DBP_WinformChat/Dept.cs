@@ -330,7 +330,7 @@ namespace DBP_Chat
                     }
                     else if (!this.permissionManager.CanChat(this.currentUserId, uid))
                     {
-                        userNode.Text = $"{text} ??";
+                        userNode.Text = $"{text} X";
                     }
 
                     deptNode.Nodes.Add(userNode);
