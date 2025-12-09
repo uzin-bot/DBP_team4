@@ -10,31 +10,54 @@ namespace leehaeun.UIHelpers
     public static class LoginFormUIHelper
     {
         /// <summary>
-        /// �̴ϸ� ��Ÿ�� ����
+        /// 미니멀 스타일 적용
         /// </summary>
         public static void ApplyStyles(LoginForm form)
         {
-            // �� �⺻ ����
+            // 폼 기본 설정
             form.BackColor = ThemeManager.ColorScheme.Ivory; // #F1F3E0
             form.Size = new Size(350, 600);
             form.StartPosition = FormStartPosition.CenterScreen;
             form.FormBorderStyle = FormBorderStyle.None;
 
-            // �ձ� �𼭸�
+            // 둥글은 모서리
             ApplyRoundedCorners(form, 15);
 
-            // Ŀ���� Ÿ��Ʋ�� ����
+            // 커스텀 타이틀바 생성 (기존 것 제거 후)
+            RemoveExistingTitleBar(form);
             CreateCustomTitleBar(form);
 
-            // �� ��Ʈ�� ��Ÿ�� ����
+            // 폼 컨트롤 스타일 적용
             StyleAllControls(form);
 
-            // ���̾ƿ� ����
+            // 레이아웃 조정
             AdjustLayout(form);
         }
 
         /// <summary>
-        /// �� �ձ� �𼭸�
+        /// 기존 타이틀바 제거
+        /// </summary>
+        private static void RemoveExistingTitleBar(Form form)
+        {
+            Panel existingTitleBar = null;
+            foreach (Control control in form.Controls)
+            {
+                if (control is Panel panel && panel.Name == "titleBar")
+                {
+                    existingTitleBar = panel;
+                    break;
+                }
+            }
+
+            if (existingTitleBar != null)
+            {
+                form.Controls.Remove(existingTitleBar);
+                existingTitleBar.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// 폼 둥근 모서리
         /// </summary>
         private static void ApplyRoundedCorners(Form form, int radius)
         {
@@ -45,7 +68,7 @@ namespace leehaeun.UIHelpers
         private static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
 
         /// <summary>
-        /// Ŀ���� Ÿ��Ʋ�� ����
+        /// 커스텀 타이틀바 생성
         /// </summary>
         private static void CreateCustomTitleBar(Form form)
         {
@@ -79,7 +102,7 @@ namespace leehaeun.UIHelpers
 
             titleBar.Controls.Add(closeButton);
 
-            // Ÿ��Ʋ�� �巡��
+            // 타이틀바 드래그
             bool isDragging = false;
             Point dragStart = Point.Empty;
 
@@ -107,7 +130,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// ��� ��Ʈ�� ��Ÿ�� ����
+        /// 모든 컨트롤 스타일 적용
         /// </summary>
         private static void StyleAllControls(Form form)
         {
@@ -143,10 +166,21 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// TextBox ��Ÿ��
+        /// TextBox 스타일
         /// </summary>
         private static void StyleTextBox(TextBox textBox, Form form)
         {
+            // 기존 wrapper가 있는지 확인
+            Panel existingWrapper = textBox.Parent as Panel;
+            if (existingWrapper != null && existingWrapper.Tag?.ToString() == textBox.Name)
+            {
+                // 이미 wrapper가 있으면 색상만 업데이트
+                existingWrapper.BackColor = ThemeManager.ColorScheme.White;
+                textBox.BackColor = ThemeManager.ColorScheme.White;
+                existingWrapper.Invalidate();
+                return;
+            }
+
             textBox.BorderStyle = BorderStyle.None;
             textBox.Font = new Font("맑은 고딕", 10F);
             textBox.BackColor = ThemeManager.ColorScheme.White;
@@ -177,7 +211,7 @@ namespace leehaeun.UIHelpers
                         textBox.Text = "";
                         textBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
 
-                        // ��й�ȣ �ڽ��� �Է� ������ �� PasswordChar Ȱ��ȭ
+                        // 비밀번호 박스일 입력 시작할 때 PasswordChar 활성화
                         if (isPasswordBox)
                         {
                             textBox.PasswordChar = '●';
@@ -192,7 +226,7 @@ namespace leehaeun.UIHelpers
                         textBox.Text = placeHolder;
                         textBox.ForeColor = ThemeManager.ColorScheme.SageGreen;
 
-                        // ��й�ȣ �ڽ��� PlaceHolder ǥ�� �� PasswordChar ��Ȱ��ȭ
+                        // 비밀번호 박스일 PlaceHolder 표시 때 PasswordChar 비활성화
                         if (isPasswordBox)
                         {
                             textBox.PasswordChar = '\0';
@@ -200,12 +234,12 @@ namespace leehaeun.UIHelpers
                     }
                 };
 
-                // ��й�ȣ �ڽ� �ؽ�Ʈ ���� ����
+                // 비밀번호 박스 텍스트 변경 처리
                 if (isPasswordBox)
                 {
                     textBox.TextChanged += (s, e) =>
                     {
-                        // PlaceHolder�� �ƴϰ� �ؽ�Ʈ�� ������ PasswordChar Ȱ��ȭ
+                        // PlaceHolder가 아니고 텍스트가 있으면 PasswordChar 활성화
                         if (textBox.Text != placeHolder && !string.IsNullOrEmpty(textBox.Text))
                         {
                             if (textBox.PasswordChar != '●')
@@ -256,7 +290,7 @@ namespace leehaeun.UIHelpers
 
 
         /// <summary>
-        /// Button ��Ÿ��
+        /// Button 스타일
         /// </summary>
         private static void StyleButton(Button button)
         {
@@ -282,11 +316,24 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// CheckBox ��Ÿ��
+        /// CheckBox 스타일
         /// </summary>
         private static void StyleCheckBox(CheckBox checkBox)
         {
-            // ���� �ؽ�Ʈ ����
+            // 이미 스타일이 적용되었는지 확인 (Tag로 체크)
+            if (checkBox.Tag != null && checkBox.Tag.ToString() == "styled")
+            {
+                // 이미 스타일이 적용된 경우 색상만 업데이트
+                checkBox.BackColor = ThemeManager.ColorScheme.Ivory;
+                checkBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
+                checkBox.Invalidate(); // 다시 그리기
+                return;
+            }
+
+            // 처음 스타일 적용
+            checkBox.Tag = "styled"; // 스타일 적용 표시
+
+            // 원래 텍스트 저장
             string originalText = checkBox.Text;
             checkBox.Text = "";
 
@@ -301,20 +348,20 @@ namespace leehaeun.UIHelpers
             checkBox.Width = 230;
             checkBox.Height = 22;
 
-            // Ŀ���� �׸���
-            checkBox.Paint += (s, e) =>
+            // 커스텀 그리기
+            PaintEventHandler paintHandler = (s, e) =>
             {
                 CheckBox cb = s as CheckBox;
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                e.Graphics.Clear(ThemeManager.ColorScheme.Ivory); // ��� �����
+                e.Graphics.Clear(ThemeManager.ColorScheme.Ivory); // 배경 클리어
 
-                // üũ�ڽ� �׸� ��ġ
+                // 체크박스 그릴 위치
                 Rectangle checkBoxRect = new Rectangle(0, 3, 16, 16);
 
-                // ���콺 ȣ�� Ȯ��
+                // 마우스 호버 확인
                 bool isHover = cb.ClientRectangle.Contains(cb.PointToClient(Cursor.Position));
 
-                // ���� ����
+                // 배경 색상
                 Color bgColor;
                 if (isHover)
                 {
@@ -325,7 +372,7 @@ namespace leehaeun.UIHelpers
                     bgColor = cb.Checked ? ThemeManager.ColorScheme.SageGreen : ThemeManager.ColorScheme.White;
                 }
 
-                // �ձ� �׸� �׸���
+                // 둥근 사각 그리기
                 using (GraphicsPath path = GetRoundedRectangle(checkBoxRect, 4))
                 {
                     using (SolidBrush brush = new SolidBrush(bgColor))
@@ -338,7 +385,7 @@ namespace leehaeun.UIHelpers
                     }
                 }
 
-                // üũ ǥ��
+                // 체크 표시
                 if (cb.Checked)
                 {
                     using (Pen pen = new Pen(ThemeManager.ColorScheme.White, 2f))
@@ -354,19 +401,21 @@ namespace leehaeun.UIHelpers
                     }
                 }
 
-                // �ؽ�Ʈ �׸���
+                // 텍스트 그리기
                 TextRenderer.DrawText(
                     e.Graphics,
                     originalText,
                     cb.Font,
                     new Rectangle(22, 0, cb.Width - 22, cb.Height),
-                    cb.ForeColor,
-                    ThemeManager.ColorScheme.Ivory, // ����
+                    ThemeManager.ColorScheme.DarkOlive, // 현재 테마의 색상 사용
+                    ThemeManager.ColorScheme.Ivory, // 배경
                     TextFormatFlags.VerticalCenter | TextFormatFlags.Left
                 );
             };
 
-            // ȣ�� �� �ٽ� �׸���
+            checkBox.Paint += paintHandler;
+
+            // 호버 시 다시 그리기
             checkBox.MouseEnter += (s, e) => checkBox.Invalidate();
             checkBox.MouseLeave += (s, e) => checkBox.Invalidate();
             checkBox.MouseMove += (s, e) => checkBox.Invalidate();
@@ -374,7 +423,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// LinkLabel ��Ÿ��
+        /// LinkLabel 스타일
         /// </summary>
         private static void StyleLinkLabel(LinkLabel linkLabel)
         {
@@ -391,7 +440,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// ���̾ƿ� ����
+        /// 레이아웃 조정
         /// </summary>
         private static void AdjustLayout(Form form)
         {
@@ -433,7 +482,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// �ձ� �簢�� ��� ����
+        /// 둥근 사각형 경로 생성
         /// </summary>
         private static GraphicsPath GetRoundedRectangle(Rectangle bounds, int radius)
         {

@@ -1,6 +1,8 @@
 using DBP_WinformChat;
 using leehaeun.UIHelpers;
 using System.Data;
+using DBP_Chat;
+using System.Drawing.Drawing2D;
 
 namespace leehaeun
 {
@@ -118,29 +120,98 @@ namespace leehaeun
         private void AddNewProfile(DataRow row)
         {
             Panel newPanel = new Panel();
-            newPanel.Size = new Size(216, 35);
+            newPanel.Size = new Size(330, 60);
             newPanel.Location = new Point(2, 41);
+            newPanel.BackColor = ThemeManager.ColorScheme.White;
 
             PictureBox profileImage = new PictureBox();
-            profileImage.Location = new Point(0, 3);
-            profileImage.Size = new Size(30, 29);
+            profileImage.Location = new Point(0, 5);
+            profileImage.Size = new Size(50, 50);
             profileImage.SizeMode = PictureBoxSizeMode.StretchImage;
             profileImage.Image = DBP_WinformChat.Properties.Resources._default;
 
             Label nicknameLabel = new Label();
-            nicknameLabel.Location = new Point(35, 10);
+            nicknameLabel.Location = new Point(60, 22);
             nicknameLabel.AutoSize = true;
             nicknameLabel.Text = row["Nickname"].ToString();
+            nicknameLabel.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
+            nicknameLabel.ForeColor = ThemeManager.ColorScheme.DarkOlive;
 
             Button editButton = new Button();
             editButton.Text = "관리";
-            editButton.Size = new Size(39, 22);
-            editButton.Location = new Point(125, 6);
+            editButton.Size = new Size(50, 30);
+            editButton.Location = new Point(215, 17);
+            editButton.Font = new Font("맑은 고딕", 9F, FontStyle.Bold);
+            editButton.ForeColor = ThemeManager.ColorScheme.DarkOlive;
+            editButton.FlatStyle = FlatStyle.Flat;
+            editButton.FlatAppearance.BorderSize = 0;
+            editButton.FlatAppearance.MouseDownBackColor = ThemeManager.ColorScheme.SageGreen;
+            editButton.FlatAppearance.MouseOverBackColor = ThemeManager.ColorScheme.SageGreen;
+            editButton.Cursor = Cursors.Hand;
+            editButton.TabStop = false;
+            editButton.BackColor = ThemeManager.ColorScheme.LightOlive;
 
             Button deleteButton = new Button();
             deleteButton.Text = "삭제";
-            deleteButton.Size = new Size(39, 22);
-            deleteButton.Location = new Point(168, 6);
+            deleteButton.Size = new Size(50, 30);
+            deleteButton.Location = new Point(270, 17);
+            deleteButton.Font = new Font("맑은 고딕", 9F, FontStyle.Bold);
+            deleteButton.ForeColor = ThemeManager.ColorScheme.DarkOlive;
+            deleteButton.FlatStyle = FlatStyle.Flat;
+            deleteButton.FlatAppearance.BorderSize = 0;
+            deleteButton.FlatAppearance.MouseDownBackColor = ThemeManager.ColorScheme.SageGreen;
+            deleteButton.FlatAppearance.MouseOverBackColor = ThemeManager.ColorScheme.SageGreen;
+            deleteButton.Cursor = Cursors.Hand;
+            deleteButton.TabStop = false;
+            deleteButton.BackColor = ThemeManager.ColorScheme.LightOlive;
+
+            // 관리 버튼 둥근 모서리 및 테두리
+            editButton.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                Rectangle rect = new Rectangle(0, 0, editButton.Width, editButton.Height);
+
+                using (System.Drawing.Drawing2D.GraphicsPath path = leehaeun.UIHelpers.EditInfoFormUIHelper.GetRoundedRectanglePublic(rect, 8))
+                {
+                    editButton.Region = new Region(path);
+                }
+
+                using (System.Drawing.Drawing2D.GraphicsPath borderPath = leehaeun.UIHelpers.EditInfoFormUIHelper.GetRoundedRectanglePublic(new Rectangle(0, 0, editButton.Width - 1, editButton.Height - 1), 8))
+                {
+                    using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 1.5f))
+                    {
+                        e.Graphics.DrawPath(pen, borderPath);
+                    }
+                }
+            };
+
+            // 삭제 버튼 둥근 모서리 및 테두리
+            deleteButton.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                Rectangle rect = new Rectangle(0, 0, deleteButton.Width, deleteButton.Height);
+
+                using (System.Drawing.Drawing2D.GraphicsPath path = leehaeun.UIHelpers.EditInfoFormUIHelper.GetRoundedRectanglePublic(rect, 8))
+                {
+                    deleteButton.Region = new Region(path);
+                }
+
+                using (System.Drawing.Drawing2D.GraphicsPath borderPath = leehaeun.UIHelpers.EditInfoFormUIHelper.GetRoundedRectanglePublic(new Rectangle(0, 0, deleteButton.Width - 1, deleteButton.Height - 1), 8))
+                {
+                    using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 1.5f))
+                    {
+                        e.Graphics.DrawPath(pen, borderPath);
+                    }
+                }
+            };
+
+            editButton.Resize += (s, e) => editButton.Invalidate();
+            editButton.MouseEnter += (s, e) => editButton.BackColor = ThemeManager.ColorScheme.SageGreen;
+            editButton.MouseLeave += (s, e) => editButton.BackColor = ThemeManager.ColorScheme.LightOlive;
+
+            deleteButton.Resize += (s, e) => deleteButton.Invalidate();
+            deleteButton.MouseEnter += (s, e) => deleteButton.BackColor = ThemeManager.ColorScheme.SageGreen;
+            deleteButton.MouseLeave += (s, e) => deleteButton.BackColor = ThemeManager.ColorScheme.LightOlive;
 
             newPanel.Controls.Add(profileImage);
             newPanel.Controls.Add(nicknameLabel);
@@ -403,8 +474,11 @@ namespace leehaeun
             // 프로필 아이디 가져와서 새 프로필 패널 생성
             string squery = $"SELECT * FROM Profile WHERE UserId = {LoginForm.UserId} ORDER BY ProfileId DESC LIMIT 1;";
             DataTable dt = DBconnector.GetInstance().Query(squery);
-            DataRow row = dt.Rows[0];
-            AddNewProfile(row);
+
+            UserInfo.GetInfo();
+            LoadMulProfileList();
+            /*DataRow row = dt.Rows[0];
+            AddNewProfile(row);*/
         }
 
         // 사용자 정보 탭

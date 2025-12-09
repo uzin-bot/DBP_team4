@@ -13,7 +13,7 @@ namespace leehaeun.UIHelpers
         private static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
 
         /// <summary>
-        /// �맑은 고딕� �� ��Ÿ�� 관리
+        /// 맑은 고딕 폼 스타일 관리
         /// </summary>
         public static void ApplyStyles(UserInfoForm form)
         {
@@ -21,18 +21,44 @@ namespace leehaeun.UIHelpers
             form.FormBorderStyle = FormBorderStyle.None;
 
             form.Width = 350;
-            form.Height = 250;  // 200 �� 250
+            form.Height = 250;  // 200 → 250
             form.MinimumSize = new Size(350, 250);
             form.MaximumSize = new Size(350, 250);
 
             form.StartPosition = FormStartPosition.CenterParent;
 
             ApplyRoundedCorners(form, 15);
+            
+            // 기존 타이틀바 제거 후 생성
+            RemoveExistingTitleBar(form);
             CreateCustomTitleBar(form);
+            
             StyleControls(form);
             AdjustLayout(form);
 
             form.Refresh();
+        }
+
+        /// <summary>
+        /// 기존 타이틀바 제거
+        /// </summary>
+        private static void RemoveExistingTitleBar(Form form)
+        {
+            Panel existingTitleBar = null;
+            foreach (Control control in form.Controls)
+            {
+                if (control is Panel panel && panel.Name == "titleBar")
+                {
+                    existingTitleBar = panel;
+                    break;
+                }
+            }
+
+            if (existingTitleBar != null)
+            {
+                form.Controls.Remove(existingTitleBar);
+                existingTitleBar.Dispose();
+            }
         }
 
         private static void ApplyRoundedCorners(Form form, int radius)
@@ -116,7 +142,7 @@ namespace leehaeun.UIHelpers
         {
             pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
 
-            // �ձ� �簢�� �׵θ�
+            // 둥근 사각 테두리
             pictureBox.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -151,7 +177,7 @@ namespace leehaeun.UIHelpers
             }
             else if (label.Name == "StatusMessageLabel")
             {
-                label.Font = new Font("맑은 고딕", 10F);  // 헤더Ÿ�ü 관리
+                label.Font = new Font("맑은 고딕", 10F);  // 헤더타이틀 관리
                 label.ForeColor = ThemeManager.ColorScheme.DarkOlive;  // 맑은 고딕헤더 관리
             }
         }
@@ -183,7 +209,7 @@ namespace leehaeun.UIHelpers
                     else if (label.Name == "StatusMessageLabel")
                     {
                         label.Location = new Point(margin, topMargin + 100);
-                        label.MaximumSize = new Size(290, 50);  // 2�� �� 관리
+                        label.MaximumSize = new Size(290, 50);  // 2줄 제한 관리
                         label.AutoSize = true;
                     }
                 }

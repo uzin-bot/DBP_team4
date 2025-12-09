@@ -74,11 +74,12 @@ namespace 남예솔
         {
             if (isDark)
             {
-                // 필요 시 다크 헬퍼 사용 (현재 컨텍스트엔 라이트만 있으므로 생략 또는 구현)
-                // 예: DarkChatListUIHelper.Apply(this);
+                // 다크모드 적용
+                ThemeManager.ApplyTheme(this);
             }
             else
             {
+                // 라이트모드 적용
                 DBP_WinformChat.chatlistUIHelper.Apply(this);
             }
         }

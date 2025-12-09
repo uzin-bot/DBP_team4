@@ -986,23 +986,23 @@ namespace leehaeun.UIHelpers
                 }
                 else if (control.Name == "ProfileImageMBox")
                 {
-                    control.Location = new Point(centerX, startY + 40);
+                    control.Location = new Point(centerX, startY + 55);
                     control.Size = new Size(50, 50);
                 }
                 else if (control.Name == "NicknameLabel")
                 {
-                    control.Location = new Point(centerX + 60, startY + 55);
+                    control.Location = new Point(centerX + 60, startY + 70);
                     control.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
                 }
                 else if (control.Name == "EditButton")
                 {
-                    control.Location = new Point(centerX + 270, startY + 50);
+                    control.Location = new Point(centerX + 270, startY + 65);
                     control.Width = 50;
                 }
                 else if (control.Name == "ProfileFLP")
                 {
-                    control.Location = new Point(centerX - 5, startY + 100);
-                    control.Size = new Size(355, 355);
+                    control.Location = new Point(centerX - 5, startY + 115);
+                    control.Size = new Size(355, 340);
                     control.BackColor = ThemeManager.ColorScheme.White;
 
                     if (control is FlowLayoutPanel flp)
@@ -1189,7 +1189,7 @@ namespace leehaeun.UIHelpers
                                 btn.Height = 30;
                             }
                         }
-                        else if (btn.Text == "관리")
+                        else if (btn.Text == "삭제")
                         {
                             if (parentName == "ProfileFLP")
                             {
@@ -1265,6 +1265,12 @@ namespace leehaeun.UIHelpers
             path.CloseFigure();
 
             return path;
+        }
+
+        // EditInfoForm에서 사용할 수 있도록 public 메서드 추가
+        public static GraphicsPath GetRoundedRectanglePublic(Rectangle bounds, int radius)
+        {
+            return GetRoundedRectangle(bounds, radius);
         }
     }
 }

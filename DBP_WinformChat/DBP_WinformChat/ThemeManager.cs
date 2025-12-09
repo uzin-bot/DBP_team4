@@ -21,10 +21,28 @@ namespace DBP_Chat
             CurrentMode = mode;
 
             foreach (Form f in Application.OpenForms)
-                ApplyTheme(f);
+            {
+                // LoginForm과 UserInfoForm은 UIHelper를 다시 호출
+                if (f.GetType().Name == "LoginForm")
+                {
+                    leehaeun.UIHelpers.LoginFormUIHelper.ApplyStyles((leehaeun.LoginForm)f);
+                }
+                else if (f.GetType().Name == "UserInfoForm")
+                {
+                    leehaeun.UIHelpers.UserInfoFormUIHelper.ApplyStyles((leehaeun.UserInfoForm)f);
+                }
+                else
+                {
+                    ApplyTheme(f);
+                }
+            }
 
             ThemeChanged?.Invoke(mode);
             DarkModeChanged?.Invoke(mode == ThemeMode.Dark);
+            
+            // Settings에 다크모드 설정 저장
+            DBP_WinformChat.Properties.Settings.Default.IsDarkMode = (mode == ThemeMode.Dark);
+            DBP_WinformChat.Properties.Settings.Default.Save();
         }
 
         public static void SetDarkMode(bool enable)

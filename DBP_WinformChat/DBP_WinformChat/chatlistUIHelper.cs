@@ -51,9 +51,6 @@ namespace DBP_WinformChat
                 lv.BackColor = Color.White;
                 lv.ForeColor = Color.FromArgb(119, 136, 115);
 
-                // 마우스 이벤트 핸들러 추가
-                lv.MouseMove += (s, e) => { };
-
                 // --- 컬럼 헤더 ---
                 lv.DrawColumnHeader += (s, e) =>
                 {
@@ -130,15 +127,6 @@ namespace DBP_WinformChat
 
                 btn.Font = new Font("맑은 고딕", 9.5f, FontStyle.Bold);
                 btn.Cursor = Cursors.Hand;
-
-                btn.MouseEnter += (s, e) =>
-                {
-                    btn.BackColor = Color.FromArgb(210, 220, 182);
-                };
-                btn.MouseLeave += (s, e) =>
-                {
-                    btn.BackColor = Color.FromArgb(241, 243, 224);
-                };
             }
 
             foreach (Control child in ctrl.Controls)
