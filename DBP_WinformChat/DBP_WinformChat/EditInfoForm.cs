@@ -513,16 +513,16 @@ namespace leehaeun
             // 이름 변경
             if (NameBox.Text != UserInfo.User["Name"].ToString())
             {
-                string query = $"UPDATE User SET Name = '{NameBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE User SET Name = '{NameBox.Text}' WHERE UserId = {LoginForm.UserId};";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("변경 실패");
             }
 
             // 비밀번호 변경
             string pwHash = Sha256.Instance.HashSHA256(PwBox.Text);
-            if (pwHash != UserInfo.User["PasswordHash"].ToString())
+            if (!string.IsNullOrEmpty(PwBox.Text) && pwHash != UserInfo.User["PasswordHash"].ToString())
             {
-                string query = $"UPDATE User SET PasswordHash = '{pwHash}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE User SET PasswordHash = '{pwHash}' WHERE UserId = {LoginForm.UserId};";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("변경 실패");
             }
@@ -531,7 +531,7 @@ namespace leehaeun
             if (AddressBox.Text != UserInfo.User["Address"].ToString() ||
             ZipCodeBox.Text != UserInfo.User["ZipCode"].ToString())
             {
-                string query = $"UPDATE User SET Address = '{AddressBox.Text}', ZipCode = '{ZipCodeBox.Text}' WHERE UserId = '{LoginForm.UserId}';";
+                string query = $"UPDATE User SET Address = '{AddressBox.Text}', ZipCode = '{ZipCodeBox.Text}' WHERE UserId = {LoginForm.UserId};";
                 int affected = DBconnector.GetInstance().NonQuery(query);
                 if (affected <= 0) MessageBox.Show("변경 실패");
             }
@@ -548,8 +548,8 @@ namespace leehaeun
             {
                 if (NicknameBox.Text != CurrProfile["Nickname"].ToString() ||
                     StatusBox.Text != CurrProfile["StatusMessage"].ToString() ||
-                    (!string.IsNullOrEmpty(ProfileImagePBox.Tag.ToString()) &&
-                        ProfileImagePBox.Tag.ToString() != CurrProfile["ProfileImage"].ToString()))
+                    (!string.IsNullOrEmpty(ProfileImagePBox.Tag?.ToString()) &&
+                        ProfileImagePBox.Tag?.ToString() != CurrProfile["ProfileImage"].ToString()))
                 {
                     flag = true;
                 }

@@ -26,7 +26,7 @@ namespace leehaeun
         // DB에서 사용자 정보 불러오기
         public static void GetUserInfo()
         {
-            string query = $"SELECT * FROM User WHERE Userid = '{LoginForm.UserId}';";
+            string query = $"SELECT * FROM User WHERE UserId = {LoginForm.UserId};";
             DataTable dt = DBconnector.GetInstance().Query(query);
             dt.Columns.Add("DeptName", typeof(string));
             User = dt.Rows[0];
@@ -37,7 +37,7 @@ namespace leehaeun
         // DB에서 사용자 프로필 정보 불러오기
         public static void GetProfileInfo()
         {
-            string query = $"SELECT * FROM Profile WHERE UserId = '{LoginForm.UserId}' ORDER BY ProfileId;";
+            string query = $"SELECT * FROM Profile WHERE UserId = {LoginForm.UserId} ORDER BY ProfileId;";
             Profile = DBconnector.GetInstance().Query(query);
         }
 

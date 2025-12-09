@@ -76,6 +76,15 @@ namespace leehaeun
         // 멀티프로필 매핑 안된 유저 검색(쿼리 수정)
         private void SearchUser()
         {
+            // 디버깅: UserVisibleUser 테이블 확인
+            string debugQuery = $@"SELECT * FROM UserVisibleUser WHERE OwnerUserId = {LoginForm.UserId};";
+            DataTable debugDt = DBconnector.GetInstance().Query(debugQuery);
+            System.Diagnostics.Debug.WriteLine($"UserVisibleUser rows for UserId {LoginForm.UserId}: {debugDt.Rows.Count}");
+            foreach (DataRow debugRow in debugDt.Rows)
+            {
+                System.Diagnostics.Debug.WriteLine($"  VisibleUserId: {debugRow["VisibleUserId"]}");
+            }
+
             string query = $@"
                 SELECT
                     u.UserId,
@@ -95,6 +104,7 @@ namespace leehaeun
                 LEFT JOIN Department d
                     ON d.DeptId = u.DeptId
                 WHERE u.UserId != {LoginForm.UserId}
+                AND u.Role != 'admin'
                 AND NOT EXISTS (
                     SELECT 1
                     FROM UserProfileMap already
