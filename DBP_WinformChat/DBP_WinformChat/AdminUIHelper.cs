@@ -1,40 +1,41 @@
-ï»¿using System;
+using DBP_Chat;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace DBPAdmin
 {
-    // ==================== 1. ìƒ‰ìƒ íŒ”ë ˆíŠ¸ (ì´ê²ƒë§Œ ìˆ˜ì •í•˜ë©´ ì „ì²´ UI ìƒ‰ìƒ ë³€ê²½) ====================
+    // ==================== 1. »ö»ó ÆÈ·¹Æ® (ÀÌ°Í¸¸ ¼öÁ¤ÇÏ¸é ÀüÃ¼ UI »ö»ó º¯°æ) ====================
     public static class AppTheme
     {
-        // ğŸ¨ ë©”ì¸ íŒ”ë ˆíŠ¸ - ì—¬ê¸°ë§Œ ìˆ˜ì •í•˜ì„¸ìš”!
-        public static readonly Color Color1 = ColorTranslator.FromHtml("#F1F3E0");  // ê°€ì¥ ë°ì€ ìƒ‰ (ë°°ê²½)
-        public static readonly Color Color2 = ColorTranslator.FromHtml("#D2DCB6");  // ë°ì€ ìƒ‰ (ì¹´ë“œ, ì„œë¸Œ)
-        public static readonly Color Color3 = ColorTranslator.FromHtml("#A1BC98");  // ì¤‘ê°„ ìƒ‰ (ë²„íŠ¼, ê°•ì¡°)
-        public static readonly Color Color4 = ColorTranslator.FromHtml("#778873");  // ì–´ë‘ìš´ ìƒ‰ (ì‚¬ì´ë“œë°”, í—¤ë”)
+        // ?? ¸ŞÀÎ ÆÈ·¹Æ® - ¿©±â¸¸ ¼öÁ¤ÇÏ¼¼¿ä!
+        public static readonly Color Color1 = ColorTranslator.FromHtml("#F1F3E0");  // °¡Àå ¹àÀº »ö (¹è°æ)
+        public static readonly Color Color2 = ColorTranslator.FromHtml("#D2DCB6");  // ¹àÀº »ö (Ä«µå, ¼­ºê)
+        public static readonly Color Color3 = ColorTranslator.FromHtml("#A1BC98");  // Áß°£ »ö (¹öÆ°, °­Á¶)
+        public static readonly Color Color4 = ColorTranslator.FromHtml("#778873");  // ¾îµÎ¿î »ö (»çÀÌµå¹Ù, Çì´õ)
 
-        // ğŸ”§ ì—­í• ë³„ ìƒ‰ìƒ ë§¤í•‘ (íŒ”ë ˆíŠ¸ ê¸°ë°˜ ìë™ ì ìš©)
-        public static readonly Color Background = Color1;       // ë©”ì¸ ë°°ê²½
-        public static readonly Color CardBg = Color.White;      // ì¹´ë“œ ë°°ê²½
-        public static readonly Color SidebarBg = Color4;        // ì‚¬ì´ë“œë°” ë°°ê²½
-        public static readonly Color Primary = Color3;          // ì£¼ìš” ë²„íŠ¼, ê°•ì¡°
-        public static readonly Color Secondary = Color2;        // ë³´ì¡° ìš”ì†Œ
-        public static readonly Color HeaderBg = Color4;         // í…Œì´ë¸” í—¤ë”
+        // ?? ¿ªÇÒº° »ö»ó ¸ÅÇÎ (ÆÈ·¹Æ® ±â¹İ ÀÚµ¿ Àû¿ë)
+        public static readonly Color Background = Color1;       // ¸ŞÀÎ ¹è°æ
+        public static readonly Color CardBg = Color.White;      // Ä«µå ¹è°æ
+        public static readonly Color SidebarBg = Color4;        // »çÀÌµå¹Ù ¹è°æ
+        public static readonly Color Primary = Color3;          // ÁÖ¿ä ¹öÆ°, °­Á¶
+        public static readonly Color Secondary = Color2;        // º¸Á¶ ¿ä¼Ò
+        public static readonly Color HeaderBg = Color4;         // Å×ÀÌºí Çì´õ
 
-        public static readonly Color TextDark = Color.FromArgb(50, 50, 50);     // ì–´ë‘ìš´ í…ìŠ¤íŠ¸
-        public static readonly Color TextLight = Color.White;                    // ë°ì€ í…ìŠ¤íŠ¸
-        public static readonly Color TextMuted = Color.FromArgb(120, 120, 120); // íë¦° í…ìŠ¤íŠ¸
+        public static readonly Color TextDark = Color.FromArgb(50, 50, 50);     // ¾îµÎ¿î ÅØ½ºÆ®
+        public static readonly Color TextLight = Color.White;                    // ¹àÀº ÅØ½ºÆ®
+        public static readonly Color TextMuted = Color.FromArgb(120, 120, 120); // Èå¸° ÅØ½ºÆ®
 
-        public static readonly Color Border = Color2;           // í…Œë‘ë¦¬
-        public static readonly Color ButtonHover = Color2;      // ë²„íŠ¼ í˜¸ë²„
-        public static readonly Color ActiveMenu = Color3;       // í™œì„± ë©”ë‰´
-        public static readonly Color InactiveMenu = Color4;     // ë¹„í™œì„± ë©”ë‰´
+        public static readonly Color Border = Color2;           // Å×µÎ¸®
+        public static readonly Color ButtonHover = Color2;      // ¹öÆ° È£¹ö
+        public static readonly Color ActiveMenu = Color3;       // È°¼º ¸Ş´º
+        public static readonly Color InactiveMenu = Color4;     // ºñÈ°¼º ¸Ş´º
     }
 
-    // ==================== 2. UIHelper (ìƒ‰ìƒì€ AppThemeì—ì„œ ê°€ì ¸ì˜´) ====================
+    // ==================== 2. UIHelper (»ö»óÀº AppTheme¿¡¼­ °¡Á®¿È) ====================
     public static class AdminUIHelper
     {
-        // ê¸°ì¡´ ì½”ë“œ í˜¸í™˜ìš© Colors í´ë˜ìŠ¤
+        // ±âÁ¸ ÄÚµå È£È¯¿ë Colors Å¬·¡½º
         public static class Colors
         {
             public static readonly Color Primary = AppTheme.Primary;
@@ -48,32 +49,32 @@ namespace DBPAdmin
             public static readonly Color AccentLight = AppTheme.Secondary;
         }
 
-        // íƒ€ì´í‹€ ë ˆì´ë¸”
+        // Å¸ÀÌÆ² ·¹ÀÌºí
         public static Label CreateTitle(string text)
         {
             return new Label
             {
                 Text = text,
-                Font = new Font("ë§‘ì€ ê³ ë”•", 14F, FontStyle.Bold),
+                Font = new Font("¸¼Àº °íµñ", 14F, FontStyle.Bold),
                 ForeColor = AppTheme.TextDark,
                 AutoSize = true
             };
         }
 
-        // ì¼ë°˜ ë ˆì´ë¸”
+        // ÀÏ¹İ ·¹ÀÌºí
         public static Label CreateLabel(string text, int x, int y, int fontSize = 9, Color? color = null, bool bold = false)
         {
             return new Label
             {
                 Text = text,
                 Location = new Point(x, y),
-                Font = new Font("ë§‘ì€ ê³ ë”•", fontSize, bold ? FontStyle.Bold : FontStyle.Regular),
+                Font = new Font("¸¼Àº °íµñ", fontSize, bold ? FontStyle.Bold : FontStyle.Regular),
                 ForeColor = color ?? AppTheme.TextDark,
                 AutoSize = true
             };
         }
 
-        // ì¹´ë“œ íŒ¨ë„
+        // Ä«µå ÆĞ³Î
         public static Panel CreateCard(int x, int y, int width, int height)
         {
             return new Panel
@@ -85,7 +86,7 @@ namespace DBPAdmin
             };
         }
 
-        // í…ìŠ¤íŠ¸ë°•ìŠ¤
+        // ÅØ½ºÆ®¹Ú½º
         public static TextBox CreateTextBox(int x, int y, int width, int height, string name, string placeholder = "")
         {
             var txt = new TextBox
@@ -93,7 +94,7 @@ namespace DBPAdmin
                 Location = new Point(x, y),
                 Size = new Size(width, height),
                 Name = name,
-                Font = new Font("ë§‘ì€ ê³ ë”•", 9F)
+                Font = new Font("¸¼Àº °íµñ", 9F)
             };
 
             if (!string.IsNullOrEmpty(placeholder))
@@ -123,7 +124,7 @@ namespace DBPAdmin
             return txt;
         }
 
-        // ì½¤ë³´ë°•ìŠ¤
+        // ÄŞº¸¹Ú½º
         public static ComboBox CreateComboBox(int x, int y, int width, int height, string name)
         {
             return new ComboBox
@@ -131,7 +132,7 @@ namespace DBPAdmin
                 Location = new Point(x, y),
                 Size = new Size(width, height),
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                Font = new Font("ë§‘ì€ ê³ ë”•", 9F),
+                Font = new Font("¸¼Àº °íµñ", 9F),
                 Name = name
             };
         }
@@ -144,12 +145,12 @@ namespace DBPAdmin
                 Location = new Point(x, y),
                 Size = new Size(width, height),
                 Format = DateTimePickerFormat.Short,
-                Font = new Font("ë§‘ì€ ê³ ë”•", 9F),
+                Font = new Font("¸¼Àº °íµñ", 9F),
                 Name = name
             };
         }
 
-        // ë©”ì¸ ë²„íŠ¼ (Primary ìƒ‰ìƒ)
+        // ¸ŞÀÎ ¹öÆ° (Primary »ö»ó)
         public static Button CreateBlueButton(string text, int x, int y, int width, int height)
         {
             var btn = new Button
@@ -160,12 +161,12 @@ namespace DBPAdmin
                 BackColor = AppTheme.Primary,
                 ForeColor = AppTheme.TextLight,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("ë§‘ì€ ê³ ë”•", 9F, FontStyle.Bold),
+                Font = new Font("¸¼Àº °íµñ", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             btn.FlatAppearance.BorderSize = 0;
 
-            // í˜¸ë²„ íš¨ê³¼
+            // È£¹ö È¿°ú
             btn.MouseEnter += (s, e) => btn.BackColor = AppTheme.ButtonHover;
             btn.MouseLeave += (s, e) => btn.BackColor = AppTheme.Primary;
 
@@ -195,24 +196,24 @@ namespace DBPAdmin
             };
             dgv.RowTemplate.Height = 35;
 
-            // í—¤ë” ìŠ¤íƒ€ì¼
+            // Çì´õ ½ºÅ¸ÀÏ
             dgv.ColumnHeadersDefaultCellStyle.BackColor = AppTheme.HeaderBg;
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = AppTheme.TextLight;
-            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold);
+            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold);
             dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-            // ì…€ ìŠ¤íƒ€ì¼
-            dgv.DefaultCellStyle.Font = new Font("ë§‘ì€ ê³ ë”•", 9F);
+            // ¼¿ ½ºÅ¸ÀÏ
+            dgv.DefaultCellStyle.Font = new Font("¸¼Àº °íµñ", 9F);
             dgv.DefaultCellStyle.SelectionBackColor = AppTheme.Primary;
             dgv.DefaultCellStyle.SelectionForeColor = AppTheme.TextLight;
 
-            // êµëŒ€ í–‰ ìƒ‰ìƒ
+            // ±³´ë Çà »ö»ó
             dgv.AlternatingRowsDefaultCellStyle.BackColor = AppTheme.Secondary;
 
             return dgv;
         }
 
-        // ì„¼í„° ì •ë ¬ ê³„ì‚°
+        // ¼¾ÅÍ Á¤·Ä °è»ê
         public static int CalculateCenterX(int containerWidth, int elementWidth)
         {
             return (containerWidth - elementWidth) / 2;

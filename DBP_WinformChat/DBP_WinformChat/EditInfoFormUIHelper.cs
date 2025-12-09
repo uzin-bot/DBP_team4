@@ -1,8 +1,9 @@
-ï»¿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using DBP_Chat;
 
 namespace leehaeun.UIHelpers
 {
@@ -19,7 +20,7 @@ namespace leehaeun.UIHelpers
 
         public static void ApplyStyles(EditInfoForm form)
         {
-            form.BackColor = ColorSchemes.Ivory;
+            form.BackColor = ThemeManager.ColorScheme.Ivory;
             form.Size = new Size(450, 700);
             form.StartPosition = FormStartPosition.CenterScreen;
             form.FormBorderStyle = FormBorderStyle.None;
@@ -43,27 +44,27 @@ namespace leehaeun.UIHelpers
                 Name = "titleBar",
                 Height = 50,
                 Dock = DockStyle.Top,
-                BackColor = ColorSchemes.Ivory
+                BackColor = ThemeManager.ColorScheme.Ivory
             };
 
             Button closeButton = new Button
             {
                 Name = "closeButton",
-                Text = "âœ•",
-                Font = new Font("ë§‘ì€ ê³ ë”•", 11F, FontStyle.Bold),
+                Text = "?",
+                Font = new Font("¸¼Àº °íµñ", 11F, FontStyle.Bold),
                 Size = new Size(50, 40),
                 Location = new Point(form.Width - 55, 5),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = ColorSchemes.Ivory,
-                ForeColor = ColorSchemes.LightOlive,
+                BackColor = ThemeManager.ColorScheme.Ivory,
+                ForeColor = ThemeManager.ColorScheme.LightOlive,
                 Cursor = Cursors.Hand
             };
             closeButton.FlatAppearance.BorderSize = 0;
-            closeButton.FlatAppearance.MouseOverBackColor = ColorSchemes.Ivory;
-            closeButton.FlatAppearance.MouseDownBackColor = ColorSchemes.Ivory;
+            closeButton.FlatAppearance.MouseOverBackColor = ThemeManager.ColorScheme.Ivory;
+            closeButton.FlatAppearance.MouseDownBackColor = ThemeManager.ColorScheme.Ivory;
             closeButton.Click += (s, e) => form.Close();
-            closeButton.MouseEnter += (s, e) => closeButton.ForeColor = ColorSchemes.DarkOlive;
-            closeButton.MouseLeave += (s, e) => closeButton.ForeColor = ColorSchemes.LightOlive;
+            closeButton.MouseEnter += (s, e) => closeButton.ForeColor = ThemeManager.ColorScheme.DarkOlive;
+            closeButton.MouseLeave += (s, e) => closeButton.ForeColor = ThemeManager.ColorScheme.LightOlive;
 
             titleBar.Controls.Add(closeButton);
 
@@ -113,7 +114,7 @@ namespace leehaeun.UIHelpers
                 Name = "mainContainer",
                 Location = new Point(25, 50),
                 Size = new Size(form.ClientSize.Width - 50, form.ClientSize.Height - 75),
-                BackColor = ColorSchemes.Ivory
+                BackColor = ThemeManager.ColorScheme.Ivory
             };
 
             Panel tabBar = new Panel
@@ -121,7 +122,7 @@ namespace leehaeun.UIHelpers
                 Name = "tabBar",
                 Location = new Point(0, 0),
                 Size = new Size(mainContainer.Width, 50),
-                BackColor = ColorSchemes.Ivory
+                BackColor = ThemeManager.ColorScheme.Ivory
             };
 
             Panel contentBox = new Panel
@@ -129,7 +130,7 @@ namespace leehaeun.UIHelpers
                 Name = "contentBox",
                 Location = new Point(0, 49),
                 Size = new Size(mainContainer.Width, mainContainer.Height - 49),
-                BackColor = ColorSchemes.Ivory
+                BackColor = ThemeManager.ColorScheme.Ivory
             };
 
             contentBox.Paint += (s, e) =>
@@ -152,13 +153,13 @@ namespace leehaeun.UIHelpers
                     bgPath.AddLine(w, 0, 1, 0);
                     bgPath.CloseFigure();
 
-                    using (SolidBrush bgBrush = new SolidBrush(ColorSchemes.White))
+                    using (SolidBrush bgBrush = new SolidBrush(ThemeManager.ColorScheme.White))
                     {
                         g.FillPath(bgBrush, bgPath);
                     }
                 }
 
-                using (Pen pen = new Pen(ColorSchemes.SageGreen, 1.5f))
+                using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 1.5f))
                 {
                     g.DrawLine(pen, 1, 0, 1, h - r);
                     g.DrawArc(pen, 1, h - r * 2, r * 2, r * 2, 90, 90);
@@ -168,7 +169,7 @@ namespace leehaeun.UIHelpers
                 }
             };
 
-            string[] tabNames = { "í”„ë¡œí•„", "ë©€í‹°í”„ë¡œí•„", "ê³„ì • ì •ë³´" };
+            string[] tabNames = { "ÇÁ·ÎÇÊ", "¸ÖÆ¼ÇÁ·ÎÇÊ", "°èÁ¤ Á¤º¸" };
             Panel[] pages = new Panel[3];
 
             for (int i = 0; i < 3; i++)
@@ -178,7 +179,7 @@ namespace leehaeun.UIHelpers
                     Name = "customPage" + i,
                     Location = new Point(20, 20),
                     Size = new Size(contentBox.Width - 40, contentBox.Height - 40),
-                    BackColor = ColorSchemes.White,
+                    BackColor = ThemeManager.ColorScheme.White,
                     Visible = (i == 0),
                     AutoScroll = false
                 };
@@ -225,8 +226,8 @@ namespace leehaeun.UIHelpers
                 Label tabLabel = new Label
                 {
                     Text = tabNames[i],
-                    Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold),
-                    ForeColor = ColorSchemes.DarkOlive,
+                    Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold),
+                    ForeColor = ThemeManager.ColorScheme.DarkOlive,
                     TextAlign = ContentAlignment.MiddleCenter,
                     Dock = DockStyle.Fill,
                     BackColor = Color.Transparent,
@@ -253,13 +254,13 @@ namespace leehaeun.UIHelpers
                         bgPath.AddLine(1, btn.Height, 1, r + 1);
                         bgPath.CloseFigure();
 
-                        using (SolidBrush brush = new SolidBrush(isSelected ? ColorSchemes.White : ColorSchemes.Ivory))
+                        using (SolidBrush brush = new SolidBrush(isSelected ? ThemeManager.ColorScheme.White : ThemeManager.ColorScheme.Ivory))
                         {
                             g.FillPath(brush, bgPath);
                         }
                     }
 
-                    using (Pen pen = new Pen(ColorSchemes.SageGreen, 1.5f))
+                    using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 1.5f))
                     {
                         g.DrawArc(pen, 1, 1, r * 2, r * 2, 180, 90);
                         g.DrawLine(pen, r + 1, 1, btn.Width - r - 1, 1);
@@ -480,16 +481,16 @@ namespace leehaeun.UIHelpers
                 return;
 
             textBox.BorderStyle = BorderStyle.None;
-            textBox.Font = new Font("ë§‘ì€ ê³ ë”•", 10F);
-            textBox.ForeColor = ColorSchemes.DarkOlive;
+            textBox.Font = new Font("¸¼Àº °íµñ", 10F);
+            textBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
 
             if (textBox.Name == "PwBox")
             {
-                textBox.PasswordChar = 'â—';
+                textBox.PasswordChar = '¡Ü';
             }
 
             bool isReadOnly = textBox.ReadOnly;
-            textBox.BackColor = isReadOnly ? ColorSchemes.LightOlive : ColorSchemes.White;
+            textBox.BackColor = isReadOnly ? ThemeManager.ColorScheme.LightOlive : ThemeManager.ColorScheme.White;
             textBox.Cursor = isReadOnly ? Cursors.Default : Cursors.IBeam;
             textBox.TabStop = !isReadOnly;
 
@@ -554,7 +555,7 @@ namespace leehaeun.UIHelpers
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 using (GraphicsPath borderPath = GetRoundedRectangle(new Rectangle(0, 0, wrapperWidth - 1, wrapperHeight - 1), 8))
                 {
-                    using (Pen pen = new Pen(ColorSchemes.SageGreen, 0.8f))
+                    using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 0.8f))
                     {
                         e.Graphics.DrawPath(pen, borderPath);
                     }
@@ -566,16 +567,16 @@ namespace leehaeun.UIHelpers
         {
             if (button.Name == "EditMButton" || button.Name == "AddMulProfileButton" || button.Name == "EditButton")
             {
-                button.Font = new Font("ë§‘ì€ ê³ ë”•", 9F, FontStyle.Bold);
-                button.ForeColor = ColorSchemes.DarkOlive;
+                button.Font = new Font("¸¼Àº °íµñ", 9F, FontStyle.Bold);
+                button.ForeColor = ThemeManager.ColorScheme.DarkOlive;
                 button.FlatStyle = FlatStyle.Flat;
                 button.FlatAppearance.BorderSize = 0;
-                button.FlatAppearance.MouseDownBackColor = ColorSchemes.SageGreen;
-                button.FlatAppearance.MouseOverBackColor = ColorSchemes.SageGreen;
+                button.FlatAppearance.MouseDownBackColor = ThemeManager.ColorScheme.SageGreen;
+                button.FlatAppearance.MouseOverBackColor = ThemeManager.ColorScheme.SageGreen;
                 button.Cursor = Cursors.Hand;
                 button.Height = 30;
                 button.TabStop = false;
-                button.BackColor = ColorSchemes.LightOlive;
+                button.BackColor = ThemeManager.ColorScheme.LightOlive;
 
                 button.Paint += (s, e) =>
                 {
@@ -589,7 +590,7 @@ namespace leehaeun.UIHelpers
 
                     using (GraphicsPath borderPath = GetRoundedRectangle(new Rectangle(0, 0, button.Width - 1, button.Height - 1), 8))
                     {
-                        using (Pen pen = new Pen(ColorSchemes.SageGreen, 1.5f))
+                        using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 1.5f))
                         {
                             e.Graphics.DrawPath(pen, borderPath);
                         }
@@ -597,21 +598,21 @@ namespace leehaeun.UIHelpers
                 };
 
                 button.Resize += (s, e) => button.Invalidate();
-                button.MouseEnter += (s, e) => button.BackColor = ColorSchemes.SageGreen;
-                button.MouseLeave += (s, e) => button.BackColor = ColorSchemes.LightOlive;
+                button.MouseEnter += (s, e) => button.BackColor = ThemeManager.ColorScheme.SageGreen;
+                button.MouseLeave += (s, e) => button.BackColor = ThemeManager.ColorScheme.LightOlive;
             }
             else
             {
-                button.Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold);
-                button.ForeColor = ColorSchemes.White;
+                button.Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold);
+                button.ForeColor = ThemeManager.ColorScheme.White;
                 button.FlatStyle = FlatStyle.Flat;
                 button.FlatAppearance.BorderSize = 0;
-                button.FlatAppearance.MouseDownBackColor = ColorSchemes.DarkOlive;
-                button.FlatAppearance.MouseOverBackColor = ColorSchemes.DarkOlive;
+                button.FlatAppearance.MouseDownBackColor = ThemeManager.ColorScheme.DarkOlive;
+                button.FlatAppearance.MouseOverBackColor = ThemeManager.ColorScheme.DarkOlive;
                 button.Cursor = Cursors.Hand;
                 button.Height = 38;
                 button.TabStop = false;
-                button.BackColor = ColorSchemes.SageGreen;
+                button.BackColor = ThemeManager.ColorScheme.SageGreen;
 
                 button.Paint += (s, e) =>
                 {
@@ -626,23 +627,23 @@ namespace leehaeun.UIHelpers
                 button.Resize += (s, e) => button.Invalidate();
                 button.GotFocus += (s, e) =>
                 {
-                    button.BackColor = ColorSchemes.SageGreen;
+                    button.BackColor = ThemeManager.ColorScheme.SageGreen;
                     button.Invalidate();
                 };
                 button.LostFocus += (s, e) =>
                 {
-                    button.BackColor = ColorSchemes.SageGreen;
+                    button.BackColor = ThemeManager.ColorScheme.SageGreen;
                     button.Invalidate();
                 };
-                button.MouseEnter += (s, e) => button.BackColor = ColorSchemes.DarkOlive;
-                button.MouseLeave += (s, e) => button.BackColor = ColorSchemes.SageGreen;
+                button.MouseEnter += (s, e) => button.BackColor = ThemeManager.ColorScheme.DarkOlive;
+                button.MouseLeave += (s, e) => button.BackColor = ThemeManager.ColorScheme.SageGreen;
             }
         }
 
         private static void StyleLabel(Label label)
         {
-            label.Font = new Font("ë§‘ì€ ê³ ë”•", 9F, FontStyle.Bold);
-            label.ForeColor = ColorSchemes.DarkOlive;
+            label.Font = new Font("¸¼Àº °íµñ", 9F, FontStyle.Bold);
+            label.ForeColor = ThemeManager.ColorScheme.DarkOlive;
             label.BackColor = Color.Transparent;
         }
 
@@ -656,7 +657,7 @@ namespace leehaeun.UIHelpers
                 {
                     Size = new Size(100, 100),
                     Location = pictureBox.Location,
-                    BackColor = ColorSchemes.White,
+                    BackColor = ThemeManager.ColorScheme.White,
                     Tag = "ProfileBg"
                 };
 
@@ -677,7 +678,7 @@ namespace leehaeun.UIHelpers
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     using (GraphicsPath borderPath = GetRoundedRectangle(new Rectangle(0, 0, 99, 99), 15))
                     {
-                        using (Pen pen = new Pen(ColorSchemes.SageGreen, 2.5f))
+                        using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 2.5f))
                         {
                             e.Graphics.DrawPath(pen, borderPath);
                         }
@@ -698,7 +699,7 @@ namespace leehaeun.UIHelpers
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     using (GraphicsPath borderPath = GetRoundedRectangle(new Rectangle(0, 0, 49, 49), 10))
                     {
-                        using (Pen pen = new Pen(ColorSchemes.SageGreen, 2f))
+                        using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 2f))
                         {
                             e.Graphics.DrawPath(pen, borderPath);
                         }
@@ -711,7 +712,7 @@ namespace leehaeun.UIHelpers
         {
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
-            button.BackColor = ColorSchemes.White;
+            button.BackColor = ThemeManager.ColorScheme.White;
             button.Cursor = Cursors.Hand;
             button.Size = new Size(36, 36);
 
@@ -756,15 +757,15 @@ namespace leehaeun.UIHelpers
                         e.Graphics.DrawImage(resizedImage, imgX, imgY);
                     }
 
-                    using (Pen pen = new Pen(ColorSchemes.SageGreen, 2f))
+                    using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 2f))
                     {
                         e.Graphics.DrawPath(pen, borderPath);
                     }
                 }
             };
 
-            button.MouseEnter += (s, e) => button.BackColor = ColorSchemes.White;
-            button.MouseLeave += (s, e) => button.BackColor = ColorSchemes.White;
+            button.MouseEnter += (s, e) => button.BackColor = ThemeManager.ColorScheme.White;
+            button.MouseLeave += (s, e) => button.BackColor = ThemeManager.ColorScheme.White;
         }
 
         private static void AdjustLayout(Form form)
@@ -883,7 +884,7 @@ namespace leehaeun.UIHelpers
                     {
                         Location = new Point(centerX, startY + 275),
                         Size = new Size(320, 130),
-                        BackColor = ColorSchemes.White,
+                        BackColor = ThemeManager.ColorScheme.White,
                         Name = "MemberFLPBorder"
                     };
 
@@ -903,7 +904,7 @@ namespace leehaeun.UIHelpers
                             bgPath.AddArc(0, h - radius * 2, radius * 2, radius * 2, 90, 90);
                             bgPath.CloseFigure();
 
-                            using (SolidBrush bgBrush = new SolidBrush(ColorSchemes.White))
+                            using (SolidBrush bgBrush = new SolidBrush(ThemeManager.ColorScheme.White))
                             {
                                 e.Graphics.FillPath(bgBrush, bgPath);
                             }
@@ -917,7 +918,7 @@ namespace leehaeun.UIHelpers
                             borderPath.AddArc(0, h - radius * 2, radius * 2, radius * 2, 90, 90);
                             borderPath.CloseFigure();
 
-                            using (Pen pen = new Pen(ColorSchemes.SageGreen, 0.8f))
+                            using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 0.8f))
                             {
                                 e.Graphics.DrawPath(pen, borderPath);
                             }
@@ -926,7 +927,7 @@ namespace leehaeun.UIHelpers
 
                     flp.Location = new Point(4, 4);
                     flp.Size = new Size(312, 122);
-                    flp.BackColor = ColorSchemes.White;
+                    flp.BackColor = ThemeManager.ColorScheme.White;
                     flp.FlowDirection = FlowDirection.TopDown;
                     flp.WrapContents = false;
                     flp.Padding = new Padding(5, 5, 5, 5);
@@ -953,7 +954,7 @@ namespace leehaeun.UIHelpers
                     {
                         Location = new Point(300, 2),
                         Size = new Size(16, 126),
-                        BackColor = ColorSchemes.White,
+                        BackColor = ThemeManager.ColorScheme.White,
                         Name = "ScrollCover"
                     };
                     borderPanel.Controls.Add(scrollCover);
@@ -976,7 +977,7 @@ namespace leehaeun.UIHelpers
                 if (control.Name == "label7")
                 {
                     control.Location = new Point(centerX, startY);
-                    control.Font = new Font("ë§‘ì€ ê³ ë”•", 12F, FontStyle.Bold);
+                    control.Font = new Font("¸¼Àº °íµñ", 12F, FontStyle.Bold);
                 }
                 else if (control.Name == "AddMulProfileButton")
                 {
@@ -991,7 +992,7 @@ namespace leehaeun.UIHelpers
                 else if (control.Name == "NicknameLabel")
                 {
                     control.Location = new Point(centerX + 60, startY + 55);
-                    control.Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold);
+                    control.Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold);
                 }
                 else if (control.Name == "EditButton")
                 {
@@ -1002,7 +1003,7 @@ namespace leehaeun.UIHelpers
                 {
                     control.Location = new Point(centerX - 5, startY + 100);
                     control.Size = new Size(355, 355);
-                    control.BackColor = ColorSchemes.White;
+                    control.BackColor = ThemeManager.ColorScheme.White;
 
                     if (control is FlowLayoutPanel flp)
                     {
@@ -1113,7 +1114,7 @@ namespace leehaeun.UIHelpers
         {
             if (control is Panel panel)
             {
-                panel.BackColor = ColorSchemes.White;
+                panel.BackColor = ThemeManager.ColorScheme.White;
                 panel.Margin = new Padding(0, 0, 0, 8);
 
                 if (parentName == "ProfileFLP")
@@ -1149,7 +1150,7 @@ namespace leehaeun.UIHelpers
                             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                             using (GraphicsPath imgBorder = GetRoundedRectangle(new Rectangle(0, 0, pb.Width - 1, pb.Height - 1), 10))
                             {
-                                using (Pen pen = new Pen(ColorSchemes.SageGreen, 2f))
+                                using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 2f))
                                 {
                                     e.Graphics.DrawPath(pen, imgBorder);
                                 }
@@ -1161,16 +1162,16 @@ namespace leehaeun.UIHelpers
                         if (parentName == "ProfileFLP")
                         {
                             lbl.Location = new Point(60, 22);
-                            lbl.Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold);
-                            lbl.ForeColor = ColorSchemes.DarkOlive;
+                            lbl.Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold);
+                            lbl.ForeColor = ThemeManager.ColorScheme.DarkOlive;
                             lbl.BackColor = Color.Transparent;
                             lbl.AutoSize = true;
                         }
                         else if (parentName == "MemberFLP")
                         {
                             lbl.Location = new Point(55, 17);
-                            lbl.Font = new Font("ë§‘ì€ ê³ ë”•", 8.5F, FontStyle.Bold);
-                            lbl.ForeColor = ColorSchemes.DarkOlive;
+                            lbl.Font = new Font("¸¼Àº °íµñ", 8.5F, FontStyle.Bold);
+                            lbl.ForeColor = ThemeManager.ColorScheme.DarkOlive;
                             lbl.BackColor = Color.Transparent;
                             lbl.AutoSize = false;
                             lbl.Size = new Size(175, 20);
@@ -1179,7 +1180,7 @@ namespace leehaeun.UIHelpers
                     }
                     else if (child is Button btn)
                     {
-                        if (btn.Text == "ê´€ë¦¬")
+                        if (btn.Text == "°ü¸®")
                         {
                             if (parentName == "ProfileFLP")
                             {
@@ -1188,7 +1189,7 @@ namespace leehaeun.UIHelpers
                                 btn.Height = 30;
                             }
                         }
-                        else if (btn.Text == "ì‚­ì œ")
+                        else if (btn.Text == "»èÁ¦")
                         {
                             if (parentName == "ProfileFLP")
                             {
@@ -1204,15 +1205,15 @@ namespace leehaeun.UIHelpers
                             }
                         }
 
-                        btn.Font = new Font("ë§‘ì€ ê³ ë”•", 9F, FontStyle.Bold);
-                        btn.ForeColor = ColorSchemes.DarkOlive;
+                        btn.Font = new Font("¸¼Àº °íµñ", 9F, FontStyle.Bold);
+                        btn.ForeColor = ThemeManager.ColorScheme.DarkOlive;
                         btn.FlatStyle = FlatStyle.Flat;
                         btn.FlatAppearance.BorderSize = 0;
-                        btn.FlatAppearance.MouseDownBackColor = ColorSchemes.SageGreen;
-                        btn.FlatAppearance.MouseOverBackColor = ColorSchemes.SageGreen;
+                        btn.FlatAppearance.MouseDownBackColor = ThemeManager.ColorScheme.SageGreen;
+                        btn.FlatAppearance.MouseOverBackColor = ThemeManager.ColorScheme.SageGreen;
                         btn.Cursor = Cursors.Hand;
                         btn.TabStop = false;
-                        btn.BackColor = ColorSchemes.LightOlive;
+                        btn.BackColor = ThemeManager.ColorScheme.LightOlive;
 
                         btn.Paint += (s, e) =>
                         {
@@ -1226,7 +1227,7 @@ namespace leehaeun.UIHelpers
 
                             using (GraphicsPath borderPath = GetRoundedRectangle(new Rectangle(0, 0, btn.Width - 1, btn.Height - 1), 8))
                             {
-                                using (Pen pen = new Pen(ColorSchemes.SageGreen, 1.5f))
+                                using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 1.5f))
                                 {
                                     e.Graphics.DrawPath(pen, borderPath);
                                 }
@@ -1234,8 +1235,8 @@ namespace leehaeun.UIHelpers
                         };
 
                         btn.Resize += (s, e) => btn.Invalidate();
-                        btn.MouseEnter += (s, e) => btn.BackColor = ColorSchemes.SageGreen;
-                        btn.MouseLeave += (s, e) => btn.BackColor = ColorSchemes.LightOlive;
+                        btn.MouseEnter += (s, e) => btn.BackColor = ThemeManager.ColorScheme.SageGreen;
+                        btn.MouseLeave += (s, e) => btn.BackColor = ThemeManager.ColorScheme.LightOlive;
                     }
                 }
             }

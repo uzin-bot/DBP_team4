@@ -1,4 +1,5 @@
-ï»¿using System;
+using DBP_Chat;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -10,7 +11,7 @@ namespace DBP_WinformChat
         public static void Apply(Form form)
         {
             form.BackColor = Color.White;
-            form.Font = new Font("ë§‘ì€ ê³ ë”•", 10);
+            form.Font = new Font("¸¼Àº °íµñ", 10);
 
             foreach (Control c in form.Controls)
                 StyleControl(c);
@@ -18,12 +19,12 @@ namespace DBP_WinformChat
 
         private static void StyleControl(Control ctrl)
         {
-            // ========== ìƒë‹¨ í—¤ë”(Label) ==========
+            // ========== »ó´Ü Çì´õ(Label) ==========
             if (ctrl is Label lbl && lbl.Name == "label1")
             {
                 lbl.BackColor = Color.FromArgb(119, 136, 115);
                 lbl.ForeColor = Color.White;
-                lbl.Font = new Font("ë§‘ì€ ê³ ë”•", 13, FontStyle.Bold);
+                lbl.Font = new Font("¸¼Àº °íµñ", 13, FontStyle.Bold);
                 lbl.AutoSize = false;
                 lbl.Dock = DockStyle.Top;
                 lbl.Height = 80;
@@ -31,7 +32,7 @@ namespace DBP_WinformChat
                 lbl.Padding = new Padding(15, 0, 0, 0);
             }
 
-            // ========== íŒ¨ë„ ==========
+            // ========== ÆÐ³Î ==========
             if (ctrl is Panel pnl)
             {
                 pnl.BackColor = Color.White;
@@ -50,10 +51,10 @@ namespace DBP_WinformChat
                 lv.BackColor = Color.White;
                 lv.ForeColor = Color.FromArgb(119, 136, 115);
 
-                // âœ… ë§ˆìš°ìŠ¤ ì´ë²¤íŠ¸ ì™„ì „ ì°¨ë‹¨
+                // ? ¸¶¿ì½º ÀÌº¥Æ® ¿ÏÀü Â÷´Ü
                 lv.MouseMove += (s, e) => { };
 
-                // --- ì»¬ëŸ¼ í—¤ë” ---
+                // --- ÄÃ·³ Çì´õ ---
                 lv.DrawColumnHeader += (s, e) =>
                 {
                     using (SolidBrush br = new SolidBrush(Color.White))
@@ -64,19 +65,19 @@ namespace DBP_WinformChat
                     TextRenderer.DrawText(
                         e.Graphics,
                         e.Header.Text,
-                        new Font("ë§‘ì€ ê³ ë”•", 10, FontStyle.Bold),
+                        new Font("¸¼Àº °íµñ", 10, FontStyle.Bold),
                         e.Bounds,
                         Color.FromArgb(119, 136, 115),
                         TextFormatFlags.VerticalCenter | TextFormatFlags.Left
                     );
                 };
 
-                // --- í–‰ ë°°ê²½ (í˜¸ë²„ ë¬´ì‹œ) ---
+                // --- Çà ¹è°æ (È£¹ö ¹«½Ã) ---
                 lv.DrawItem += (s, e) =>
                 {
                     e.DrawDefault = false;
 
-                    // âœ… Selected ìƒíƒœë§Œ ì²´í¬
+                    // ? Selected »óÅÂ¸¸ Ã¼Å©
                     Color bg = e.Item.Selected
                         ? Color.FromArgb(210, 220, 182)
                         : Color.FromArgb(241, 243, 224);
@@ -87,10 +88,10 @@ namespace DBP_WinformChat
                     }
                 };
 
-                // --- í–‰ í…ìŠ¤íŠ¸ & ì•„ì´ì½˜ ---
+                // --- Çà ÅØ½ºÆ® & ¾ÆÀÌÄÜ ---
                 lv.DrawSubItem += (s, e) =>
                 {
-                    // âœ… ë°°ê²½ ë¨¼ì € ê·¸ë¦¬ê¸° (Selected ìƒíƒœë§Œ í™•ì¸)
+                    // ? ¹è°æ ¸ÕÀú ±×¸®±â (Selected »óÅÂ¸¸ È®ÀÎ)
                     Color cellBg = e.Item.Selected
                         ? Color.FromArgb(210, 220, 182)
                         : Color.FromArgb(241, 243, 224);
@@ -100,17 +101,17 @@ namespace DBP_WinformChat
                         e.Graphics.FillRectangle(bgBrush, e.Bounds);
                     }
 
-                    // ì²« ë²ˆì§¸ ì»¬ëŸ¼(ë¹¨ê°„ì )ì€ chatlist.csì—ì„œ ì²˜ë¦¬
+                    // Ã¹ ¹øÂ° ÄÃ·³(»¡°£Á¡)Àº chatlist.cs¿¡¼­ Ã³¸®
                     if (e.ColumnIndex == 0)
                     {
                         return;
                     }
 
-                    // ê¸°ë³¸ í…ìŠ¤íŠ¸ ì¶œë ¥
+                    // ±âº» ÅØ½ºÆ® Ãâ·Â
                     TextRenderer.DrawText(
                         e.Graphics,
                         e.SubItem.Text,
-                        new Font("ë§‘ì€ ê³ ë”•", 10),
+                        new Font("¸¼Àº °íµñ", 10),
                         e.Bounds,
                         Color.FromArgb(119, 136, 115),
                         TextFormatFlags.VerticalCenter | TextFormatFlags.Left
@@ -118,7 +119,7 @@ namespace DBP_WinformChat
                 };
             }
 
-            // ========== ë²„íŠ¼ ==========
+            // ========== ¹öÆ° ==========
             if (ctrl is Button btn)
             {
                 btn.FlatStyle = FlatStyle.Flat;
@@ -127,7 +128,7 @@ namespace DBP_WinformChat
                 btn.BackColor = Color.FromArgb(241, 243, 224);
                 btn.ForeColor = Color.FromArgb(119, 136, 115);
 
-                btn.Font = new Font("ë§‘ì€ ê³ ë”•", 9.5f, FontStyle.Bold);
+                btn.Font = new Font("¸¼Àº °íµñ", 9.5f, FontStyle.Bold);
                 btn.Cursor = Cursors.Hand;
 
                 btn.MouseEnter += (s, e) =>

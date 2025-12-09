@@ -1,4 +1,5 @@
-ï»¿using System;
+using DBP_Chat;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -12,11 +13,11 @@ namespace leehaeun.UIHelpers
         private static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
 
         /// <summary>
-        /// ì£¼ì†Œ ê²€ìƒ‰ í¼ ìŠ¤íƒ€ì¼ ì ìš©
+        /// ÁÖ¼Ò °Ë»ö Æû ½ºÅ¸ÀÏ Àû¿ë
         /// </summary>
         public static void ApplyStyles(SearchAddressForm form)
         {
-            form.BackColor = ColorSchemes.Ivory;
+            form.BackColor = ThemeManager.ColorScheme.Ivory;
             form.Size = new Size(600, 470);
             form.StartPosition = FormStartPosition.CenterParent;
             form.FormBorderStyle = FormBorderStyle.None;
@@ -25,11 +26,11 @@ namespace leehaeun.UIHelpers
             CreateCustomTitleBar(form);
             StyleControls(form);
             AdjustLayout(form);
-            ReconnectEvents(form);  // ì´ë²¤íŠ¸ ì¬ì—°ê²° ì¶”ê°€
+            ReconnectEvents(form);  // ÀÌº¥Æ® Àç¿¬°á Ãß°¡
         }
 
         /// <summary>
-        /// í¼ ë‘¥ê·¼ ëª¨ì„œë¦¬
+        /// Æû µÕ±Ù ¸ğ¼­¸®
         /// </summary>
         private static void ApplyRoundedCorners(Form form, int radius)
         {
@@ -37,7 +38,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// ì»¤ìŠ¤í…€ íƒ€ì´í‹€ë°” ìƒì„±
+        /// Ä¿½ºÅÒ Å¸ÀÌÆ²¹Ù »ı¼º
         /// </summary>
         private static void CreateCustomTitleBar(Form form)
         {
@@ -46,27 +47,27 @@ namespace leehaeun.UIHelpers
                 Name = "titleBar",
                 Height = 40,
                 Dock = DockStyle.Top,
-                BackColor = ColorSchemes.Ivory
+                BackColor = ThemeManager.ColorScheme.Ivory
             };
 
             Button closeButton = new Button
             {
                 Name = "closeButton",
-                Text = "âœ•",
-                Font = new Font("ë§‘ì€ ê³ ë”•", 11F, FontStyle.Bold),
+                Text = "?",
+                Font = new Font("¸¼Àº °íµñ", 11F, FontStyle.Bold),
                 Size = new Size(40, 30),
                 Location = new Point(form.Width - 45, 5),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = ColorSchemes.Ivory,
-                ForeColor = ColorSchemes.LightOlive,
+                BackColor = ThemeManager.ColorScheme.Ivory,
+                ForeColor = ThemeManager.ColorScheme.LightOlive,
                 Cursor = Cursors.Hand
             };
             closeButton.FlatAppearance.BorderSize = 0;
-            closeButton.FlatAppearance.MouseOverBackColor = ColorSchemes.Ivory;
-            closeButton.FlatAppearance.MouseDownBackColor = ColorSchemes.Ivory;
+            closeButton.FlatAppearance.MouseOverBackColor = ThemeManager.ColorScheme.Ivory;
+            closeButton.FlatAppearance.MouseDownBackColor = ThemeManager.ColorScheme.Ivory;
             closeButton.Click += (s, e) => form.Close();
-            closeButton.MouseEnter += (s, e) => closeButton.ForeColor = ColorSchemes.DarkOlive;
-            closeButton.MouseLeave += (s, e) => closeButton.ForeColor = ColorSchemes.LightOlive;
+            closeButton.MouseEnter += (s, e) => closeButton.ForeColor = ThemeManager.ColorScheme.DarkOlive;
+            closeButton.MouseLeave += (s, e) => closeButton.ForeColor = ThemeManager.ColorScheme.LightOlive;
 
             titleBar.Controls.Add(closeButton);
 
@@ -97,7 +98,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// ì»¨íŠ¸ë¡¤ ìŠ¤íƒ€ì¼ ì ìš©
+        /// ÄÁÆ®·Ñ ½ºÅ¸ÀÏ Àû¿ë
         /// </summary>
         private static void StyleControls(Form form)
         {
@@ -119,14 +120,14 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// TextBox ìŠ¤íƒ€ì¼
+        /// TextBox ½ºÅ¸ÀÏ
         /// </summary>
         private static void StyleTextBox(TextBox textBox)
         {
             textBox.BorderStyle = BorderStyle.None;
-            textBox.Font = new Font("ë§‘ì€ ê³ ë”•", 10F);
-            textBox.ForeColor = ColorSchemes.DarkOlive;
-            textBox.BackColor = ColorSchemes.White;
+            textBox.Font = new Font("¸¼Àº °íµñ", 10F);
+            textBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
+            textBox.BackColor = ThemeManager.ColorScheme.White;
 
             int wrapperWidth = 440;
             int wrapperHeight = 38;
@@ -135,7 +136,7 @@ namespace leehaeun.UIHelpers
             {
                 Size = new Size(wrapperWidth, wrapperHeight),
                 Location = textBox.Location,
-                BackColor = ColorSchemes.White,
+                BackColor = ThemeManager.ColorScheme.White,
                 Tag = textBox.Name,
                 Cursor = Cursors.IBeam
             };
@@ -163,7 +164,7 @@ namespace leehaeun.UIHelpers
 
                 using (GraphicsPath borderPath = GetRoundedRectangle(new Rectangle(0, 0, wrapper.Width - 1, wrapper.Height - 1), 8))
                 {
-                    using (Pen pen = new Pen(ColorSchemes.SageGreen, 0.8f))
+                    using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 0.8f))
                     {
                         e.Graphics.DrawPath(pen, borderPath);
                     }
@@ -175,23 +176,23 @@ namespace leehaeun.UIHelpers
                 textBox.Width = wrapper.Width - 20;
             };
 
-            // Placeholder íš¨ê³¼
-            if (textBox.Text == "ì£¼ì†Œ ì…ë ¥")
+            // Placeholder È¿°ú
+            if (textBox.Text == "ÁÖ¼Ò ÀÔ·Â")
             {
                 textBox.ForeColor = Color.Gray;
                 textBox.GotFocus += (s, e) =>
                 {
-                    if (textBox.Text == "ì£¼ì†Œ ì…ë ¥")
+                    if (textBox.Text == "ÁÖ¼Ò ÀÔ·Â")
                     {
                         textBox.Text = "";
-                        textBox.ForeColor = ColorSchemes.DarkOlive;
+                        textBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
                     }
                 };
                 textBox.LostFocus += (s, e) =>
                 {
                     if (string.IsNullOrWhiteSpace(textBox.Text))
                     {
-                        textBox.Text = "ì£¼ì†Œ ì…ë ¥";
+                        textBox.Text = "ÁÖ¼Ò ÀÔ·Â";
                         textBox.ForeColor = Color.Gray;
                     }
                 };
@@ -199,20 +200,20 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// Button ìŠ¤íƒ€ì¼
+        /// Button ½ºÅ¸ÀÏ
         /// </summary>
         private static void StyleButton(Button button)
         {
-            button.Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold);
-            button.ForeColor = ColorSchemes.White;
+            button.Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold);
+            button.ForeColor = ThemeManager.ColorScheme.White;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
-            button.FlatAppearance.MouseDownBackColor = ColorSchemes.DarkOlive;
-            button.FlatAppearance.MouseOverBackColor = ColorSchemes.DarkOlive;
+            button.FlatAppearance.MouseDownBackColor = ThemeManager.ColorScheme.DarkOlive;
+            button.FlatAppearance.MouseOverBackColor = ThemeManager.ColorScheme.DarkOlive;
             button.Cursor = Cursors.Hand;
             button.Height = 38;
             button.TabStop = false;
-            button.BackColor = ColorSchemes.SageGreen;
+            button.BackColor = ThemeManager.ColorScheme.SageGreen;
 
             button.Paint += (s, e) =>
             {
@@ -225,19 +226,19 @@ namespace leehaeun.UIHelpers
             };
 
             button.Resize += (s, e) => button.Invalidate();
-            button.MouseEnter += (s, e) => button.BackColor = ColorSchemes.DarkOlive;
-            button.MouseLeave += (s, e) => button.BackColor = ColorSchemes.SageGreen;
+            button.MouseEnter += (s, e) => button.BackColor = ThemeManager.ColorScheme.DarkOlive;
+            button.MouseLeave += (s, e) => button.BackColor = ThemeManager.ColorScheme.SageGreen;
         }
 
         /// <summary>
-        /// ListBox ìŠ¤íƒ€ì¼
+        /// ListBox ½ºÅ¸ÀÏ
         /// </summary>
         private static void StyleListBox(ListBox listBox)
         {
             listBox.BorderStyle = BorderStyle.None;
-            listBox.Font = new Font("ë§‘ì€ ê³ ë”•", 9F);
-            listBox.ForeColor = ColorSchemes.DarkOlive;
-            listBox.BackColor = ColorSchemes.White;
+            listBox.Font = new Font("¸¼Àº °íµñ", 9F);
+            listBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
+            listBox.BackColor = ThemeManager.ColorScheme.White;
             listBox.ItemHeight = 30;
             listBox.DrawMode = DrawMode.OwnerDrawFixed;
 
@@ -248,7 +249,7 @@ namespace leehaeun.UIHelpers
             {
                 Size = new Size(wrapperWidth, wrapperHeight),
                 Location = listBox.Location,
-                BackColor = ColorSchemes.White,
+                BackColor = ThemeManager.ColorScheme.White,
                 Tag = listBox.Name
             };
 
@@ -275,7 +276,7 @@ namespace leehaeun.UIHelpers
 
                 using (GraphicsPath borderPath = GetRoundedRectangle(new Rectangle(0, 0, wrapper.Width - 1, wrapper.Height - 1), 8))
                 {
-                    using (Pen pen = new Pen(ColorSchemes.SageGreen, 0.8f))
+                    using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 0.8f))
                     {
                         e.Graphics.DrawPath(pen, borderPath);
                     }
@@ -287,38 +288,38 @@ namespace leehaeun.UIHelpers
                 listBox.Size = new Size(wrapper.Width - 8, wrapper.Height - 8);
             };
 
-            // ListBox ì•„ì´í…œ ê·¸ë¦¬ê¸°
+            // ListBox ¾ÆÀÌÅÛ ±×¸®±â
             listBox.DrawItem += (s, e) =>
             {
                 if (e.Index < 0) return;
 
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-                // ë°°ê²½
+                // ¹è°æ
                 bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-                using (SolidBrush bgBrush = new SolidBrush(isSelected ? ColorSchemes.LightOlive : ColorSchemes.White))
+                using (SolidBrush bgBrush = new SolidBrush(isSelected ? ThemeManager.ColorScheme.LightOlive : ThemeManager.ColorScheme.White))
                 {
                     e.Graphics.FillRectangle(bgBrush, e.Bounds);
                 }
 
-                // í…ìŠ¤íŠ¸
+                // ÅØ½ºÆ®
                 string text = listBox.Items[e.Index].ToString();
-                using (SolidBrush textBrush = new SolidBrush(ColorSchemes.DarkOlive))
+                using (SolidBrush textBrush = new SolidBrush(ThemeManager.ColorScheme.DarkOlive))
                 {
                     e.Graphics.DrawString(text, e.Font, textBrush, e.Bounds.Left + 10, e.Bounds.Top + 8);
                 }
 
-                // êµ¬ë¶„ì„ 
+                // ±¸ºĞ¼±
                 if (e.Index < listBox.Items.Count - 1)
                 {
-                    using (Pen linePen = new Pen(ColorSchemes.LightOlive, 1))
+                    using (Pen linePen = new Pen(ThemeManager.ColorScheme.LightOlive, 1))
                     {
                         e.Graphics.DrawLine(linePen, e.Bounds.Left + 10, e.Bounds.Bottom - 1, e.Bounds.Right - 10, e.Bounds.Bottom - 1);
                     }
                 }
             };
 
-            // ì„ íƒ ë³€ê²½ ì‹œ ì „ì²´ ë‹¤ì‹œ ê·¸ë¦¬ê¸°
+            // ¼±ÅÃ º¯°æ ½Ã ÀüÃ¼ ´Ù½Ã ±×¸®±â
             listBox.SelectedIndexChanged += (s, e) =>
             {
                 listBox.Invalidate();
@@ -326,18 +327,18 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// ì´ë²¤íŠ¸ ì¬ì—°ê²°
+        /// ÀÌº¥Æ® Àç¿¬°á
         /// </summary>
         private static void ReconnectEvents(SearchAddressForm form)
         {
-            // SelectButton ì°¾ê¸°
+            // SelectButton Ã£±â
             Button selectButton = FindButtonByName(form, "SelectButton");
             if (selectButton != null)
             {
-                // SelectButton í´ë¦­ ì´ë²¤íŠ¸ ì—°ê²°
+                // SelectButton Å¬¸¯ ÀÌº¥Æ® ¿¬°á
                 selectButton.Click += (s, e) =>
                 {
-                    // SearchAddressFormì˜ SelectButton_Click ë©”ì„œë“œ í˜¸ì¶œ
+                    // SearchAddressFormÀÇ SelectButton_Click ¸Ş¼­µå È£Ãâ
                     var method = form.GetType().GetMethod("SelectButton_Click",
                         System.Reflection.BindingFlags.NonPublic |
                         System.Reflection.BindingFlags.Instance |
@@ -352,7 +353,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// ì´ë¦„ìœ¼ë¡œ Button ì°¾ê¸°
+        /// ÀÌ¸§À¸·Î Button Ã£±â
         /// </summary>
         private static Button FindButtonByName(Control parent, string name)
         {
@@ -372,7 +373,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// ë ˆì´ì•„ì›ƒ ì¡°ì •
+        /// ·¹ÀÌ¾Æ¿ô Á¶Á¤
         /// </summary>
         private static void AdjustLayout(Form form)
         {
@@ -401,7 +402,7 @@ namespace leehaeun.UIHelpers
                 }
                 else if (control is Button btn && btn.Name == "SearchButton")
                 {
-                    // SearchButtonì„ AddressBox ë¼ë²¨ë¡œ ë³€ê²½
+                    // SearchButtonÀ» AddressBox ¶óº§·Î º¯°æ
                     btn.Visible = false;
                 }
                 else if (control is Button btn2 && btn2.Name == "SelectButton")
@@ -414,7 +415,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// ë‘¥ê·¼ ì‚¬ê°í˜• ê²½ë¡œ ìƒì„±
+        /// µÕ±Ù »ç°¢Çü °æ·Î »ı¼º
         /// </summary>
         private static GraphicsPath GetRoundedRectangle(Rectangle bounds, int radius)
         {

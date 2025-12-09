@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace DBP_Chat // 프로젝트 네임스페이스로 맞추세요
+namespace DBP_Chat
 {
     public enum ThemeMode { Light, Dark }
 
@@ -11,6 +11,9 @@ namespace DBP_Chat // 프로젝트 네임스페이스로 맞추세요
     {
         public static ThemeMode CurrentMode { get; private set; } = ThemeMode.Light;
         public static event Action<ThemeMode>? ThemeChanged;
+        public static event Action<bool>? DarkModeChanged;
+
+        public static bool IsDarkMode => CurrentMode == ThemeMode.Dark;
 
         public static void SetTheme(ThemeMode mode)
         {
@@ -21,6 +24,53 @@ namespace DBP_Chat // 프로젝트 네임스페이스로 맞추세요
                 ApplyTheme(f);
 
             ThemeChanged?.Invoke(mode);
+            DarkModeChanged?.Invoke(mode == ThemeMode.Dark);
+        }
+
+        public static void SetDarkMode(bool enable)
+        {
+            SetTheme(enable ? ThemeMode.Dark : ThemeMode.Light);
+        }
+
+        public static void Subscribe(Form form, Action<bool> handler)
+        {
+            DarkModeChanged += handler;
+            form.FormClosed += (_, __) => DarkModeChanged -= handler;
+        }
+
+        public static void AddThemeRadios(Form form, Control? container = null)
+        {
+            var host = container ?? form;
+
+            var rbLight = new RadioButton
+            {
+                Name = "rbLight",
+                Text = "라이트",
+                AutoSize = true,
+                Location = new Point(host.Width - 160, 10),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Checked = CurrentMode == ThemeMode.Light
+            };
+            rbLight.CheckedChanged += (s, e) => { if (rbLight.Checked) SetTheme(ThemeMode.Light); };
+
+            var rbDark = new RadioButton
+            {
+                Name = "rbDark",
+                Text = "다크",
+                AutoSize = true,
+                Location = new Point(host.Width - 90, 10),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Checked = CurrentMode == ThemeMode.Dark
+            };
+            rbDark.CheckedChanged += (s, e) => { if (rbDark.Checked) SetTheme(ThemeMode.Dark); };
+
+            host.Controls.Add(rbLight);
+            host.Controls.Add(rbDark);
+            host.Resize += (s, e) =>
+            {
+                rbLight.Location = new Point(host.Width - 160, 10);
+                rbDark.Location = new Point(host.Width - 90, 10);
+            };
         }
 
         public static void ApplyTheme(Form form)
@@ -107,6 +157,19 @@ namespace DBP_Chat // 프로젝트 네임스페이스로 맞추세요
             return mode == ThemeMode.Dark
                 ? (Color.Black, Color.White, Color.FromArgb(20, 20, 20), Color.FromArgb(80, 80, 80))
                 : (Color.White, Color.Black, Color.FromArgb(245, 245, 245), Color.FromArgb(200, 200, 200));
+        }
+
+        // 메인 컬러 팔레트 - 모든 색상 정의
+        public static class ColorScheme
+        {
+            // 배경색
+            public static Color Ivory => IsDarkMode ? ColorTranslator.FromHtml("#1E1E1E") : ColorTranslator.FromHtml("#F1F3E0");
+            public static Color LightOlive => IsDarkMode ? ColorTranslator.FromHtml("#2D2D2D") : ColorTranslator.FromHtml("#D2DCB6");
+            public static Color White => IsDarkMode ? ColorTranslator.FromHtml("#2D2D2D") : Color.White;
+            
+            // 강조색
+            public static Color SageGreen => IsDarkMode ? ColorTranslator.FromHtml("#E0E0E0") : ColorTranslator.FromHtml("#A1BC98");
+            public static Color DarkOlive => IsDarkMode ? ColorTranslator.FromHtml("#B0B0B0") : ColorTranslator.FromHtml("#778873");
         }
     }
 }

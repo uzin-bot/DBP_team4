@@ -1,4 +1,5 @@
-ï»¿using System;
+using DBP_Chat;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -12,15 +13,15 @@ namespace leehaeun.UIHelpers
         private static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
 
         /// <summary>
-        /// ì‚¬ìš©ì ì •ë³´ í¼ ìŠ¤íƒ€ì¼ ì ìš©
+        /// »ç¿ëÀÚ Á¤º¸ Æû ½ºÅ¸ÀÏ Àû¿ë
         /// </summary>
         public static void ApplyStyles(UserInfoForm form)
         {
-            form.BackColor = ColorSchemes.Ivory;
+            form.BackColor = ThemeManager.ColorScheme.Ivory;
             form.FormBorderStyle = FormBorderStyle.None;
 
             form.Width = 350;
-            form.Height = 250;  // 200 â†’ 250
+            form.Height = 250;  // 200 ¡æ 250
             form.MinimumSize = new Size(350, 250);
             form.MaximumSize = new Size(350, 250);
 
@@ -46,27 +47,27 @@ namespace leehaeun.UIHelpers
                 Name = "titleBar",
                 Height = 40,
                 Dock = DockStyle.Top,
-                BackColor = ColorSchemes.Ivory
+                BackColor = ThemeManager.ColorScheme.Ivory
             };
 
             Button closeButton = new Button
             {
                 Name = "closeButton",
-                Text = "âœ•",
-                Font = new Font("ë§‘ì€ ê³ ë”•", 11F, FontStyle.Bold),
+                Text = "?",
+                Font = new Font("¸¼Àº °íµñ", 11F, FontStyle.Bold),
                 Size = new Size(40, 30),
                 Location = new Point(form.Width - 45, 5),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = ColorSchemes.Ivory,
-                ForeColor = ColorSchemes.LightOlive,
+                BackColor = ThemeManager.ColorScheme.Ivory,
+                ForeColor = ThemeManager.ColorScheme.LightOlive,
                 Cursor = Cursors.Hand
             };
             closeButton.FlatAppearance.BorderSize = 0;
-            closeButton.FlatAppearance.MouseOverBackColor = ColorSchemes.Ivory;
-            closeButton.FlatAppearance.MouseDownBackColor = ColorSchemes.Ivory;
+            closeButton.FlatAppearance.MouseOverBackColor = ThemeManager.ColorScheme.Ivory;
+            closeButton.FlatAppearance.MouseDownBackColor = ThemeManager.ColorScheme.Ivory;
             closeButton.Click += (s, e) => form.Close();
-            closeButton.MouseEnter += (s, e) => closeButton.ForeColor = ColorSchemes.DarkOlive;
-            closeButton.MouseLeave += (s, e) => closeButton.ForeColor = ColorSchemes.LightOlive;
+            closeButton.MouseEnter += (s, e) => closeButton.ForeColor = ThemeManager.ColorScheme.DarkOlive;
+            closeButton.MouseLeave += (s, e) => closeButton.ForeColor = ThemeManager.ColorScheme.LightOlive;
 
             titleBar.Controls.Add(closeButton);
 
@@ -115,7 +116,7 @@ namespace leehaeun.UIHelpers
         {
             pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
 
-            // ë‘¥ê·¼ ì‚¬ê°í˜• í…Œë‘ë¦¬
+            // µÕ±Ù »ç°¢Çü Å×µÎ¸®
             pictureBox.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -127,7 +128,7 @@ namespace leehaeun.UIHelpers
 
                 using (GraphicsPath borderPath = GetRoundedRectangle(new Rectangle(1, 1, pictureBox.Width - 3, pictureBox.Height - 3), 12))
                 {
-                    using (Pen pen = new Pen(ColorSchemes.SageGreen, 1.5f))
+                    using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 1.5f))
                     {
                         e.Graphics.DrawPath(pen, borderPath);
                     }
@@ -138,20 +139,20 @@ namespace leehaeun.UIHelpers
         private static void StyleLabel(Label label)
         {
             label.BackColor = Color.Transparent;
-            label.ForeColor = ColorSchemes.DarkOlive;
+            label.ForeColor = ThemeManager.ColorScheme.DarkOlive;
 
             if (label.Name == "NicknameLabel")
             {
-                label.Font = new Font("ë§‘ì€ ê³ ë”•", 14F, FontStyle.Bold);
+                label.Font = new Font("¸¼Àº °íµñ", 14F, FontStyle.Bold);
             }
             else if (label.Name == "DeptLabel")
             {
-                label.Font = new Font("ë§‘ì€ ê³ ë”•", 10F);
+                label.Font = new Font("¸¼Àº °íµñ", 10F);
             }
             else if (label.Name == "StatusMessageLabel")
             {
-                label.Font = new Font("ë§‘ì€ ê³ ë”•", 10F);  // ì´íƒ¤ë¦­ì²´ ì œê±°
-                label.ForeColor = ColorSchemes.DarkOlive;  // ì§„í•œ ìƒ‰ìœ¼ë¡œ ë³€ê²½
+                label.Font = new Font("¸¼Àº °íµñ", 10F);  // ÀÌÅÅ¸¯Ã¼ Á¦°Å
+                label.ForeColor = ThemeManager.ColorScheme.DarkOlive;  // ÁøÇÑ »öÀ¸·Î º¯°æ
             }
         }
 
@@ -182,7 +183,7 @@ namespace leehaeun.UIHelpers
                     else if (label.Name == "StatusMessageLabel")
                     {
                         label.Location = new Point(margin, topMargin + 100);
-                        label.MaximumSize = new Size(290, 50);  // 2ì¤„ ë“¤ì–´ê°ˆ ë†’ì´
+                        label.MaximumSize = new Size(290, 50);  // 2ÁÙ µé¾î°¥ ³ôÀÌ
                         label.AutoSize = true;
                     }
                 }

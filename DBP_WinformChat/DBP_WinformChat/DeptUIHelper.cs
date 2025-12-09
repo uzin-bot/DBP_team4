@@ -1,4 +1,5 @@
-ï»¿using System;
+using DBP_Chat;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -12,7 +13,7 @@ namespace DBP_WinformChat
         public static void Apply(Form form)
         {
             form.BackColor = Color.White;
-            // í°íŠ¸ëŠ” ë””ìì´ë„ˆ ë°°ì¹˜ì— ì˜í–¥ì„ ì£¼ë¯€ë¡œ ë³€ê²½í•˜ì§€ ì•ŠìŒ
+            // ÆùÆ®´Â µğÀÚÀÌ³Ê ¹èÄ¡¿¡ ¿µÇâÀ» ÁÖ¹Ç·Î º¯°æÇÏÁö ¾ÊÀ½
 
             foreach (Control c in form.Controls)
                 StyleControl(c);
@@ -20,14 +21,14 @@ namespace DBP_WinformChat
 
         private static void StyleControl(Control ctrl)
         {
-            // ========== ìƒë‹¨ í—¤ë” íŒ¨ë„ ==========
+            // ========== »ó´Ü Çì´õ ÆĞ³Î ==========
             if (ctrl is Panel pnl && pnl.Name == "headerPanel")
             {
                 pnl.BackColor = Color.FromArgb(119, 136, 115);
                 return;
             }
 
-            // ========== ìƒë‹¨ í—¤ë”ì˜ ë¼ë²¨ ==========
+            // ========== »ó´Ü Çì´õÀÇ ¶óº§ ==========
             if (ctrl is Label lbl && lbl.Name == "headerLabel")
             {
                 lbl.ForeColor = Color.White;
@@ -81,11 +82,11 @@ namespace DBP_WinformChat
             // ===================== COMBOBOX =====================
             if (ctrl is ComboBox cb)
             {
-                cb.BackColor = Color.White;                 // í°ìƒ‰ ë°°ê²½
-                cb.ForeColor = Color.Black;                 // ê²€ì€ìƒ‰ í…ìŠ¤íŠ¸
+                cb.BackColor = Color.White;                 // Èò»ö ¹è°æ
+                cb.ForeColor = Color.Black;                 // °ËÀº»ö ÅØ½ºÆ®
                 cb.FlatStyle = FlatStyle.Standard;
-                cb.DrawMode = DrawMode.Normal;              // ë¼ì´íŠ¸ ëª¨ë“œì—ì„œëŠ” ê¸°ë³¸ ë“œë¡œì‰
-                cb.DrawItem -= null;                        // ì´ë²¤íŠ¸ í•¸ë“¤ëŸ¬ ì œê±° (ìˆë‹¤ë©´)
+                cb.DrawMode = DrawMode.Normal;              // ¶óÀÌÆ® ¸ğµå¿¡¼­´Â ±âº» µå·ÎÀ×
+                cb.DrawItem -= null;                        // ÀÌº¥Æ® ÇÚµé·¯ Á¦°Å (ÀÖ´Ù¸é)
             }
 
             // ===================== BUTTON =====================
@@ -102,17 +103,17 @@ namespace DBP_WinformChat
 
                 btn.MouseDown += (s, e) =>
                 {
-                    btn.BackColor = ClickColor;  //ëˆŒë €ì„ ë•Œ ì»¬ëŸ¬
+                    btn.BackColor = ClickColor;  //´­·¶À» ¶§ ÄÃ·¯
                 };
 
                 btn.MouseUp += (s, e) =>
                 {
-                    btn.BackColor = Color.FromArgb(161, 188, 152);       //í´ë¦­ì—ì„œ ì† ë–¼ë©´ ì›ë˜ ìƒ‰ ë³µê·€
+                    btn.BackColor = Color.FromArgb(161, 188, 152);       //Å¬¸¯¿¡¼­ ¼Õ ¶¼¸é ¿ø·¡ »ö º¹±Í
                 };
 
             }
 
-            // ===================== ì¬ê·€ ì ìš© =====================
+            // ===================== Àç±Í Àû¿ë =====================
             foreach (Control child in ctrl.Controls)
                 StyleControl(child);
         }

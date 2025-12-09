@@ -1,4 +1,5 @@
-ï»¿using System;
+using DBP_Chat;
+using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -6,11 +7,11 @@ using System.Windows.Forms;
 namespace kyg
 {
     /// <summary>
-    /// ChatForm ì „ìš© UI í…Œë§ˆ ìƒ‰ìƒ ë° ìŠ¤íƒ€ì¼ë§ ë©”ì„œë“œë¥¼ ì œê³µí•˜ëŠ” í—¬í¼ í´ë˜ìŠ¤ì…ë‹ˆë‹¤.
+    /// ChatForm Àü¿ë UI Å×¸¶ »ö»ó ¹× ½ºÅ¸ÀÏ¸µ ¸Ş¼­µå¸¦ Á¦°øÇÏ´Â ÇïÆÛ Å¬·¡½ºÀÔ´Ï´Ù.
     /// </summary>
     public static class ChatFormUIHelper
     {
-        // 1. Windows API í•¨ìˆ˜ Import (PInvoke) - ë‘¥ê·¼ ëª¨ì„œë¦¬ êµ¬í˜„ìš©
+        // 1. Windows API ÇÔ¼ö Import (PInvoke) - µÕ±Ù ¸ğ¼­¸® ±¸Çö¿ë
         [DllImport("gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
         private static extern IntPtr CreateRoundRectRgn(
             int nLeftRect,
@@ -25,14 +26,14 @@ namespace kyg
         private static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
 
 
-        // 2. ì»¬ëŸ¬ íŒ”ë ˆíŠ¸ ì •ì˜
-        public static readonly Color ColorLightest = ColorTranslator.FromHtml("#f1f3e0"); // ê°€ì¥ ë°ì€ ìƒ‰ (rtbChatLog ë°°ê²½)
-        public static readonly Color ColorLight = ColorTranslator.FromHtml("#d2dcb6");    // ì¤‘ê°„ ë°ì€ ìƒ‰ (í¼ ë°°ê²½, txtInput/txtSearch ë°°ê²½)
-        public static readonly Color ColorMedium = ColorTranslator.FromHtml("#a1bc98");   // ë²„íŠ¼ ë°°ê²½
-        public static readonly Color ColorDarkest = ColorTranslator.FromHtml("#778873");  // í…ìŠ¤íŠ¸ ìƒ‰ìƒ
-        public static readonly Color ColorWhite = Color.White; // ë²„íŠ¼ í…ìŠ¤íŠ¸ ìƒ‰ìƒ
+        // 2. ÄÃ·¯ ÆÈ·¹Æ® Á¤ÀÇ
+        public static readonly Color ColorLightest = ColorTranslator.FromHtml("#f1f3e0"); // °¡Àå ¹àÀº »ö (rtbChatLog ¹è°æ)
+        public static readonly Color ColorLight = ColorTranslator.FromHtml("#d2dcb6");    // Áß°£ ¹àÀº »ö (Æû ¹è°æ, txtInput/txtSearch ¹è°æ)
+        public static readonly Color ColorMedium = ColorTranslator.FromHtml("#a1bc98");   // ¹öÆ° ¹è°æ
+        public static readonly Color ColorDarkest = ColorTranslator.FromHtml("#778873");  // ÅØ½ºÆ® »ö»ó
+        public static readonly Color ColorWhite = Color.White; // ¹öÆ° ÅØ½ºÆ® »ö»ó
 
-        // 3. ë‘¥ê·¼ ëª¨ì„œë¦¬ ì ìš© ë©”ì„œë“œ
+        // 3. µÕ±Ù ¸ğ¼­¸® Àû¿ë ¸Ş¼­µå
         public static void ApplyRoundCorners(Control control, int radius = 15)
         {
             if (control == null || control.IsDisposed || !control.IsHandleCreated) 
@@ -47,10 +48,10 @@ namespace kyg
             }
         }
 
-        // 4. ìŠ¤íƒ€ì¼ ì ìš© ë©”ì„œë“œ
+        // 4. ½ºÅ¸ÀÏ Àû¿ë ¸Ş¼­µå
 
         /// <summary>
-        /// í¼ì˜ ê¸°ë³¸ í…Œë§ˆ ìŠ¤íƒ€ì¼ (ColorLightest)ì„ ì ìš©í•©ë‹ˆë‹¤. (RichTextBoxì— ì‚¬ìš© ê°€ëŠ¥í•˜ë„ë¡ Form ì˜¤ë²„ë¡œë“œëŠ” ìœ ì§€)
+        /// ÆûÀÇ ±âº» Å×¸¶ ½ºÅ¸ÀÏ (ColorLightest)À» Àû¿ëÇÕ´Ï´Ù. (RichTextBox¿¡ »ç¿ë °¡´ÉÇÏµµ·Ï Form ¿À¹ö·Îµå´Â À¯Áö)
         /// </summary>
         public static void ApplyFormStyle(Form form)
         {
@@ -61,7 +62,7 @@ namespace kyg
         }
 
         /// <summary>
-        /// ë²„íŠ¼ì— í…Œë§ˆ ìŠ¤íƒ€ì¼ì„ ì ìš©í•©ë‹ˆë‹¤. (ë°°ê²½: Medium, í…ìŠ¤íŠ¸: White, ë‘¥ê·¼ ëª¨ì„œë¦¬ ì ìš©)
+        /// ¹öÆ°¿¡ Å×¸¶ ½ºÅ¸ÀÏÀ» Àû¿ëÇÕ´Ï´Ù. (¹è°æ: Medium, ÅØ½ºÆ®: White, µÕ±Ù ¸ğ¼­¸® Àû¿ë)
         /// </summary>
         public static void ApplyButtonStyle(Button button, int radius = 15)
         {
@@ -77,8 +78,8 @@ namespace kyg
         }
 
         /// <summary>
-        /// í…ìŠ¤íŠ¸ ë°•ìŠ¤ ë˜ëŠ” ë¦¬ì¹˜ í…ìŠ¤íŠ¸ ë°•ìŠ¤ì— í…Œë§ˆ ìŠ¤íƒ€ì¼ì„ ì ìš©í•©ë‹ˆë‹¤. 
-        /// (ë°°ê²½: ColorLightest, í…ìŠ¤íŠ¸: Darkest, ë‘¥ê·¼ ëª¨ì„œë¦¬ ì ìš©)
+        /// ÅØ½ºÆ® ¹Ú½º ¶Ç´Â ¸®Ä¡ ÅØ½ºÆ® ¹Ú½º¿¡ Å×¸¶ ½ºÅ¸ÀÏÀ» Àû¿ëÇÕ´Ï´Ù. 
+        /// (¹è°æ: ColorLightest, ÅØ½ºÆ®: Darkest, µÕ±Ù ¸ğ¼­¸® Àû¿ë)
         /// </summary>
         public static void ApplyInputStyle(TextBoxBase control, int radius = 15)
         {
@@ -92,7 +93,7 @@ namespace kyg
         }
 
         /// <summary>
-        /// ì¼ë°˜ ì»¨íŠ¸ë¡¤ì— ì¤‘ê°„ ë°ì€ ë°°ê²½ìƒ‰(ColorLight)ì„ ì ìš©í•©ë‹ˆë‹¤. (í¼ ë°°ê²½ìš©)
+        /// ÀÏ¹İ ÄÁÆ®·Ñ¿¡ Áß°£ ¹àÀº ¹è°æ»ö(ColorLight)À» Àû¿ëÇÕ´Ï´Ù. (Æû ¹è°æ¿ë)
         /// </summary>
         public static void ApplyDisplayStyle(Control control)
         {
@@ -104,7 +105,7 @@ namespace kyg
         }
 
         /// <summary>
-        /// ì»¨íŠ¸ë¡¤ì— ê°€ì¥ ë°ì€ ë°°ê²½ìƒ‰(ColorLightest)ê³¼ Darkest í…ìŠ¤íŠ¸ ìƒ‰ìƒì„ ì ìš©í•©ë‹ˆë‹¤. (rtbChatLogìš©)
+        /// ÄÁÆ®·Ñ¿¡ °¡Àå ¹àÀº ¹è°æ»ö(ColorLightest)°ú Darkest ÅØ½ºÆ® »ö»óÀ» Àû¿ëÇÕ´Ï´Ù. (rtbChatLog¿ë)
         /// </summary>
         public static void ApplyLightestStyle(Control control)
         {
@@ -125,11 +126,11 @@ using System.Windows.Forms;
 namespace kyg
 {
     /// <summary>
-    /// ChatForm ì „ìš© UI í…Œë§ˆ ìƒ‰ìƒ ë° ìŠ¤íƒ€ì¼ë§ ë©”ì„œë“œë¥¼ ì œê³µí•˜ëŠ” í—¬í¼ í´ë˜ìŠ¤ì…ë‹ˆë‹¤.
+    /// ChatForm Àü¿ë UI Å×¸¶ »ö»ó ¹× ½ºÅ¸ÀÏ¸µ ¸Ş¼­µå¸¦ Á¦°øÇÏ´Â ÇïÆÛ Å¬·¡½ºÀÔ´Ï´Ù.
     /// </summary>
     public static class ChatFormUIHelper
     {
-        // 1. Windows API í•¨ìˆ˜ Import (PInvoke) - ë‘¥ê¸€ê²Œ ëª¨ì„œë¦¬ êµ¬í˜„ìš©
+        // 1. Windows API ÇÔ¼ö Import (PInvoke) - µÕ±Û°Ô ¸ğ¼­¸® ±¸Çö¿ë
         [DllImport("gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
         private static extern IntPtr CreateRoundRectRgn(
             int nLeftRect,
@@ -144,16 +145,16 @@ namespace kyg
         private static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
 
 
-        // 2. ì»¬ëŸ¬ íŒ”ë ˆíŠ¸ ì •ì˜
-        public static readonly Color ColorLightest = ColorTranslator.FromHtml("#f1f3e0"); // ê°€ì¥ ë°ì€ ìƒ‰ (í¼ ë°°ê²½)
-        public static readonly Color ColorLight = ColorTranslator.FromHtml("#d2dcb6");    // ì¤‘ê°„ ë°ì€ ìƒ‰ (ì…ë ¥/ë¡œê·¸ ë°°ê²½)
-        public static readonly Color ColorMedium = ColorTranslator.FromHtml("#a1bc98");   // ë²„íŠ¼ ë°°ê²½
-        public static readonly Color ColorDarkest = ColorTranslator.FromHtml("#778873");  // í…ìŠ¤íŠ¸ ìƒ‰ìƒ
-        public static readonly Color ColorWhite = Color.White; // ë²„íŠ¼ í…ìŠ¤íŠ¸ ìƒ‰ìƒ
+        // 2. ÄÃ·¯ ÆÈ·¹Æ® Á¤ÀÇ
+        public static readonly Color ColorLightest = ColorTranslator.FromHtml("#f1f3e0"); // °¡Àå ¹àÀº »ö (Æû ¹è°æ)
+        public static readonly Color ColorLight = ColorTranslator.FromHtml("#d2dcb6");    // Áß°£ ¹àÀº »ö (ÀÔ·Â/·Î±× ¹è°æ)
+        public static readonly Color ColorMedium = ColorTranslator.FromHtml("#a1bc98");   // ¹öÆ° ¹è°æ
+        public static readonly Color ColorDarkest = ColorTranslator.FromHtml("#778873");  // ÅØ½ºÆ® »ö»ó
+        public static readonly Color ColorWhite = Color.White; // ¹öÆ° ÅØ½ºÆ® »ö»ó
 
-        // 3. ë‘¥ê¸€ê²Œ ëª¨ì„œë¦¬ ì ìš© ë©”ì„œë“œ
+        // 3. µÕ±Û°Ô ¸ğ¼­¸® Àû¿ë ¸Ş¼­µå
         /// <summary>
-        /// ì»¨íŠ¸ë¡¤ì˜ ëª¨ì„œë¦¬ë¥¼ ë‘¥ê¸€ê²Œ ë§Œë“­ë‹ˆë‹¤. (TextBoxBase ì»¨íŠ¸ë¡¤ì— ëŒ€í•´ BorderStyle=None ì„¤ì •)
+        /// ÄÁÆ®·ÑÀÇ ¸ğ¼­¸®¸¦ µÕ±Û°Ô ¸¸µì´Ï´Ù. (TextBoxBase ÄÁÆ®·Ñ¿¡ ´ëÇØ BorderStyle=None ¼³Á¤)
         /// </summary>
         public static void ApplyRoundCorners(Control control, int radius = 15)
         {
@@ -164,15 +165,15 @@ namespace kyg
 
             if (control is TextBoxBase textBox)
             {
-                // ë‘¥ê¸€ê²Œ ëª¨ì„œë¦¬ë¥¼ ìœ„í•´ BorderStyleì„ Noneìœ¼ë¡œ ì„¤ì •í•©ë‹ˆë‹¤.
+                // µÕ±Û°Ô ¸ğ¼­¸®¸¦ À§ÇØ BorderStyleÀ» NoneÀ¸·Î ¼³Á¤ÇÕ´Ï´Ù.
                 textBox.BorderStyle = BorderStyle.None;
             }
         }
 
-        // 4. ìŠ¤íƒ€ì¼ ì ìš© ë©”ì„œë“œ (ë‘¥ê¸€ê²Œ ëª¨ì„œë¦¬ í˜¸ì¶œ ì½”ë“œëŠ” Load ì´ë²¤íŠ¸ì—ì„œ ë³„ë„ í˜¸ì¶œì„ ìœ„í•´ ì œê±°ë¨)
+        // 4. ½ºÅ¸ÀÏ Àû¿ë ¸Ş¼­µå (µÕ±Û°Ô ¸ğ¼­¸® È£Ãâ ÄÚµå´Â Load ÀÌº¥Æ®¿¡¼­ º°µµ È£ÃâÀ» À§ÇØ Á¦°ÅµÊ)
 
         /// <summary>
-        /// í¼ì˜ ê¸°ë³¸ í…Œë§ˆ ìŠ¤íƒ€ì¼ (ColorLightest)ì„ ì ìš©í•©ë‹ˆë‹¤.
+        /// ÆûÀÇ ±âº» Å×¸¶ ½ºÅ¸ÀÏ (ColorLightest)À» Àû¿ëÇÕ´Ï´Ù.
         /// </summary>
         public static void ApplyFormStyle(Form form)
         {
@@ -183,7 +184,7 @@ namespace kyg
         }
 
         /// <summary>
-        /// ë²„íŠ¼ì— í…Œë§ˆ ìŠ¤íƒ€ì¼ì„ ì ìš©í•©ë‹ˆë‹¤. (ë°°ê²½: Medium, í…ìŠ¤íŠ¸: White, ë‘¥ê¸€ê²Œ ëª¨ì„œë¦¬ ì ìš©)
+        /// ¹öÆ°¿¡ Å×¸¶ ½ºÅ¸ÀÏÀ» Àû¿ëÇÕ´Ï´Ù. (¹è°æ: Medium, ÅØ½ºÆ®: White, µÕ±Û°Ô ¸ğ¼­¸® Àû¿ë)
         /// </summary>
         public static void ApplyButtonStyle(Button button, int radius = 15)
         {
@@ -194,14 +195,14 @@ namespace kyg
                 button.FlatStyle = FlatStyle.Flat;
                 button.FlatAppearance.BorderSize = 0;
 
-                // ë‘¥ê¸€ê²Œ ëª¨ì„œë¦¬ ì ìš©
+                // µÕ±Û°Ô ¸ğ¼­¸® Àû¿ë
                 ApplyRoundCorners(button, radius);
             }
         }
 
         /// <summary>
-        /// í…ìŠ¤íŠ¸ ë°•ìŠ¤ ë˜ëŠ” ë¦¬ì¹˜ í…ìŠ¤íŠ¸ ë°•ìŠ¤ì— í…Œë§ˆ ìŠ¤íƒ€ì¼ì„ ì ìš©í•©ë‹ˆë‹¤. 
-        /// (ë°°ê²½: ColorLight, í…ìŠ¤íŠ¸: Darkest. ë‘¥ê¸€ê²Œ ëª¨ì„œë¦¬ëŠ” Load ì´ë²¤íŠ¸ì—ì„œ ë³„ë„ í˜¸ì¶œ í•„ìš”)
+        /// ÅØ½ºÆ® ¹Ú½º ¶Ç´Â ¸®Ä¡ ÅØ½ºÆ® ¹Ú½º¿¡ Å×¸¶ ½ºÅ¸ÀÏÀ» Àû¿ëÇÕ´Ï´Ù. 
+        /// (¹è°æ: ColorLight, ÅØ½ºÆ®: Darkest. µÕ±Û°Ô ¸ğ¼­¸®´Â Load ÀÌº¥Æ®¿¡¼­ º°µµ È£Ãâ ÇÊ¿ä)
         /// </summary>
         public static void ApplyInputStyle(TextBoxBase control, int radius = 15)
         {
@@ -210,13 +211,13 @@ namespace kyg
                 control.BackColor = ColorLight;
                 control.ForeColor = ColorDarkest;
 
-                // ApplyRoundCorners(control, radius); // Load ì´ë²¤íŠ¸ì—ì„œ ë³„ë„ í˜¸ì¶œ í•„ìš”
+                // ApplyRoundCorners(control, radius); // Load ÀÌº¥Æ®¿¡¼­ º°µµ È£Ãâ ÇÊ¿ä
             }
         }
 
         /// <summary>
-        /// ì¼ë°˜ ì»¨íŠ¸ë¡¤ì— ì¤‘ê°„ ë°ì€ ë°°ê²½ìƒ‰(ColorLight)ì„ ì ìš©í•©ë‹ˆë‹¤. 
-        /// (rtbChatLogì˜ ì›ë˜ ë°°ê²½ìƒ‰ìœ¼ë¡œ ì‚¬ìš©. ë‘¥ê¸€ê²Œ ëª¨ì„œë¦¬ëŠ” Load ì´ë²¤íŠ¸ì—ì„œ ë³„ë„ í˜¸ì¶œ í•„ìš”)
+        /// ÀÏ¹İ ÄÁÆ®·Ñ¿¡ Áß°£ ¹àÀº ¹è°æ»ö(ColorLight)À» Àû¿ëÇÕ´Ï´Ù. 
+        /// (rtbChatLogÀÇ ¿ø·¡ ¹è°æ»öÀ¸·Î »ç¿ë. µÕ±Û°Ô ¸ğ¼­¸®´Â Load ÀÌº¥Æ®¿¡¼­ º°µµ È£Ãâ ÇÊ¿ä)
         /// </summary>
         public static void ApplyDisplayStyle(Control control)
         {
@@ -225,7 +226,7 @@ namespace kyg
                 control.BackColor = ColorLight;
                 control.ForeColor = ColorDarkest;
 
-                // ApplyRoundCorners(control); // Load ì´ë²¤íŠ¸ì—ì„œ ë³„ë„ í˜¸ì¶œ í•„ìš”
+                // ApplyRoundCorners(control); // Load ÀÌº¥Æ®¿¡¼­ º°µµ È£Ãâ ÇÊ¿ä
             }
         }
     }
