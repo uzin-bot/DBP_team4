@@ -8,6 +8,7 @@ using System.Data.Common;
 using System.Drawing;
 using System.Windows.Forms;
 using 남예솔;
+using DBP_Chat;
 
 namespace DBP_Chat
 {
@@ -27,7 +28,16 @@ namespace DBP_Chat
 			this.currentUserId = userId;
 			this.parentForm = parent;
 
+			// 테마 적용
+			ApplyTheme(ThemeManager.IsDarkMode);
+			ThemeManager.Subscribe(this, ApplyTheme);
+
 			LoadResult();
+		}
+
+		private void ApplyTheme(bool isDarkMode)
+		{
+			SearchResultUIHelper.Apply(this, isDarkMode);
 		}
 
 		// ================= 직원 검색 결과 로드 =================
@@ -66,6 +76,9 @@ namespace DBP_Chat
 				item.SubItems.Add(row["TeamName"].ToString());
 				lvResult.Items.Add(item);
 			}
+
+			// 테마 재적용 (항목 추가 후)
+			ApplyTheme(ThemeManager.IsDarkMode);
 		}
 	}
 }
