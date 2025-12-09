@@ -375,8 +375,7 @@ namespace kyg
                     string readStatus = "";
                     if (senderId == myId && isRead == 0)
                     {
-                        //원래 " (1)" 임 
-                        readStatus = " "; // 안 읽음
+                        readStatus = " (1)"; // 안 읽음
                     }
 
                     if (content.StartsWith("EMOJI:"))
@@ -402,6 +401,54 @@ namespace kyg
             catch (Exception ex)
             {
                 MessageBox.Show("대화 기록을 불러오는 중 오류 발생: " + ex.Message, "DB 오류");
+            }
+        }
+
+        // READ_CONFIRM 수신 시 사용 - MarkMessagesAsRead()를 호출하지 않음
+        private void RefreshChatHistory()
+        {
+            try
+            {
+                string query = $" SELECT  FromUserId, Content, SentAt, IsRead FROM ChatMessage" +
+                    $" WHERE (FromUserId = {myId} AND ToUserId = {partnerId}) " +
+                    $"OR (FromUserId = {partnerId} AND ToUserId = {myId}) ORDER BY SentAt ASC";
+
+                DataTable history = DBconnector.GetInstance().Query(query);
+
+                if (history == null) return;
+
+                string partnerNickname = GetNicknameForUser(partnerId);
+
+                foreach (DataRow row in history.Rows)
+                {
+                    int senderId = Convert.ToInt32(row["FromUserId"]);
+                    string content = row["Content"].ToString();
+                    DateTime sendTime = (DateTime)row["SentAt"];
+                    string timeString = sendTime.ToString("tt hh:mm");
+                    int isRead = Convert.ToInt32(row["IsRead"]);
+
+                    // 내가 보낸 메시지에만 읽음 표시
+                    string readStatus = "";
+                    if (senderId == myId && isRead == 0)
+                    {
+                        readStatus = " (1)"; // 안 읽음
+                    }
+
+                    if (content.StartsWith("EMOJI:"))
+                    {
+                        DisplayEmojiWithNickname(senderId, partnerNickname, content.Substring(6), timeString, readStatus);
+                    }
+                    else
+                    {
+                        string senderLabel = senderId == myId ? "나" : partnerNickname;
+                        DisplayMessage($"[{senderLabel}]: {content}{readStatus}", senderId == myId, timeString);
+                    }
+                }
+                // MarkMessagesAsRead()를 호출하지 않음 - READ_CONFIRM 수신 시에는 읽음 처리 불필요
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[RefreshChatHistory] 오류: {ex.Message}");
             }
         }
 
@@ -550,7 +597,7 @@ namespace kyg
                         else if (type == "READ_CONFIRM")
                         {
                             this.Invoke((MethodInvoker)delegate {
-                                if (!this.IsDisposed) { rtbChatLog.Clear(); LoadChatHistory(); }
+                                if (!this.IsDisposed) { rtbChatLog.Clear(); RefreshChatHistory(); }
                             });
                         }
 
