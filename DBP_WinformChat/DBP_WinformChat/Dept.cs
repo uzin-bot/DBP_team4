@@ -15,7 +15,6 @@ namespace DBP_Chat
     public partial class Dept : Form
     {
 
-        private Dictionary<int, ChatForm> openChatForms = new Dictionary<int, ChatForm>();
         private int currentUserId;
         private string currentUserName;
         private string currentUserNickname;
@@ -508,34 +507,8 @@ namespace DBP_Chat
 				return;
 			}
 
-			// 이미 열린 채팅창 있으면 재사용
-			if (openChatForms.ContainsKey(targetUserId))
-			{
-				ChatForm openedForm = openChatForms[targetUserId];
-
-				if (openedForm.IsDisposed)
-				{
-					openChatForms.Remove(targetUserId);
-				}
-				else
-				{
-					openedForm.Activate();
-					openedForm.Focus();
-					return;
-				}
-			}
-
-			// 없으면 새로 열기
-			ChatForm chatForm = new ChatForm(this.currentUserId, targetUserId);
-			openChatForms[targetUserId] = chatForm;
-
-			// 채팅창 닫히면 Dictionary에서 제거
-			chatForm.FormClosed += (s, args) =>
-			{
-				if (openChatForms.ContainsKey(targetUserId))
-					openChatForms.Remove(targetUserId);
-			};
-
+			// ChatForm의 정적 메서드를 사용하여 중복 창 방지
+			ChatForm chatForm = ChatForm.GetOrShowExisting(this.currentUserId, targetUserId);
 			chatForm.Show();
 		}
 

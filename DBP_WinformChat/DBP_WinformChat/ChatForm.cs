@@ -20,6 +20,9 @@ namespace kyg
 {
     public partial class ChatForm : Form
     {
+        // 열려있는 ChatForm들을 관리하는 정적 Dictionary (key: myId_partnerId 조합)
+        private static Dictionary<string, ChatForm> openChatForms = new Dictionary<string, ChatForm>();
+
         // 수정
         private TcpClient client;
         private NetworkStream stream;
@@ -37,6 +40,48 @@ namespace kyg
         private ResourceManager formResourceManager; // 폼 리소스 접근용
         private Dictionary<string, Image> emojiMap = new Dictionary<string, Image>(); // 5-E: 이모티콘 맵
         private PermissionManager permissionManager; // 어드민 추가
+
+        /// <summary>
+        /// 이미 열린 채팅창이 있으면 해당 창을 활성화하고 반환, 없으면 새로 생성하여 반환
+        /// </summary>
+        public static ChatForm GetOrShowExisting(int myId, int partnerId)
+        {
+            string key = $"{myId}_{partnerId}";
+
+            // 이미 열린 채팅창이 있는지 확인
+            if (openChatForms.ContainsKey(key))
+            {
+                ChatForm existingForm = openChatForms[key];
+
+                if (!existingForm.IsDisposed)
+                {
+                    // 기존 창 활성화
+                    existingForm.Show();
+                    existingForm.WindowState = FormWindowState.Normal;
+                    existingForm.Activate();
+                    existingForm.Focus();
+                    return existingForm;
+                }
+                else
+                {
+                    // Dispose된 폼이면 Dictionary에서 제거
+                    openChatForms.Remove(key);
+                }
+            }
+
+            // 새로운 ChatForm 생성
+            ChatForm newForm = new ChatForm(myId, partnerId);
+            openChatForms[key] = newForm;
+
+            // 폼이 닫히면 Dictionary에서 제거
+            newForm.FormClosed += (s, e) =>
+            {
+                if (openChatForms.ContainsKey(key))
+                    openChatForms.Remove(key);
+            };
+
+            return newForm;
+        }
 
         public ChatForm(int myId, int partnerId) // 생성자 수정
         {
@@ -423,176 +468,6 @@ namespace kyg
                 isSending = false;
             }
         }
-
-        /*
-        private void ReceiveMessages()
-        {
-            // 2주차 5-A & 3주차 5-B: 메시지 수신 및 알림 로직
-            byte[] buffer = new byte[4096]; // ✅ 버퍼 크기 증가
-            StringBuilder messageBuilder = new StringBuilder(); // ✅ 메시지 버퍼링용
-
-            while (client != null && client.Connected) // ✅ null 체크 추가
-            {
-                try
-                {
-                    // 서버로부터 데이터 읽기
-                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                    if (bytesRead == 0) break; // 연결 종료 시 루프 탈출
-
-                    string received = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    Console.WriteLine($"[ChatForm] 원본 수신: [{received}]"); // ✅ 디버깅용
-
-                    // 메시지 누적
-                    messageBuilder.Append(received);
-                    string fullMessage = messageBuilder.ToString();
-
-                    // null 문자로 메시지 구분
-                    string[] messages = fullMessage.Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
-
-                    // 마지막 메시지가 완전하지 않을 수 있으므로 체크
-                    bool lastMessageComplete = fullMessage.EndsWith("\0");
-                    int messagesToProcess = lastMessageComplete ? messages.Length : messages.Length - 1;
-
-                    // 완전한 메시지만 처리
-                    for (int i = 0; i < messagesToProcess; i++)
-                    {
-                        string msg = messages[i].Trim();
-                        if (string.IsNullOrWhiteSpace(msg)) continue;
-
-                        Console.WriteLine($"[ChatForm] 처리할 메시지: [{msg}]"); // ✅ 디버깅용
-
-                        // 메시지 포맷 파싱 (최대 4개의 파트: TYPE:SENDER:RECEIVER:CONTENT)
-                        string[] parts = msg.Split(new char[] { ':' }, 4); // ✅ msg로 변경
-
-                        if (parts.Length < 1) continue;
-
-                        if (parts[0] == "CHAT" && parts.Length >= 4)
-                        {
-                            int senderId = Convert.ToInt32(parts[1]); // string -> int 
-                            string content = parts[3];
-
-
-                            //if (this.IsDisposed || !this.IsHandleCreated) continue; // 폼이 닫혔다면 다음 루프로 넘어감
-                            // UI 스레드에서 UI 업데이트 및 알림 처리 (Invoke 필수)
-                            this.Invoke((MethodInvoker)delegate
-                            {
-                                if (this.IsDisposed) return;
-                                // 5-E: 이모티콘 수신 처리
-
-                                System.Threading.Thread.Sleep(1000);
-
-                                // 현재 시간을 포맷하여 출력 함수에 전달
-                                string currentTime = DateTime.Now.ToString("tt hh:mm");
-                                if (content.StartsWith("EMOJI:"))
-                                {
-                                    DisplayEmoji(senderId, content.Substring(6), currentTime); // EMOJI: 뒤의 코드만 전달
-                                }
-                                // 5-F: 파일 수신 알림 처리
-                                else if (content.StartsWith("FILE_RECEIVED:"))
-                                {
-                                    //string[] fileInfo = content.Split(':');
-                                    //string fileName = fileInfo[1];
-                                    //string fullPath = fileInfo[2];
-                                    string[] fileInfo = content.Split(new char[] { ':' }, 3);
-                                    string fileName = fileInfo.Length > 1 ? fileInfo[1] : "(unknown)";
-                                    string fullPath = fileInfo.Length > 2 ? fileInfo[2] : "(unknown)";
-
-                                    // 파일 다운로드 여부 및 경로 알림
-                                    if (MessageBox.Show($"'{senderId}'님이 '{fileName}' 파일을 보냈습니다.\n다운로드 하시겠습니까?\n(경로: {fullPath})", "파일 수신", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                                    {
-                                        MessageBox.Show($"파일은 서버 경로 '{fullPath}'에 저장되어 있습니다.", "다운로드 경로");
-                                    }
-                                    DisplayMessage($"[{senderId}]: 파일 전송 알림: {fileName}", false, currentTime);
-                                }
-                                else
-                                {
-                                    // 일반 메시지 수신 (2주차 5-A)
-                                    DisplayMessage($"[{senderId}]: {content}", false, currentTime);
-                                }
-
-                                // 메시지 받은 후 즉시 읽음 처리
-                                if (CanMarkAsRead())
-                                {
-                                    MarkMessagesAsRead();
-                                }
-
-                                // 3주차 5-B: 대화 도착 알림 기능 (폼이 비활성/최소화 상태일 때)
-                                try
-                                {
-                                    if (niChatAlert != null)
-                                    {
-                                        if (!niChatAlert.Visible) niChatAlert.Visible = true;
-                                        if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
-                                        {
-                                            niChatAlert.BalloonTipTitle = $"새 메시지 도착: {senderId}";
-                                            niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
-                                            niChatAlert.ShowBalloonTip(5000);
-                                            // 보조: 창 깜박임도 실행
-                                            FlashWindow.Flash(this);
-                                        }
-                                    }
-                                }
-                                catch (ObjectDisposedException)
-                                {
-                                    // NotifyIcon이 Dispose 된 경우 무시(재생성/다시 표시 시 다음 연결에서 처리)
-                                }
-                            });
-                        }
-                        else if (parts[0] == "READ_CONFIRM" && parts.Length >= 2)
-                        {
-                            int readerId = Convert.ToInt32(parts[1]); // 읽은 사람 ID
-
-                            Console.WriteLine($"[ChatForm] 읽음 확인 수신: {readerId}가 내 메시지를 읽음");
-
-                            this.Invoke((MethodInvoker)delegate
-                            {
-                                if (this.IsDisposed) return;
-
-                                System.Threading.Thread.Sleep(1000);
-
-                                // 화면 전체 다시 로드 (읽음 상태 반영)
-                                rtbChatLog.Clear();
-                                LoadChatHistory();
-                            });
-                        }
-                    }
-
-                    // 미처리 메시지 보관
-                    if (!lastMessageComplete && messages.Length > 0)
-                    {
-                        messageBuilder.Clear();
-                        messageBuilder.Append(messages[messages.Length - 1]);
-                    }
-                    else
-                    {
-                        messageBuilder.Clear();
-                    }
-                }
-                catch (System.IO.IOException) // 연결 끊김 또는 스트림 오류
-                {
-                    Console.WriteLine("[ChatForm] 연결 끊김"); // ✅ 디버깅용
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    // 기타 예외 처리
-                    Console.WriteLine($"[ChatForm] 수신 오류: {ex.Message}"); // ✅ 디버깅용
-                }
-            }
-
-            // 연결 종료 후 처리
-            if (this.IsDisposed || !this.IsHandleCreated) return; // 폼이 닫혔다면 함수 종료
-
-            /*
-            this.Invoke((MethodInvoker)delegate
-            {
-                if (this.IsDisposed) return;
-                // 폼이 유효할 때만 UI 조작
-                rtbChatLog.AppendText(">> 연결이 종료되었습니다.\n"); // 이전에 주석 처리되었던 부분
-                client?.Close();
-            });
-            */
-        //}
 
         private void ReceiveMessages()
         {

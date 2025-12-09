@@ -789,10 +789,10 @@ namespace 남예솔
         {
             if (lvlist.SelectedItems.Count == 0) return;
 
-            // ? Tag에서 가져오도록 수정
+            // Tag에서 가져오도록 수정
             int targetUserId = Convert.ToInt32(lvlist.SelectedItems[0].Tag);
 
-            // ? UnreadCount 초기화 추가
+            // UnreadCount 초기화 추가
             string updateQuery = $@"
                 UPDATE RecentChat
                 SET UnreadCount = 0
@@ -801,7 +801,9 @@ namespace 남예솔
 
             DBconnector.GetInstance().NonQuery(updateQuery);
 
-            new ChatForm(currentUserId, targetUserId).Show();
+            // ChatForm의 정적 메서드를 사용하여 중복 창 방지
+            ChatForm chatForm = ChatForm.GetOrShowExisting(currentUserId, targetUserId);
+            chatForm.Show();
 
             LoadRecentChat();
         }
@@ -902,13 +904,10 @@ namespace 남예솔
         // ? 추가 3
         private void NiChatAlert_BalloonTipClicked(object sender, EventArgs e)
         {
-            ChatForm chatform = new ChatForm(currentUserId, lastMessageSenderId);
-
+            // ChatForm의 정적 메서드를 사용하여 중복 창 방지
+            ChatForm chatform = ChatForm.GetOrShowExisting(currentUserId, lastMessageSenderId);
             chatform.Show();
             chatform.Activate();
-
-            //this.Show();
-            //LoadRecentChat();
         }
     }
 }
