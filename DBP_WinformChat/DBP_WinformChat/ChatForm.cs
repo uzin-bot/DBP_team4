@@ -471,7 +471,7 @@ namespace kyg
                 receiveThread.IsBackground = true;
                 receiveThread.Start();
 
-                rtbChatLog.AppendText(">> 서버에 연결되었습니다.\n");
+                //rtbChatLog.AppendText(">> 서버에 연결되었습니다.\n");
             }
             catch (Exception ex)
             {
