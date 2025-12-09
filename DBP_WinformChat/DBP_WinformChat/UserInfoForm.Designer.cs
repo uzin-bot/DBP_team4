@@ -1,4 +1,4 @@
-﻿namespace leehaeun
+namespace leehaeun
 {
     partial class UserInfoForm
     {

@@ -1,4 +1,4 @@
-﻿using DBP_Chat;
+using DBP_Chat;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -11,7 +11,7 @@ namespace DBP_WinformChat
         public static void Apply(Form form)
         {
             form.BackColor = Color.White;
-            form.Font = new Font("���� ���", 10);
+            form.Font = new Font("맑은 고딕", 10);
 
             foreach (Control c in form.Controls)
                 StyleControl(c);
@@ -19,12 +19,12 @@ namespace DBP_WinformChat
 
         private static void StyleControl(Control ctrl)
         {
-            // ========== ��� ���(Label) ==========
+            // ========== 헤더 라벨(Label) ==========
             if (ctrl is Label lbl && lbl.Name == "label1")
             {
                 lbl.BackColor = Color.FromArgb(119, 136, 115);
                 lbl.ForeColor = Color.White;
-                lbl.Font = new Font("���� ���", 13, FontStyle.Bold);
+                lbl.Font = new Font("맑은 고딕", 13, FontStyle.Bold);
                 lbl.AutoSize = false;
                 lbl.Dock = DockStyle.Top;
                 lbl.Height = 80;
@@ -32,7 +32,7 @@ namespace DBP_WinformChat
                 lbl.Padding = new Padding(15, 0, 0, 0);
             }
 
-            // ========== �г� ==========
+            // ========== 패널 ==========
             if (ctrl is Panel pnl)
             {
                 pnl.BackColor = Color.White;
@@ -51,10 +51,10 @@ namespace DBP_WinformChat
                 lv.BackColor = Color.White;
                 lv.ForeColor = Color.FromArgb(119, 136, 115);
 
-                // ? ���콺 �̺�Ʈ ���� ����
+                // 마우스 이벤트 핸들러 추가
                 lv.MouseMove += (s, e) => { };
 
-                // --- �÷� ��� ---
+                // --- 컬럼 헤더 ---
                 lv.DrawColumnHeader += (s, e) =>
                 {
                     using (SolidBrush br = new SolidBrush(Color.White))
@@ -65,19 +65,19 @@ namespace DBP_WinformChat
                     TextRenderer.DrawText(
                         e.Graphics,
                         e.Header.Text,
-                        new Font("���� ���", 10, FontStyle.Bold),
+                        new Font("맑은 고딕", 10, FontStyle.Bold),
                         e.Bounds,
                         Color.FromArgb(119, 136, 115),
                         TextFormatFlags.VerticalCenter | TextFormatFlags.Left
                     );
                 };
 
-                // --- �� ��� (ȣ�� ����) ---
+                // --- 행 배경 (호버 제거) ---
                 lv.DrawItem += (s, e) =>
                 {
                     e.DrawDefault = false;
 
-                    // ? Selected ���¸� üũ
+                    // Selected 상태만 체크
                     Color bg = e.Item.Selected
                         ? Color.FromArgb(210, 220, 182)
                         : Color.FromArgb(241, 243, 224);
@@ -88,10 +88,10 @@ namespace DBP_WinformChat
                     }
                 };
 
-                // --- �� �ؽ�Ʈ & ������ ---
+                // --- 셀 텍스트 & 표시기 ---
                 lv.DrawSubItem += (s, e) =>
                 {
-                    // ? ��� ���� �׸��� (Selected ���¸� Ȯ��)
+                    // 배경 먼저 그리기 (Selected 상태만 확인)
                     Color cellBg = e.Item.Selected
                         ? Color.FromArgb(210, 220, 182)
                         : Color.FromArgb(241, 243, 224);
@@ -101,17 +101,17 @@ namespace DBP_WinformChat
                         e.Graphics.FillRectangle(bgBrush, e.Bounds);
                     }
 
-                    // ù ��° �÷�(������)�� chatlist.cs���� ó��
+                    // 첫 번째 컬럼(표시기)은 chatlist.cs에서 처리
                     if (e.ColumnIndex == 0)
                     {
                         return;
                     }
 
-                    // �⺻ �ؽ�Ʈ ���
+                    // 기본 텍스트 출력
                     TextRenderer.DrawText(
                         e.Graphics,
                         e.SubItem.Text,
-                        new Font("���� ���", 10),
+                        new Font("맑은 고딕", 10),
                         e.Bounds,
                         Color.FromArgb(119, 136, 115),
                         TextFormatFlags.VerticalCenter | TextFormatFlags.Left
@@ -119,7 +119,7 @@ namespace DBP_WinformChat
                 };
             }
 
-            // ========== ��ư ==========
+            // ========== 버튼 ==========
             if (ctrl is Button btn)
             {
                 btn.FlatStyle = FlatStyle.Flat;
@@ -128,7 +128,7 @@ namespace DBP_WinformChat
                 btn.BackColor = Color.FromArgb(241, 243, 224);
                 btn.ForeColor = Color.FromArgb(119, 136, 115);
 
-                btn.Font = new Font("���� ���", 9.5f, FontStyle.Bold);
+                btn.Font = new Font("맑은 고딕", 9.5f, FontStyle.Bold);
                 btn.Cursor = Cursors.Hand;
 
                 btn.MouseEnter += (s, e) =>

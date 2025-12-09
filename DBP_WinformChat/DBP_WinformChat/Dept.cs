@@ -3,12 +3,12 @@ using kyg;
 using leehaeun;
 using MySqlConnector;
 using System;
-using System.Collections.Generic;   // HashSet »ç¿ë
+using System.Collections.Generic;   // HashSet ì‚¬ìš©
 using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using ³²¿¹¼Ö;
+using ë‚¨ì˜ˆì†”;
 
 namespace DBP_Chat
 {
@@ -21,10 +21,10 @@ namespace DBP_Chat
         private string currentUserNickname;
         private PermissionManager permissionManager;
 
-        // Æûº° Å×¸¶ »óÅÂ(½ÇÁ¦ ÀüÈ¯Àº ThemeManager.CurrentMode ±â¹İÀ¸·Î)
+        // í¼ë³„ í…Œë§ˆ ìƒíƒœ(ì‹¤ì œ ì „í™˜ì€ ThemeManager.CurrentMode ê¸°ë°˜ìœ¼ë¡œ)
         private bool _isDarkMode = false;
 
-        // ÀÌ Æû¸¸ÀÇ ´ÙÅ©¸ğµå »ö»ó(ThemeManager¿Í´Â º°°³ ·ÎÄÃ ½ºÅ¸ÀÏ)
+        // ì´ í¼ë§Œì˜ ë‹¤í¬ëª¨ë“œ ìƒ‰ìƒ(ThemeManagerì™€ëŠ” ë³„ê°œ ë¡œì»¬ ìŠ¤íƒ€ì¼)
         private Color _darkBack = Color.FromArgb(32, 32, 32);
         private Color _darkPanel = Color.FromArgb(45, 45, 45);
         private Color _darkHeader = Color.FromArgb(64, 64, 64);
@@ -33,17 +33,17 @@ namespace DBP_Chat
 
         public Dept(int userId, string name, string nickname)
         {
-            InitializeComponent();   // µğÀÚÀÌ³Ê »ı¼º ÄÚµå È£Ãâ
+            InitializeComponent();   // ë””ìì´ë„ˆ ìƒì„± ì½”ë“œ í˜¸ì¶œ
 
             this.currentUserId = userId;
             this.currentUserName = name;
             this.currentUserNickname = nickname;
             this.permissionManager = new PermissionManager();
 
-            // Load ÀÌº¥Æ®
+            // Load ì´ë²¤íŠ¸
             this.Load += this.Dept_Load;
 
-            // TreeView & ¹öÆ° ÀÌº¥Æ® ? Designer¿¡ ¾È °É¾î³ù´Ù¸é ¿©±â¼­¸¸ µî·Ï
+            // TreeView & ë²„íŠ¼ ì´ë²¤íŠ¸ ? Designerì— ì•ˆ ê±¸ì–´ë†¨ë‹¤ë©´ ì—¬ê¸°ì„œë§Œ ë“±ë¡
             tvdept.NodeMouseDoubleClick += this.tvdept_NodeMouseDoubleClick;
             tvdept.AfterSelect += this.tvdept_AfterSelect;
             tvdept.NodeMouseClick += this.tvdept_NodeMouseClick;
@@ -54,7 +54,7 @@ namespace DBP_Chat
             btnChat.Click += this.btnChat_Click;
             lBlist.SelectedIndexChanged += this.lBlist_SelectedIndexChanged;
 
-            // Àü¿ª Å×¸¶ º¯°æ ÀÌº¥Æ® ±¸µ¶ (ÇÑ ¹ø¸¸)
+            // ì „ì—­ í…Œë§ˆ ë³€ê²½ ì´ë²¤íŠ¸ êµ¬ë… (í•œ ë²ˆë§Œ)
             ThemeManager.ThemeChanged += mode => this.OnThemeChanged(mode);
         }
 
@@ -63,13 +63,13 @@ namespace DBP_Chat
         {
             this.AutoScaleMode = AutoScaleMode.None;
 
-            // 'ÀÌ¸§' ¶óº§ÀÇ ÆùÆ®¸¦ 'ID' ¶Ç´Â 'ºÎ¼­' ¶óº§°ú µ¿ÀÏÇÏ°Ô ¸ÂÃã
-            label1.Font = label3.Font;         // ¶Ç´Â: label1.Font = label2.Font;
+            // 'ì´ë¦„' ë¼ë²¨ì˜ í°íŠ¸ë¥¼ 'ID' ë˜ëŠ” 'ë¶€ì„œ' ë¼ë²¨ê³¼ ë™ì¼í•˜ê²Œ ë§ì¶¤
+            label1.Font = label3.Font;         // ë˜ëŠ”: label1.Font = label2.Font;
 
-            // ÅØ½ºÆ®¹Ú½ºµµ ¶óº§µé°ú µ¿ÀÏÇÑ ÆùÆ®°è¿­·Î ¸ÂÃß·Á¸é
-            txtname.Font = txtID.Font;         // µ¿ÀÏ °è¿­ À¯Áö
+            // í…ìŠ¤íŠ¸ë°•ìŠ¤ë„ ë¼ë²¨ë“¤ê³¼ ë™ì¼í•œ í°íŠ¸ê³„ì—´ë¡œ ë§ì¶”ë ¤ë©´
+            txtname.Font = txtID.Font;         // ë™ì¼ ê³„ì—´ ìœ ì§€
 
-            // ³ª¸ÓÁö ÃÊ±âÈ­
+            // ë‚˜ë¨¸ì§€ ì´ˆê¸°í™”
             ApplyLightHelper();
 
             try
@@ -99,27 +99,27 @@ namespace DBP_Chat
             }
             catch
             {
-                // ¿¹¿Ü´Â ¹«½Ã
+                // ì˜ˆì™¸ëŠ” ë¬´ì‹œ
             }
 
-            // TreeView ·Îµå
+            // TreeView ë¡œë“œ
             this.LoadTreeView();
 
-            // Áñ°ÜÃ£±â ¸ñ·Ï ·Îµå
+            // ì¦ê²¨ì°¾ê¸° ëª©ë¡ ë¡œë“œ
             this.LoadFavoriteList();
 
-            // ±âº»Àº ¶óÀÌÆ® ½ºÅ¸ÀÏ
+            // ê¸°ë³¸ì€ ë¼ì´íŠ¸ ìŠ¤íƒ€ì¼
             this.ApplyLightHelper();
 
-            // ´ÙÅ© ¸ğµå ¶óµğ¿À ¹öÆ° ¼³Á¤
-            rbDarkMode.AutoCheck = false;                // ÀÚµ¿ Ã¼Å© ¹æÁö
-            rbDarkMode.Click += this.rbDarkMode_Click;   // Å¬¸¯ÇÒ ¶§ ¼öµ¿ Åä±Û
-            // CheckedChanged´Â Designer¿¡¼­ ÀÌ¹Ì ¿¬°áµÇ¾î ÀÖÀ½
+            // ë‹¤í¬ ëª¨ë“œ ë¼ë””ì˜¤ ë²„íŠ¼ ì„¤ì •
+            rbDarkMode.AutoCheck = false;                // ìë™ ì²´í¬ ë°©ì§€
+            rbDarkMode.Click += this.rbDarkMode_Click;   // í´ë¦­í•  ë•Œ ìˆ˜ë™ í† ê¸€
+            // CheckedChangedëŠ” Designerì—ì„œ ì´ë¯¸ ì—°ê²°ë˜ì–´ ìˆìŒ
 
-            // ÇöÀç Àü¿ª Å×¸¶ »óÅÂ¿¡ ¸ÂÃç ÃÊ±â Àû¿ë
+            // í˜„ì¬ ì „ì—­ í…Œë§ˆ ìƒíƒœì— ë§ì¶° ì´ˆê¸° ì ìš©
             if (ThemeManager.CurrentMode == ThemeMode.Dark)
             {
-                rbDarkMode.Checked = true;       // CheckedChanged ¹ß»ı ¡æ ThemeManager.SetTheme(Dark) ´Ù½Ã È£ÃâÇØµµ µ¿ÀÏ »óÅÂ¶ó ¹«½ÃµÊ
+                rbDarkMode.Checked = true;       // CheckedChanged ë°œìƒ â†’ ThemeManager.SetTheme(Dark) ë‹¤ì‹œ í˜¸ì¶œí•´ë„ ë™ì¼ ìƒíƒœë¼ ë¬´ì‹œë¨
                 this.ApplyTheme(true);
             }
             else
@@ -134,7 +134,7 @@ namespace DBP_Chat
         {
             this.AutoScaleMode = AutoScaleMode.None;
 
-            // ÆùÆ® ½ºÅ¸ÀÏ ÃÊ±âÈ­
+            // í°íŠ¸ ìŠ¤íƒ€ì¼ ì´ˆê¸°í™”
             label1.Font = label3.Font;
             txtname.Font = txtID.Font;
 
@@ -145,8 +145,8 @@ namespace DBP_Chat
                 var visibleDepts = this.permissionManager.GetVisibleDepartments(this.currentUserId);
                 cbDept.Items.Clear();
 
-                // [¼öÁ¤ 1] ÄŞº¸¹Ú½º ÃÖ»ó´Ü¿¡ 'ÀüÃ¼' ¿É¼Ç Ãß°¡
-                cbDept.Items.Add("ÀüÃ¼");
+                // [ìˆ˜ì • 1] ì½¤ë³´ë°•ìŠ¤ ìµœìƒë‹¨ì— 'ì „ì²´' ì˜µì…˜ ì¶”ê°€
+                cbDept.Items.Add("ì „ì²´");
 
                 var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (DataRow dept in visibleDepts.Rows)
@@ -165,22 +165,22 @@ namespace DBP_Chat
                         cbDept.Items.Add(topLevelDept);
                 }
 
-                // [¼öÁ¤ 2] ±âº» ¼±ÅÃ°ªÀ» 'ÀüÃ¼'(ÀÎµ¦½º 0)·Î ¼³Á¤
+                // [ìˆ˜ì • 2] ê¸°ë³¸ ì„ íƒê°’ì„ 'ì „ì²´'(ì¸ë±ìŠ¤ 0)ë¡œ ì„¤ì •
                 if (cbDept.Items.Count > 0)
                     cbDept.SelectedIndex = 0;
             }
             catch
             {
-                // ¿¹¿Ü ¹«½Ã
+                // ì˜ˆì™¸ ë¬´ì‹œ
             }
 
-            // TreeView ·Îµå
+            // TreeView ë¡œë“œ
             this.LoadTreeView();
 
-            // Áñ°ÜÃ£±â ¸ñ·Ï ·Îµå
+            // ì¦ê²¨ì°¾ê¸° ëª©ë¡ ë¡œë“œ
             this.LoadFavoriteList();
 
-            // Å×¸¶ ¼³Á¤
+            // í…Œë§ˆ ì„¤ì •
             this.ApplyLightHelper();
 
             rbDarkMode.AutoCheck = false;
@@ -203,20 +203,20 @@ namespace DBP_Chat
             string id = this.txtID.Text.Trim();
             string name = this.txtname.Text.Trim();
 
-            // [¼öÁ¤ 3] 'ÀüÃ¼' ¼±ÅÃ ½Ã ºÎ¼­ °Ë»ö Á¶°ÇÀ» ºó ¹®ÀÚ¿­·Î Ã³¸®ÇÏ¿© ¸ğµç ºÎ¼­ °Ë»ö
+            // [ìˆ˜ì • 3] 'ì „ì²´' ì„ íƒ ì‹œ ë¶€ì„œ ê²€ìƒ‰ ì¡°ê±´ì„ ë¹ˆ ë¬¸ìì—´ë¡œ ì²˜ë¦¬í•˜ì—¬ ëª¨ë“  ë¶€ì„œ ê²€ìƒ‰
             string dept = this.cbDept.SelectedItem?.ToString()?.Trim() ?? string.Empty;
-            if (dept == "ÀüÃ¼")
+            if (dept == "ì „ì²´")
             {
                 dept = "";
             }
 
-            // SearchResultForm »ı¼º ½Ã currentUserId°¡ ³Ñ¾î°¡¹Ç·Î, 
-            // SearchResultForm ³»ºÎ Äõ¸®¿¡¼­ ÇÊÅÍ¸µÀ» ¼öÇàÇØ¾ß ÇÕ´Ï´Ù.
+            // SearchResultForm ìƒì„± ì‹œ currentUserIdê°€ ë„˜ì–´ê°€ë¯€ë¡œ, 
+            // SearchResultForm ë‚´ë¶€ ì¿¼ë¦¬ì—ì„œ í•„í„°ë§ì„ ìˆ˜í–‰í•´ì•¼ í•©ë‹ˆë‹¤.
             SearchResultForm s = new SearchResultForm(id, name, dept, this.currentUserId, this);
             s.Show();
         }
 
-        // ThemeManager.ThemeChanged¿¡¼­ È£ÃâµÇ´Â ÇÚµé·¯
+        // ThemeManager.ThemeChangedì—ì„œ í˜¸ì¶œë˜ëŠ” í•¸ë“¤ëŸ¬
         private void OnThemeChanged(ThemeMode mode)
         {
             if (mode == ThemeMode.Dark)
@@ -231,26 +231,26 @@ namespace DBP_Chat
             }
         }
 
-        // ¶óµğ¿À¹öÆ°À» Åä±Û ½ºÀ§Ä¡Ã³·³ »ç¿ë
+        // ë¼ë””ì˜¤ë²„íŠ¼ì„ í† ê¸€ ìŠ¤ìœ„ì¹˜ì²˜ëŸ¼ ì‚¬ìš©
         private void rbDarkMode_Click(object sender, EventArgs e)
         {
             rbDarkMode.Checked = !rbDarkMode.Checked;
         }
 
-        // Checked º¯°æ ½Ã Àü¿ª Å×¸¶ »óÅÂµµ ÇÔ²² º¯°æ
+        // Checked ë³€ê²½ ì‹œ ì „ì—­ í…Œë§ˆ ìƒíƒœë„ í•¨ê»˜ ë³€ê²½
         private void rbDarkMode_CheckedChanged(object sender, EventArgs e)
         {
             if (this.rbDarkMode.Checked)
             {
-                // ´ÙÅ© ¸ğµå ON
+                // ë‹¤í¬ ëª¨ë“œ ON
                 ThemeManager.SetTheme(ThemeMode.Dark);
                 
                 RefreshAllForms();
-                // ThemeManager ³»ºÎ¿¡¼­ CurrentMode º¯°æ + ¸ğµç Æû ApplyTheme + ThemeChanged ÀÌº¥Æ®
+                // ThemeManager ë‚´ë¶€ì—ì„œ CurrentMode ë³€ê²½ + ëª¨ë“  í¼ ApplyTheme + ThemeChanged ì´ë²¤íŠ¸
             }
             else
             {
-                // ¶óÀÌÆ® ¸ğµå ON
+                // ë¼ì´íŠ¸ ëª¨ë“œ ON
                 ThemeManager.SetTheme(ThemeMode.Light);
                 
                 RefreshAllForms();
@@ -259,11 +259,11 @@ namespace DBP_Chat
 
         private void RefreshAllForms()
         {
-            // ÇöÀç Æû »õ·Î°íÄ§
+            // í˜„ì¬ í¼ ìƒˆë¡œê³ ì¹¨
             this.Invalidate(true);
             this.Refresh();
 
-            // ¿­·ÁÀÖ´Â ¸ğµç Æû »õ·Î°íÄ§
+            // ì—´ë ¤ìˆëŠ” ëª¨ë“  í¼ ìƒˆë¡œê³ ì¹¨
             foreach (Form form in Application.OpenForms)
             {
                 if (form != this)
@@ -281,14 +281,14 @@ namespace DBP_Chat
         private void LoadTreeView()
         {
             this.tvdept.Nodes.Clear();
-            TreeNode companyNode = new TreeNode("È¸»ç");
+            TreeNode companyNode = new TreeNode("íšŒì‚¬");
             this.tvdept.Nodes.Add(companyNode);
 
             DataTable visibleDepts = this.permissionManager.GetVisibleDepartments(this.currentUserId);
 
             if (visibleDepts == null || visibleDepts.Rows.Count == 0)
             {
-                TreeNode noDeptNode = new TreeNode("(º¼ ¼ö ÀÖ´Â ºÎ¼­°¡ ¾ø½À´Ï´Ù)");
+                TreeNode noDeptNode = new TreeNode("(ë³¼ ìˆ˜ ìˆëŠ” ë¶€ì„œê°€ ì—†ìŠµë‹ˆë‹¤)");
                 companyNode.Nodes.Add(noDeptNode);
                 this.tvdept.ExpandAll();
                 return;
@@ -300,7 +300,7 @@ namespace DBP_Chat
                     ? dept["DeptPath"].ToString()
                     : dept["DeptName"].ToString();
 
-                TreeNode deptNode = new TreeNode($"{deptDisplayName} ({dept["UserCount"]}¸í)");
+                TreeNode deptNode = new TreeNode($"{deptDisplayName} ({dept["UserCount"]}ëª…)");
                 deptNode.Tag = dept["DeptId"];
                 companyNode.Nodes.Add(deptNode);
 
@@ -325,8 +325,8 @@ namespace DBP_Chat
 
                     if (uid == this.currentUserId)
                     {
-                        userNode.Text = $"{text}  - ³ª";
-                        userNode.NodeFont = new Font("¸¼Àº °íµñ", 10, FontStyle.Bold);
+                        userNode.Text = $"{text}  - ë‚˜";
+                        userNode.NodeFont = new Font("ë§‘ì€ ê³ ë”•", 10, FontStyle.Bold);
                         userNode.ForeColor = Color.FromArgb(119, 136, 115);
                     }
                     else if (!this.permissionManager.CanChat(this.currentUserId, uid))
@@ -400,7 +400,7 @@ namespace DBP_Chat
         {
             if (this.tvdept.SelectedNode == null || this.tvdept.SelectedNode.Level != 2)
             {
-                MessageBox.Show("Á÷¿øÀ» ¼±ÅÃÇÏ¼¼¿ä!");
+                MessageBox.Show("ì§ì›ì„ ì„ íƒí•˜ì„¸ìš”!");
                 return;
             }
 
@@ -408,7 +408,7 @@ namespace DBP_Chat
 
             if (!this.permissionManager.CanViewUser(this.currentUserId, targetUserId))
             {
-                MessageBox.Show("ÇØ´ç »ç¿ëÀÚ¸¦ º¼ ¼ö ÀÖ´Â ±ÇÇÑÀÌ ¾ø½À´Ï´Ù.", "±ÇÇÑ ¾øÀ½",
+                MessageBox.Show("í•´ë‹¹ ì‚¬ìš©ìë¥¼ ë³¼ ìˆ˜ ìˆëŠ” ê¶Œí•œì´ ì—†ìŠµë‹ˆë‹¤.", "ê¶Œí•œ ì—†ìŒ",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -422,7 +422,7 @@ namespace DBP_Chat
 
             if (Convert.ToInt32(dt.Rows[0][0]) > 0)
             {
-                   MessageBox.Show("ÀÌ¹Ì Áñ°ÜÃ£±â¿¡ µî·ÏµÇ¾î ÀÖ½À´Ï´Ù!");
+                   MessageBox.Show("ì´ë¯¸ ì¦ê²¨ì°¾ê¸°ì— ë“±ë¡ë˜ì–´ ìˆìŠµë‹ˆë‹¤!");
                 return;
             }
 
@@ -431,7 +431,7 @@ namespace DBP_Chat
 
             DBconnector.GetInstance().NonQuery(sql);
 
-            MessageBox.Show("Áñ°ÜÃ£±â¿¡ Ãß°¡µÇ¾ú½À´Ï´Ù!");
+            MessageBox.Show("ì¦ê²¨ì°¾ê¸°ì— ì¶”ê°€ë˜ì—ˆìŠµë‹ˆë‹¤!");
             this.LoadFavoriteList();
         }
 
@@ -439,7 +439,7 @@ namespace DBP_Chat
         {
             if (this.lBlist.SelectedItem == null)
             {
-                MessageBox.Show("»èÁ¦ÇÒ ´ë»óÀ» ¼±ÅÃÇÏ¼¼¿ä!");
+                MessageBox.Show("ì‚­ì œí•  ëŒ€ìƒì„ ì„ íƒí•˜ì„¸ìš”!");
                 return;
             }
             /*
@@ -447,15 +447,15 @@ namespace DBP_Chat
             int targetUserId = Convert.ToInt32(this.lBlist.SelectedItem.ToString());
             */
 
-            // ListBox¿¡¼­ ¼±ÅÃµÈ ÅØ½ºÆ®: "(LoginId) Name" Çü½Ä
+            // ListBoxì—ì„œ ì„ íƒëœ í…ìŠ¤íŠ¸: "(LoginId) Name" í˜•ì‹
             string selectedText = this.lBlist.SelectedItem.ToString();
 
-            // "()" »çÀÌÀÇ LoginId ÃßÃâ
+            // "()" ì‚¬ì´ì˜ LoginId ì¶”ì¶œ
             int startIdx = selectedText.IndexOf('(') + 1;
             int endIdx = selectedText.IndexOf(')');
             string loginId = selectedText.Substring(startIdx, endIdx - startIdx);
 
-            // LoginId·Î UserId Ã£±â
+            // LoginIdë¡œ UserId ì°¾ê¸°
             string findUserSql = $"SELECT UserId FROM User WHERE LoginId = '{loginId}'";
             DataTable userDt = DBconnector.GetInstance().Query(findUserSql);
             int targetUserId = Convert.ToInt32(userDt.Rows[0]["UserId"]);
@@ -465,7 +465,7 @@ namespace DBP_Chat
 
             DBconnector.GetInstance().NonQuery(sql);
 
-            MessageBox.Show("»èÁ¦µÇ¾ú½À´Ï´Ù!");
+            MessageBox.Show("ì‚­ì œë˜ì—ˆìŠµë‹ˆë‹¤!");
             this.LoadFavoriteList();
         }
 
@@ -473,7 +473,7 @@ namespace DBP_Chat
 		{
 			int targetUserId = -1;
 
-			// Áñ°ÜÃ£±â¿¡¼­ ¼±ÅÃÇÑ °æ¿ì
+			// ì¦ê²¨ì°¾ê¸°ì—ì„œ ì„ íƒí•œ ê²½ìš°
 			if (this.lBlist.SelectedItem != null)
 			{
 				string selectedText = this.lBlist.SelectedItem.ToString();
@@ -488,27 +488,27 @@ namespace DBP_Chat
 				if (dt.Rows.Count > 0)
 					targetUserId = Convert.ToInt32(dt.Rows[0]["UserId"]);
 			}
-			// Á¶Á÷µµ(TreeView)¿¡¼­ ¼±ÅÃÇÑ °æ¿ì
+			// ì¡°ì§ë„(TreeView)ì—ì„œ ì„ íƒí•œ ê²½ìš°
 			else if (this.tvdept.SelectedNode != null && this.tvdept.SelectedNode.Level == 2)
 			{
 				targetUserId = Convert.ToInt32(this.tvdept.SelectedNode.Tag);
 			}
 			else
 			{
-				MessageBox.Show("´ëÈ­ÇÒ Á÷¿øÀ» ¼±ÅÃÇÏ¼¼¿ä!");
+				MessageBox.Show("ëŒ€í™”í•  ì§ì›ì„ ì„ íƒí•˜ì„¸ìš”!");
 				return;
 			}
 
-			// Ã¤ÆÃ ±ÇÇÑ Ã¼Å©
+			// ì±„íŒ… ê¶Œí•œ ì²´í¬
 			var result = this.permissionManager.CanSendMessage(this.currentUserId, targetUserId);
 			if (!result.CanSend)
 			{
-				MessageBox.Show(result.Reason, "Ã¤ÆÃ ºÒ°¡",
+				MessageBox.Show(result.Reason, "ì±„íŒ… ë¶ˆê°€",
 					MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
-			// ÀÌ¹Ì ¿­¸° Ã¤ÆÃÃ¢ ÀÖÀ¸¸é Àç»ç¿ë
+			// ì´ë¯¸ ì—´ë¦° ì±„íŒ…ì°½ ìˆìœ¼ë©´ ì¬ì‚¬ìš©
 			if (openChatForms.ContainsKey(targetUserId))
 			{
 				ChatForm openedForm = openChatForms[targetUserId];
@@ -525,11 +525,11 @@ namespace DBP_Chat
 				}
 			}
 
-			// ¾øÀ¸¸é »õ·Î ¿­±â
+			// ì—†ìœ¼ë©´ ìƒˆë¡œ ì—´ê¸°
 			ChatForm chatForm = new ChatForm(this.currentUserId, targetUserId);
 			openChatForms[targetUserId] = chatForm;
 
-			// Ã¤ÆÃÃ¢ ´İÈ÷¸é Dictionary¿¡¼­ Á¦°Å
+			// ì±„íŒ…ì°½ ë‹«íˆë©´ Dictionaryì—ì„œ ì œê±°
 			chatForm.FormClosed += (s, args) =>
 			{
 				if (openChatForms.ContainsKey(targetUserId))
@@ -575,7 +575,7 @@ namespace DBP_Chat
             editForm.ShowDialog();
         }
 
-        // ÀÌ Æû Àü¿ë ´ÙÅ©¸ğµå ½ºÅ¸ÀÏ Àû¿ë
+        // ì´ í¼ ì „ìš© ë‹¤í¬ëª¨ë“œ ìŠ¤íƒ€ì¼ ì ìš©
         private void ApplyTheme(bool isDark)
         {
             if (!isDark)
@@ -616,25 +616,25 @@ namespace DBP_Chat
             this.txtname.BackColor = Color.FromArgb(30, 30, 30);
             this.txtname.ForeColor = text;
 
-            // ÄŞº¸¹Ú½º ´ÙÅ©¸ğµå Àû¿ë ¼öÁ¤ - ¿ÏÀü ¾îµÓ°Ô
-            this.cbDept.BackColor = Color.FromArgb(30, 30, 30);  // ´õ ¾îµÎ¿î ¹è°æ (ÅØ½ºÆ®¹Ú½º¿Í µ¿ÀÏ)
-            this.cbDept.ForeColor = Color.White;                 // Èò»ö ÅØ½ºÆ®
+            // ì½¤ë³´ë°•ìŠ¤ ë‹¤í¬ëª¨ë“œ ì ìš© ìˆ˜ì • - ì™„ì „ ì–´ë‘¡ê²Œ
+            this.cbDept.BackColor = Color.FromArgb(30, 30, 30);  // ë” ì–´ë‘ìš´ ë°°ê²½ (í…ìŠ¤íŠ¸ë°•ìŠ¤ì™€ ë™ì¼)
+            this.cbDept.ForeColor = Color.White;                 // í°ìƒ‰ í…ìŠ¤íŠ¸
             this.cbDept.FlatStyle = FlatStyle.Flat;
             
-            // µå·Ó´Ù¿îµµ ¾îµÓ°Ô ¸¸µé±â À§ÇÑ Ãß°¡ ¼³Á¤
+            // ë“œë¡­ë‹¤ìš´ë„ ì–´ë‘¡ê²Œ ë§Œë“¤ê¸° ìœ„í•œ ì¶”ê°€ ì„¤ì •
             this.cbDept.DrawMode = DrawMode.OwnerDrawFixed;
             this.cbDept.DrawItem += (s, e) => {
                 if (e.Index < 0) return;
                 
                 e.DrawBackground();
                 
-                // ¹è°æ»öÀ» ¾îµÓ°Ô
+                // ë°°ê²½ìƒ‰ì„ ì–´ë‘¡ê²Œ
                 using (var brush = new SolidBrush(Color.FromArgb(30, 30, 30)))
                 {
                     e.Graphics.FillRectangle(brush, e.Bounds);
                 }
                 
-                // ¼±ÅÃµÈ ¾ÆÀÌÅÛ ÇÏÀÌ¶óÀÌÆ®
+                // ì„ íƒëœ ì•„ì´í…œ í•˜ì´ë¼ì´íŠ¸
                 if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
                 {
                     using (var brush = new SolidBrush(Color.FromArgb(60, 60, 60)))
@@ -643,7 +643,7 @@ namespace DBP_Chat
                     }
                 }
                 
-                // ÅØ½ºÆ® ±×¸®±â
+                // í…ìŠ¤íŠ¸ ê·¸ë¦¬ê¸°
                 using (var brush = new SolidBrush(Color.White))
                 {
                     e.Graphics.DrawString(this.cbDept.Items[e.Index].ToString(), 
@@ -651,7 +651,7 @@ namespace DBP_Chat
                 }
             };
             
-            this.cbDept.Refresh();                               //Áï½Ã ´Ù½Ã ±×¸®±â
+            this.cbDept.Refresh();                               //ì¦‰ì‹œ ë‹¤ì‹œ ê·¸ë¦¬ê¸°
             
             this.lBlist.BackColor = Color.FromArgb(30, 30, 30);
             this.lBlist.ForeColor = text;
@@ -675,7 +675,7 @@ namespace DBP_Chat
 
         private void ApplyLightHelper()
         {
-            // Dept Àü¿ë ¶óÀÌÆ® ½ºÅ¸ÀÏ
+            // Dept ì „ìš© ë¼ì´íŠ¸ ìŠ¤íƒ€ì¼
             DeptUIHelper.Apply(this);
             this.ResetLabelBackgrounds(this);
             headerLabel.BackColor = Color.Transparent;

@@ -1,4 +1,4 @@
-﻿using leehaeun.UIHelpers;
+using leehaeun.UIHelpers;
 using System.Text.Json;
 
 

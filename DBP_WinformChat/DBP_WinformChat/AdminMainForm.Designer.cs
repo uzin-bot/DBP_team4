@@ -1,4 +1,4 @@
-﻿namespace DBPAdmin
+namespace DBPAdmin
 {
     partial class AdminMainForm
     {

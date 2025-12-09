@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -169,7 +169,7 @@ namespace leehaeun.UIHelpers
                 }
             };
 
-            string[] tabNames = { "프로필", "��Ƽ프로필", "맑은 고딕�" };
+            string[] tabNames = { "프로필", "멀티프로필", "계정 정보" };
             Panel[] pages = new Panel[3];
 
             for (int i = 0; i < 3; i++)

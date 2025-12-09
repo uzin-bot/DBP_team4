@@ -1,4 +1,4 @@
-﻿namespace DBP_Chat
+namespace DBP_Chat
 {
 	partial class SearchResultForm
 	{

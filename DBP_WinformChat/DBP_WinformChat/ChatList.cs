@@ -12,58 +12,58 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ³²¿¹¼Ö
+namespace ë‚¨ì˜ˆì†”
 {
     public partial class chatlist : Form
     {
-        //ÇöÀç ·Î±×ÀÎÇÑ »ç¿ëÀÚ Á¤º¸(UserInfo¿¡¼­ °¡Á®¿È)
+        //í˜„ì¬ ë¡œê·¸ì¸í•œ ì‚¬ìš©ì ì •ë³´(UserInfoì—ì„œ ê°€ì ¸ì˜´)
         //User.Rows[0] -> User
         private int currentUserId = Convert.ToInt32(UserInfo.User["UserId"]);
         private string currentUserName = UserInfo.User["Name"].ToString();
         private string currentUserNickname = UserInfo.Profile.Rows[0]["Nickname"].ToString();
 
-        // ¾Ë¶÷¿ë TCP Å¬¶óÀÌ¾ğÆ®
+        // ì•ŒëŒìš© TCP í´ë¼ì´ì–¸íŠ¸
         private TcpClient alertClient;
         private NetworkStream alertStream;
         private NotifyIcon niChatAlert;
 
-        // ? Ãß°¡ÇÒ ÇÊµåµé
-        private System.Windows.Forms.Timer refreshTimer;  // ¡ç ¿©±â Ãß°¡
-        private int lastMessageSenderId = 0;              // ¡ç ¿©±â Ãß°¡
+        // ? ì¶”ê°€í•  í•„ë“œë“¤
+        private System.Windows.Forms.Timer refreshTimer;  // â† ì—¬ê¸° ì¶”ê°€
+        private int lastMessageSenderId = 0;              // â† ì—¬ê¸° ì¶”ê°€
 
         public chatlist()
         {
             InitializeComponent();
 
-            // ? ListView È£¹ö È¿°ú ¿ÏÀü Â÷´Ü (ÀÌ ºÎºĞÀ» Ãß°¡)
+            // ? ListView í˜¸ë²„ íš¨ê³¼ ì™„ì „ ì°¨ë‹¨ (ì´ ë¶€ë¶„ì„ ì¶”ê°€)
             lvlist.HotTracking = false;
             lvlist.HoverSelection = false;
             lvlist.Activation = ItemActivation.Standard;
 
-            // Àü¿ª Å×¸¶ Àû¿ë ¹× ±¸µ¶
+            // ì „ì—­ í…Œë§ˆ ì ìš© ë° êµ¬ë…
             ApplyTheme(ThemeManager.IsDarkMode);
             ThemeManager.Subscribe(this, ApplyTheme);
 
             btndept.Click += btndept_Click;
 
-            // ? Owner Draw ÀÌº¥Æ® µî·Ï Ãß°¡
+            // ? Owner Draw ì´ë²¤íŠ¸ ë“±ë¡ ì¶”ê°€
             lvlist.DrawColumnHeader += LvList_DrawColumnHeader;
             lvlist.DrawSubItem += LvList_DrawSubItem;
 
             niChatAlert = new NotifyIcon();
             niChatAlert.Icon = SystemIcons.Information;
             niChatAlert.Visible = true;
-            niChatAlert.Text = "Ã¤ÆÃ ¾Ë¸²";
+            niChatAlert.Text = "ì±„íŒ… ì•Œë¦¼";
 
-            // ? BalloonTip Å¬¸¯ ÀÌº¥Æ® Ãß°¡
+            // ? BalloonTip í´ë¦­ ì´ë²¤íŠ¸ ì¶”ê°€
             niChatAlert.BalloonTipClicked += NiChatAlert_BalloonTipClicked;
 
-            // ? refreshTimer ÃÊ±âÈ­ Ãß°¡
+            // ? refreshTimer ì´ˆê¸°í™” ì¶”ê°€
             refreshTimer = new System.Windows.Forms.Timer();
             refreshTimer.Interval = 3000;
             refreshTimer.Tick += (s, e) => LoadRecentChat();
 
-            // ? Ãß°¡
+            // ? ì¶”ê°€
             LoadRecentChat();
             this.Activated += chatlist_Activated;
 
@@ -74,8 +74,8 @@ namespace ³²¿¹¼Ö
         {
             if (isDark)
             {
-                // ÇÊ¿ä ½Ã ´ÙÅ© ÇïÆÛ »ç¿ë (ÇöÀç ÄÁÅØ½ºÆ®¿£ ¶óÀÌÆ®¸¸ ÀÖÀ¸¹Ç·Î »ı·« ¶Ç´Â ±¸Çö)
-                // ¿¹: DarkChatListUIHelper.Apply(this);
+                // í•„ìš” ì‹œ ë‹¤í¬ í—¬í¼ ì‚¬ìš© (í˜„ì¬ ì»¨í…ìŠ¤íŠ¸ì—” ë¼ì´íŠ¸ë§Œ ìˆìœ¼ë¯€ë¡œ ìƒëµ ë˜ëŠ” êµ¬í˜„)
+                // ì˜ˆ: DarkChatListUIHelper.Apply(this);
             }
             else
             {
@@ -83,7 +83,7 @@ namespace ³²¿¹¼Ö
             }
         }
 
-        // ? ¿©±â¿¡ Ãß°¡
+        // ? ì—¬ê¸°ì— ì¶”ê°€
         private void chatlist_Activated(object sender, EventArgs e)
         {
             LoadRecentChat();
@@ -91,14 +91,14 @@ namespace ³²¿¹¼Ö
 
         private void chatlist_Load(object sender, EventArgs e)
         {
-            Console.WriteLine($"[chatlist] ==================== chatlist_Load ½ÃÀÛ ====================");
+            Console.WriteLine($"[chatlist] ==================== chatlist_Load ì‹œì‘ ====================");
             Console.WriteLine($"[chatlist] currentUserId = {currentUserId}");
             LoadRecentChat();
 
-            Console.WriteLine($"[chatlist] ConnectAlertClient È£Ãâ Àü");
-            //¾Ë¸² Å¬¶óÀÌ¾ğÆ® ¿¬°á
+            Console.WriteLine($"[chatlist] ConnectAlertClient í˜¸ì¶œ ì „");
+            //ì•Œë¦¼ í´ë¼ì´ì–¸íŠ¸ ì—°ê²°
             ConnectAlertClient();
-            Console.WriteLine($"[chatlist] chatlist_Load ¿Ï·á");
+            Console.WriteLine($"[chatlist] chatlist_Load ì™„ë£Œ");
         }
 
         private void RefreshTimer_Tick(object sender, EventArgs e)
@@ -107,43 +107,43 @@ namespace ³²¿¹¼Ö
             LoadRecentChat();
         }
 
-        // ===== ¾Ë¸² ±â´É Ãß°¡ =====
+        // ===== ì•Œë¦¼ ê¸°ëŠ¥ ì¶”ê°€ =====
 
-        // ¼­¹ö¿¡ ¾Ë¸²¿ë ¿¬°á »ı¼º
+        // ì„œë²„ì— ì•Œë¦¼ìš© ì—°ê²° ìƒì„±
         private void ConnectAlertClient()
         {
             if (alertClient != null && alertClient.Connected) return;
 
             try
             {
-                // 1. ±âÁ¸ ¿¬°á Á¤¸®
+                // 1. ê¸°ì¡´ ì—°ê²° ì •ë¦¬
                 alertClient?.Close();
                 alertClient = new TcpClient();
 
-                // 2. »õ·Î¿î ¿¬°á ½Ãµµ
+                // 2. ìƒˆë¡œìš´ ì—°ê²° ì‹œë„
                 //alertClient.Connect("127.0.0.1", 8888);
                 alertClient.Connect("51.21.27.234", 12345);
                 //alertClient.Connect("10.201.21.210", 8888);
 
                 alertStream = alertClient.GetStream();
 
-                // 3. ¼­¹ö¿¡ ·Î±×ÀÎ ID µî·Ï
+                // 3. ì„œë²„ì— ë¡œê·¸ì¸ ID ë“±ë¡
                 string loginMsg = $"LOGIN:{currentUserId}:::";
                 byte[] loginData = Encoding.UTF8.GetBytes(loginMsg);
                 alertStream.Write(loginData, 0, loginData.Length);
 
-                // 4. ¸Ş½ÃÁö ¼ö½Å¿ë ½º·¹µå ½ÃÀÛ
+                // 4. ë©”ì‹œì§€ ìˆ˜ì‹ ìš© ìŠ¤ë ˆë“œ ì‹œì‘
                 Thread receiveThread = new Thread(ReceiveAlertMessages);
                 receiveThread.IsBackground = true;
                 receiveThread.Start();
 
-                Console.WriteLine("[chatlist] ¾Ë¸² Å¬¶óÀÌ¾ğÆ® ¿¬°á ¼º°ø.");
+                Console.WriteLine("[chatlist] ì•Œë¦¼ í´ë¼ì´ì–¸íŠ¸ ì—°ê²° ì„±ê³µ.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[chatlist] ¾Ë¸² Å¬¶óÀÌ¾ğÆ® ¿¬°á ¿À·ù: {ex.Message}");
+                Console.WriteLine($"[chatlist] ì•Œë¦¼ í´ë¼ì´ì–¸íŠ¸ ì—°ê²° ì˜¤ë¥˜: {ex.Message}");
 
-                // ¿¬°á ½ÇÆĞ ½Ã Àç¿¬°á ½Ãµµ (3ÃÊ ÈÄ)
+                // ì—°ê²° ì‹¤íŒ¨ ì‹œ ì¬ì—°ê²° ì‹œë„ (3ì´ˆ í›„)
                 Task.Run(() =>
                 {
                     Thread.Sleep(3000);
@@ -151,7 +151,7 @@ namespace ³²¿¹¼Ö
                     {
                         this.Invoke((MethodInvoker)delegate
                         {
-                            ConnectAlertClient(); // Àç±ÍÀûÀ¸·Î Àç¿¬°á ½Ãµµ
+                            ConnectAlertClient(); // ì¬ê·€ì ìœ¼ë¡œ ì¬ì—°ê²° ì‹œë„
                         });
                     }
                 });
@@ -159,13 +159,13 @@ namespace ³²¿¹¼Ö
         }
 
         /*
-        // ¿©±â¿¡ ¿ø·¡ ÀÖ´ø ÇÔ¼ö
-        // ¼­¹ö·Î ºÎÅÍ ¾Ë¸² ¸Ş¼¼Áö ¼ö½Å
+        // ì—¬ê¸°ì— ì›ë˜ ìˆë˜ í•¨ìˆ˜
+        // ì„œë²„ë¡œ ë¶€í„° ì•Œë¦¼ ë©”ì„¸ì§€ ìˆ˜ì‹ 
         private void ReceiveAlertMessages()
         {
             if (alertClient == null || !alertClient.Connected) return;
 
-            byte[] buffer = new byte[4096]; // ¹öÆÛ Å©±â Áõ°¡
+            byte[] buffer = new byte[4096]; // ë²„í¼ í¬ê¸° ì¦ê°€
             StringBuilder messageBuilder = new StringBuilder();
 
             while (alertClient != null && alertClient.Connected)
@@ -176,15 +176,15 @@ namespace ³²¿¹¼Ö
                     if (bytesRead == 0) break;
 
                     string received = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    Console.WriteLine($"[chatlist] ¿øº» ¼ö½Å: [{received}]");
+                    Console.WriteLine($"[chatlist] ì›ë³¸ ìˆ˜ì‹ : [{received}]");
 
                     messageBuilder.Append(received);
                     string fullMessage = messageBuilder.ToString();
 
-                    // null ¹®ÀÚ·Î ¸Ş½ÃÁö ±¸ºĞ
+                    // null ë¬¸ìë¡œ ë©”ì‹œì§€ êµ¬ë¶„
                     string[] messages = fullMessage.Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    // ¸¶Áö¸· ¸Ş½ÃÁö°¡ ¿ÏÀüÇÏÁö ¾ÊÀ» ¼ö ÀÖÀ¸¹Ç·Î Ã¼Å©
+                    // ë§ˆì§€ë§‰ ë©”ì‹œì§€ê°€ ì™„ì „í•˜ì§€ ì•Šì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì²´í¬
                     bool lastMessageComplete = fullMessage.EndsWith("\0");
 
                     int messagesToProcess = lastMessageComplete ? messages.Length : messages.Length - 1;
@@ -194,9 +194,9 @@ namespace ³²¿¹¼Ö
                         string msg = messages[i].Trim();
                         if (string.IsNullOrWhiteSpace(msg)) continue;
 
-                        Console.WriteLine($"[chatlist] Ã³¸®ÇÒ ¸Ş½ÃÁö: [{msg}]");
+                        Console.WriteLine($"[chatlist] ì²˜ë¦¬í•  ë©”ì‹œì§€: [{msg}]");
 
-                        // CHAT:senderId:receiverId:content (4°³·Î ºĞÇÒ)
+                        // CHAT:senderId:receiverId:content (4ê°œë¡œ ë¶„í• )
                         string[] parts = msg.Split(new char[] { ':' }, 4);
 
                         Console.WriteLine($"[chatlist] parts.Length={parts.Length}");
@@ -214,10 +214,10 @@ namespace ³²¿¹¼Ö
 
                             Console.WriteLine($"[chatlist] receiverId={receiverId}, currentUserId={currentUserId}");
 
-                            // ³ª¿¡°Ô ¿Â ¸Ş½ÃÁöÀÎ °æ¿ì¿¡¸¸ Ã³¸®
+                            // ë‚˜ì—ê²Œ ì˜¨ ë©”ì‹œì§€ì¸ ê²½ìš°ì—ë§Œ ì²˜ë¦¬
                             if (receiverId == currentUserId.ToString())
                             {
-                                Console.WriteLine($"[chatlist] ¾Ë¶÷ Ç¥½Ã ½ÃÀÛ!");
+                                Console.WriteLine($"[chatlist] ì•ŒëŒ í‘œì‹œ ì‹œì‘!");
 
                                 if (this.InvokeRequired)
                                 {
@@ -236,16 +236,16 @@ namespace ³²¿¹¼Ö
                             }
                             else
                             {
-                                Console.WriteLine($"[chatlist] ´Ù¸¥ »ç¶÷ ¸Ş½ÃÁö");
+                                Console.WriteLine($"[chatlist] ë‹¤ë¥¸ ì‚¬ëŒ ë©”ì‹œì§€");
                             }
                         }
                         else
                         {
-                            Console.WriteLine($"[chatlist] CHAT ¸Ş½ÃÁö ¾Æ´Ô ¶Ç´Â Çü½Ä ¿À·ù");
+                            Console.WriteLine($"[chatlist] CHAT ë©”ì‹œì§€ ì•„ë‹˜ ë˜ëŠ” í˜•ì‹ ì˜¤ë¥˜");
                         }
                     }
 
-                    // ¹ÌÃ³¸® ¸Ş½ÃÁö º¸°ü
+                    // ë¯¸ì²˜ë¦¬ ë©”ì‹œì§€ ë³´ê´€
                     if (!lastMessageComplete && messages.Length > 0)
                     {
                         messageBuilder.Clear();
@@ -258,16 +258,16 @@ namespace ³²¿¹¼Ö
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[chatlist] ¼ö½Å ¿À·ù: {ex.Message}\n{ex.StackTrace}");
+                    Console.WriteLine($"[chatlist] ìˆ˜ì‹  ì˜¤ë¥˜: {ex.Message}\n{ex.StackTrace}");
                     break;
                 }
             }
 
-            // ¿¬°á Á¾·á ÈÄ Àç¿¬°á
+            // ì—°ê²° ì¢…ë£Œ í›„ ì¬ì—°ê²°
             ReconnectAlert();
         }
 
-        // Àç¿¬°á ¸Ş¼­µå (»õ·Î Ãß°¡)
+        // ì¬ì—°ê²° ë©”ì„œë“œ (ìƒˆë¡œ ì¶”ê°€)
         private void ReconnectAlert()
         {
             try
@@ -290,26 +290,26 @@ namespace ³²¿¹¼Ö
                                 {
                                     if (!this.IsDisposed)
                                     {
-                                        Console.WriteLine("[chatlist] Àç¿¬°á ½Ãµµ...");
+                                        Console.WriteLine("[chatlist] ì¬ì—°ê²° ì‹œë„...");
                                         ConnectAlertClient();
                                     }
                                 });
                             }
                         });
 
-                        Console.WriteLine("[chatlist] ¾Ë¸² Å¬¶óÀÌ¾ğÆ® Àç¿¬°á ¿¹¾à.");
+                        Console.WriteLine("[chatlist] ì•Œë¦¼ í´ë¼ì´ì–¸íŠ¸ ì¬ì—°ê²° ì˜ˆì•½.");
                     });
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[chatlist] Àç¿¬°á ¿À·ù: {ex.Message}");
+                Console.WriteLine($"[chatlist] ì¬ì—°ê²° ì˜¤ë¥˜: {ex.Message}");
             }
         }
         */
 
-        // ±âÁ¸ÀÇ ReceiveAlertMessages() ¸Ş¼­µå¸¦ »èÁ¦ÇÏ°í
-        // 1¹ø ¹®¼­ÀÇ ReceiveAlertMessages()·Î ¿ÏÀüÈ÷ ±³Ã¼
+        // ê¸°ì¡´ì˜ ReceiveAlertMessages() ë©”ì„œë“œë¥¼ ì‚­ì œí•˜ê³ 
+        // 1ë²ˆ ë¬¸ì„œì˜ ReceiveAlertMessages()ë¡œ ì™„ì „íˆ êµì²´
         private void ReceiveAlertMessages()
         {
             if (alertClient == null || !alertClient.Connected) return;
@@ -339,7 +339,7 @@ namespace ³²¿¹¼Ö
                         string msg = messages[i].Trim();
                         if (string.IsNullOrWhiteSpace(msg)) continue;
 
-                        // ? 5°³·Î Split (1¹ø ¹®¼­ ¹æ½Ä)
+                        // ? 5ê°œë¡œ Split (1ë²ˆ ë¬¸ì„œ ë°©ì‹)
                         string[] parts = msg.Split(new char[] { ':' }, 5);
 
                         if (parts.Length >= 4 && parts[0] == "CHAT")
@@ -350,10 +350,10 @@ namespace ³²¿¹¼Ö
 
                             if (receiverId == currentUserId.ToString())
                             {
-                                // ¡Ú¡Ú¡Ú ¿©±â¿¡ Ãß°¡ ¡Ú¡Ú¡Ú
+                                // â˜…â˜…â˜… ì—¬ê¸°ì— ì¶”ê°€ â˜…â˜…â˜…
                                 lastMessageSenderId = Convert.ToInt32(senderId);
 
-                                // ? 3ÃÊ Áö¿¬ ·ÎÁ÷ (1¹ø ¹®¼­ ¹æ½Ä)
+                                // ? 3ì´ˆ ì§€ì—° ë¡œì§ (1ë²ˆ ë¬¸ì„œ ë°©ì‹)
                                 Task.Delay(3000).ContinueWith(_ =>
                                 {
                                     try
@@ -374,7 +374,7 @@ namespace ³²¿¹¼Ö
                                             {
                                                 if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
                                                 {
-                                                    niChatAlert.BalloonTipTitle = $"»õ ¸Ş½ÃÁö: {senderId}";
+                                                    niChatAlert.BalloonTipTitle = $"ìƒˆ ë©”ì‹œì§€: {senderId}";
                                                     niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
                                                     niChatAlert.ShowBalloonTip(5000);
 
@@ -407,7 +407,7 @@ namespace ³²¿¹¼Ö
                 catch { }
             }
 
-            // Àç¿¬°á
+            // ì¬ì—°ê²°
             Task.Run(() =>
             {
                 Thread.Sleep(3000);
@@ -428,29 +428,29 @@ namespace ³²¿¹¼Ö
         }
 
         /*
-        //¿ø·¡ ÀÖ´ø ÇÔ¼ö
-        // »õ¸Ş¼¼Áö µµÂø ¾Ë¸²
+        //ì›ë˜ ìˆë˜ í•¨ìˆ˜
+        // ìƒˆë©”ì„¸ì§€ ë„ì°© ì•Œë¦¼
         private void ShowAlertOnMainForm(string senderId, string content)
         {
-            // 1. ´ëÈ­¸ñ·ÏÀ» °»½ÅÇÏ¿© ÃÖ½Å ¸Ş½ÃÁö°¡ À§·Î ¿À°Ô ÇÔ
+            // 1. ëŒ€í™”ëª©ë¡ì„ ê°±ì‹ í•˜ì—¬ ìµœì‹  ë©”ì‹œì§€ê°€ ìœ„ë¡œ ì˜¤ê²Œ í•¨
             LoadRecentChat();
 
-            // 2. ÀÛ¾÷ Ç¥½ÃÁÙ ±ôºıÀÓ
-            FlashWindow.Flash(this); // FlashWindow ÇïÆÛ Å¬·¡½º°¡ ÇÊ¿äÇÔ
+            // 2. ì‘ì—… í‘œì‹œì¤„ ê¹œë¹¡ì„
+            FlashWindow.Flash(this); // FlashWindow í—¬í¼ í´ë˜ìŠ¤ê°€ í•„ìš”í•¨
 
-            // 3. NotifyIcon Ç³¼± ¾Ë¸² (niChatAlert ÄÁÆ®·ÑÀÌ ÇÊ¿äÇÔ)
+            // 3. NotifyIcon í’ì„  ì•Œë¦¼ (niChatAlert ì»¨íŠ¸ë¡¤ì´ í•„ìš”í•¨)
             if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
             {
-                niChatAlert.BalloonTipTitle = $"»õ ¸Ş½ÃÁö: {senderId}";
+                niChatAlert.BalloonTipTitle = $"ìƒˆ ë©”ì‹œì§€: {senderId}";
                 niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
-                niChatAlert.ShowBalloonTip(5000); // 5ÃÊ À¯Áö
+                niChatAlert.ShowBalloonTip(5000); // 5ì´ˆ ìœ ì§€
             }
 
-            // 4. ListView Ç×¸ñ °­Á¶ (Optional)
+            // 4. ListView í•­ëª© ê°•ì¡° (Optional)
             
             //foreach (ListViewItem item in lvRecentChats.Items)
             //{
-            //    // senderId°¡ ÀÌ Ç×¸ñÀÇ PartnerID¶ó¸é 
+            //    // senderIdê°€ ì´ í•­ëª©ì˜ PartnerIDë¼ë©´ 
             //    if (item.Tag != null && item.Tag.ToString() == senderId)
             //    {
             //        item.BackColor = System.Drawing.Color.LightYellow;
@@ -461,7 +461,7 @@ namespace ³²¿¹¼Ö
         }
         */
 
-        // ¸Ş¼­µå ±³Ã¼
+        // ë©”ì„œë“œ êµì²´
         private void ShowAlertOnMainForm(string senderId, string content)
         {
             try
@@ -478,7 +478,7 @@ namespace ³²¿¹¼Ö
                 {
                     if (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus)
                     {
-                        niChatAlert.BalloonTipTitle = $"»õ ¸Ş½ÃÁö: {senderId}";
+                        niChatAlert.BalloonTipTitle = $"ìƒˆ ë©”ì‹œì§€: {senderId}";
                         niChatAlert.BalloonTipText = content.Length > 50 ? content.Substring(0, 50) + "..." : content;
                         niChatAlert.ShowBalloonTip(5000);
                     }
@@ -492,7 +492,7 @@ namespace ³²¿¹¼Ö
         {
             try
             {
-                // ÆûÀÌ ´İÈú ¶§ ¾Ë¸² Å¬¶óÀÌ¾ğÆ® ¿¬°áµµ ÇØÁ¦
+                // í¼ì´ ë‹«í ë•Œ ì•Œë¦¼ í´ë¼ì´ì–¸íŠ¸ ì—°ê²°ë„ í•´ì œ
                 alertClient?.Close();
             }
             catch { }
@@ -500,10 +500,10 @@ namespace ³²¿¹¼Ö
         }
 
 
-        // ===== Ãª¸®½ºÆ® ±â´É ======
+        // ===== ì±—ë¦¬ìŠ¤íŠ¸ ê¸°ëŠ¥ ======
 
         /*
-        //RecentChat + °íÁ¤Á¤·Ä
+        //RecentChat + ê³ ì •ì •ë ¬
         private void LoadRecentChat()
         {
             lvlist.Items.Clear();
@@ -531,7 +531,7 @@ namespace ³²¿¹¼Ö
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
-                    MessageBox.Show("Ã¤ÆÃ ¸ñ·ÏÀÌ ºñ¾îÀÖ½À´Ï´Ù.");
+                    MessageBox.Show("ì±„íŒ… ëª©ë¡ì´ ë¹„ì–´ìˆìŠµë‹ˆë‹¤.");
                     return;
                 }
 
@@ -546,10 +546,10 @@ namespace ³²¿¹¼Ö
                     item.SubItems.Add(row["Name"].ToString());
                     item.SubItems.Add(row["DeptName"].ToString());
 
-                    //ÃÖ±Ù ¸Ş½ÃÁö ±æ¸é ...À¸·Î Àß¸² (30Á¦ÇÑ >> UI º¯°æ½Ã ´Ã¸®°Å³ª ÇØµµ O)
+                    //ìµœê·¼ ë©”ì‹œì§€ ê¸¸ë©´ ...ìœ¼ë¡œ ì˜ë¦¼ (30ì œí•œ >> UI ë³€ê²½ì‹œ ëŠ˜ë¦¬ê±°ë‚˜ í•´ë„ O)
                     string msg = row["LastMessage"].ToString();
                     if (msg.Length > 30)
-                        msg = msg.Substring(0, 30) + "¡¦";
+                        msg = msg.Substring(0, 30) + "â€¦";
                     item.SubItems.Add(msg);
 
                     item.SubItems.Add(row["LastMessageAt"].ToString());
@@ -559,17 +559,17 @@ namespace ³²¿¹¼Ö
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ã¤ÆÃ ¸ñ·Ï ·Îµå ½ÇÆĞ: {ex.Message}\n\n{ex.StackTrace}");
+                MessageBox.Show($"ì±„íŒ… ëª©ë¡ ë¡œë“œ ì‹¤íŒ¨: {ex.Message}\n\n{ex.StackTrace}");
             }
         }
         */
         /*
-        // ±âÁ¸ °ÍÀ» »èÁ¦ÇÏ°í 1¹ø ¹®¼­ °ÍÀ¸·Î ¿ÏÀüÈ÷ ±³Ã¼
+        // ê¸°ì¡´ ê²ƒì„ ì‚­ì œí•˜ê³  1ë²ˆ ë¬¸ì„œ ê²ƒìœ¼ë¡œ ì™„ì „íˆ êµì²´
         private void LoadRecentChat()
         {
             lvlist.Items.Clear();
 
-            // ? UnreadCount Ãß°¡µÈ Äõ¸®
+            // ? UnreadCount ì¶”ê°€ëœ ì¿¼ë¦¬
             string sql = $@"
         SELECT 
             rc.PartnerUserId,
@@ -603,8 +603,8 @@ namespace ³²¿¹¼Ö
                     bool isPinned = Convert.ToInt32(row["is_pinned"]) == 1;
                     int unreadCount = Convert.ToInt32(row["UnreadCount"]);
 
-                    // ? ÀĞÁö ¾ÊÀº ¸Ş½ÃÁö Ç¥½Ã
-                    string indicator = unreadCount > 0 ? "¡Ü" : "";
+                    // ? ì½ì§€ ì•Šì€ ë©”ì‹œì§€ í‘œì‹œ
+                    string indicator = unreadCount > 0 ? "â—" : "";
                     ListViewItem item = new ListViewItem(indicator);
 
                     item.ImageIndex = isPinned ? 0 : -1;
@@ -615,12 +615,12 @@ namespace ³²¿¹¼Ö
 
                     string msg = row["LastMessage"].ToString();
                     if (msg.Length > 20)
-                        msg = msg.Substring(0, 20) + "¡¦";
+                        msg = msg.Substring(0, 20) + "â€¦";
                     item.SubItems.Add(msg);
 
                     item.SubItems.Add(row["LastMessageAt"].ToString());
 
-                    // ? Tag¿¡ UserId ÀúÀå
+                    // ? Tagì— UserId ì €ì¥
                     item.Tag = row["PartnerUserId"].ToString();
 
                     lvlist.Items.Add(item);
@@ -628,17 +628,17 @@ namespace ³²¿¹¼Ö
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ã¤ÆÃ ¸ñ·Ï ·Îµå ½ÇÆĞ: {ex.Message}\n\n{ex.StackTrace}");
+                MessageBox.Show($"ì±„íŒ… ëª©ë¡ ë¡œë“œ ì‹¤íŒ¨: {ex.Message}\n\n{ex.StackTrace}");
             }
         }
         */
 
-        // ±âÁ¸ °ÍÀ» »èÁ¦ÇÏ°í 1¹ø ¹®¼­ °ÍÀ¸·Î ¿ÏÀüÈ÷ ±³Ã¼
+        // ê¸°ì¡´ ê²ƒì„ ì‚­ì œí•˜ê³  1ë²ˆ ë¬¸ì„œ ê²ƒìœ¼ë¡œ ì™„ì „íˆ êµì²´
         private void LoadRecentChat()
         {
             lvlist.Items.Clear();
 
-            // ? UnreadCount Ãß°¡µÈ Äõ¸®
+            // ? UnreadCount ì¶”ê°€ëœ ì¿¼ë¦¬
             string sql = $@"
         SELECT 
             rc.PartnerUserId,
@@ -671,29 +671,29 @@ namespace ³²¿¹¼Ö
                     int unreadCount = Convert.ToInt32(row["UnreadCount"]);
                     int partnerUserId = Convert.ToInt32(row["PartnerUserId"]);
 
-                    // ? ¸ÖÆ¼ÇÁ·ÎÇÊ ´Ğ³×ÀÓ °¡Á®¿À±â
+                    // ? ë©€í‹°í”„ë¡œí•„ ë‹‰ë„¤ì„ ê°€ì ¸ì˜¤ê¸°
                     string nickname = GetNicknameForUser(partnerUserId);
                     string name = row["Name"].ToString();
 
-                    // ? ÀĞÁö ¾ÊÀº ¸Ş½ÃÁö Ç¥½Ã
-                    string indicator = unreadCount > 0 ? "¡Ü" : "";
+                    // ? ì½ì§€ ì•Šì€ ë©”ì‹œì§€ í‘œì‹œ
+                    string indicator = unreadCount > 0 ? "â—" : "";
                     ListViewItem item = new ListViewItem(indicator);
 
                     item.ImageIndex = isPinned ? 0 : -1;
 
                     item.SubItems.Add(row["LoginId"].ToString());
-                    item.SubItems.Add(name); // ? ÀÌ¸§ Ãß°¡
-                    item.SubItems.Add(nickname); // ? ´Ğ³×ÀÓ Ãß°¡
+                    item.SubItems.Add(name); // ? ì´ë¦„ ì¶”ê°€
+                    item.SubItems.Add(nickname); // ? ë‹‰ë„¤ì„ ì¶”ê°€
                     item.SubItems.Add(row["DeptName"].ToString());
 
                     string msg = row["LastMessage"].ToString();
                     if (msg.Length > 20)
-                        msg = msg.Substring(0, 20) + "¡¦";
+                        msg = msg.Substring(0, 20) + "â€¦";
                     item.SubItems.Add(msg);
 
                     item.SubItems.Add(row["LastMessageAt"].ToString());
 
-                    // ? Tag¿¡ UserId ÀúÀå
+                    // ? Tagì— UserId ì €ì¥
                     item.Tag = row["PartnerUserId"].ToString();
 
                     lvlist.Items.Add(item);
@@ -701,16 +701,16 @@ namespace ³²¿¹¼Ö
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ã¤ÆÃ ¸ñ·Ï ·Îµå ½ÇÆĞ: {ex.Message}\n\n{ex.StackTrace}");
+                MessageBox.Show($"ì±„íŒ… ëª©ë¡ ë¡œë“œ ì‹¤íŒ¨: {ex.Message}\n\n{ex.StackTrace}");
             }
         }
 
-        // ? ¸ÖÆ¼ÇÁ·ÎÇÊÀ» °í·ÁÇÑ ´Ğ³×ÀÓ °¡Á®¿À±â ¸Ş¼­µå (LoadRecentChat ¹Ù·Î ¾Æ·¡¿¡ Ãß°¡)
+        // ? ë©€í‹°í”„ë¡œí•„ì„ ê³ ë ¤í•œ ë‹‰ë„¤ì„ ê°€ì ¸ì˜¤ê¸° ë©”ì„œë“œ (LoadRecentChat ë°”ë¡œ ì•„ë˜ì— ì¶”ê°€)
         private string GetNicknameForUser(int targetUserId)
         {
             try
             {
-                // 1. UserProfileMap È®ÀÎ (³»°¡ »ó´ë¹æ¿¡°Ô ¼³Á¤ÇÑ ¸ÖÆ¼ÇÁ·ÎÇÊ)
+                // 1. UserProfileMap í™•ì¸ (ë‚´ê°€ ìƒëŒ€ë°©ì—ê²Œ ì„¤ì •í•œ ë©€í‹°í”„ë¡œí•„)
                 string mapQuery = $@"
             SELECT ProfileId 
             FROM UserProfileMap 
@@ -721,7 +721,7 @@ namespace ³²¿¹¼Ö
 
                 if (mapDt != null && mapDt.Rows.Count > 0)
                 {
-                    // ¸ÖÆ¼ÇÁ·ÎÇÊÀÌ ÀÖ´Â °æ¿ì
+                    // ë©€í‹°í”„ë¡œí•„ì´ ìˆëŠ” ê²½ìš°
                     int profileId = Convert.ToInt32(mapDt.Rows[0]["ProfileId"]);
 
                     string profileQuery = $@"
@@ -737,7 +737,7 @@ namespace ³²¿¹¼Ö
                     }
                 }
 
-                // 2. ¸ÖÆ¼ÇÁ·ÎÇÊÀÌ ¾øÀ¸¸é ±âº» ÇÁ·ÎÇÊ »ç¿ë
+                // 2. ë©€í‹°í”„ë¡œí•„ì´ ì—†ìœ¼ë©´ ê¸°ë³¸ í”„ë¡œí•„ ì‚¬ìš©
                 string defaultQuery = $@"
             SELECT Nickname 
             FROM Profile 
@@ -755,12 +755,12 @@ namespace ³²¿¹¼Ö
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetNicknameForUser] ¿À·ù: {ex.Message}");
+                Console.WriteLine($"[GetNicknameForUser] ì˜¤ë¥˜: {ex.Message}");
                 return "-";
             }
         }
 
-        //¿ìÅ¬¸¯ ÀÚµ¿ ¼±ÅÃ
+        //ìš°í´ë¦­ ìë™ ì„ íƒ
         private void lvlist_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -772,7 +772,7 @@ namespace ³²¿¹¼Ö
         }
 
         /*
-        //´õºíÅ¬¸¯ ¡æ Ã¤ÆÃÃ¢ ¿­±â
+        //ë”ë¸”í´ë¦­ â†’ ì±„íŒ…ì°½ ì—´ê¸°
         private void lvlist_DoubleClick(object sender, EventArgs e)
         {
             if (lvlist.SelectedItems.Count == 0) return;
@@ -783,15 +783,15 @@ namespace ³²¿¹¼Ö
         }
         */
 
-        // ±âÁ¸ °ÍÀ» ÀÌ·¸°Ô ¼öÁ¤
+        // ê¸°ì¡´ ê²ƒì„ ì´ë ‡ê²Œ ìˆ˜ì •
         private void lvlist_DoubleClick(object sender, EventArgs e)
         {
             if (lvlist.SelectedItems.Count == 0) return;
 
-            // ? Tag¿¡¼­ °¡Á®¿Àµµ·Ï ¼öÁ¤
+            // ? Tagì—ì„œ ê°€ì ¸ì˜¤ë„ë¡ ìˆ˜ì •
             int targetUserId = Convert.ToInt32(lvlist.SelectedItems[0].Tag);
 
-            // ? UnreadCount ÃÊ±âÈ­ Ãß°¡
+            // ? UnreadCount ì´ˆê¸°í™” ì¶”ê°€
             string updateQuery = $@"
                 UPDATE RecentChat
                 SET UnreadCount = 0
@@ -805,7 +805,7 @@ namespace ³²¿¹¼Ö
             LoadRecentChat();
         }
 
-        //°íÁ¤ÇÏ±â
+        //ê³ ì •í•˜ê¸°
         private void PinChat(int partnerUserId)
         {
             string sql = $@"
@@ -816,7 +816,7 @@ namespace ³²¿¹¼Ö
             DBconnector.GetInstance().NonQuery(sql);
         }
 
-        //°íÁ¤ ÇØÁ¦
+        //ê³ ì • í•´ì œ
         private void UnpinChat(int partnerUserId)
         {
             string sql = $@"
@@ -827,7 +827,7 @@ namespace ³²¿¹¼Ö
             DBconnector.GetInstance().NonQuery(sql);
         }
 
-        //¿ìÅ¬¸¯ ¸Ş´º ¡æ °íÁ¤ÇÏ±â
+        //ìš°í´ë¦­ ë©”ë‰´ â†’ ê³ ì •í•˜ê¸°
         private void addpin_Click(object sender, EventArgs e)
         {
             if (lvlist.SelectedItems.Count == 0) return;
@@ -838,7 +838,7 @@ namespace ³²¿¹¼Ö
             LoadRecentChat();
         }
 
-        //¿ìÅ¬¸¯ ¸Ş´º ¡æ °íÁ¤ ÇØÁ¦
+        //ìš°í´ë¦­ ë©”ë‰´ â†’ ê³ ì • í•´ì œ
         private void deletepin_Click(object sender, EventArgs e)
         {
             if (lvlist.SelectedItems.Count == 0) return;
@@ -849,22 +849,22 @@ namespace ³²¿¹¼Ö
             LoadRecentChat();
         }
 
-        //btndept ¡æ Ä£±¸ ¸ñ·Ï(DeptForm)À¸·Î ÀÌµ¿
+        //btndept â†’ ì¹œêµ¬ ëª©ë¡(DeptForm)ìœ¼ë¡œ ì´ë™
         private void btndept_Click(object sender, EventArgs e)
         {
             Dept deptForm = new Dept(currentUserId, currentUserName, currentUserNickname);
             deptForm.Show();
         }
 
-        // ÆÄÀÏ ¸Ç ³¡, ¸¶Áö¸· } ¹Ù·Î ¾Õ¿¡ Ãß°¡
+        // íŒŒì¼ ë§¨ ë, ë§ˆì§€ë§‰ } ë°”ë¡œ ì•ì— ì¶”ê°€
 
-        // ? Ãß°¡ 1
+        // ? ì¶”ê°€ 1
         private void LvList_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
         {
             e.DrawDefault = true;
         }
 
-        // ? Ãß°¡ 2
+        // ? ì¶”ê°€ 2
         private void LvList_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
             if (e.ColumnIndex == 0)
@@ -898,7 +898,7 @@ namespace ³²¿¹¼Ö
             }
         }
 
-        // ? Ãß°¡ 3
+        // ? ì¶”ê°€ 3
         private void NiChatAlert_BalloonTipClicked(object sender, EventArgs e)
         {
             ChatForm chatform = new ChatForm(currentUserId, lastMessageSenderId);

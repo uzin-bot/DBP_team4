@@ -1,4 +1,4 @@
-﻿using DBPAdmin;
+using DBPAdmin;
 
 namespace kyg
 {

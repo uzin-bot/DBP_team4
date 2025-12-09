@@ -45,7 +45,7 @@ namespace DBP_Chat
             var rbLight = new RadioButton
             {
                 Name = "rbLight",
-                Text = "¶óÀÌÆ®",
+                Text = "ë¼ì´íŠ¸",
                 AutoSize = true,
                 Location = new Point(host.Width - 160, 10),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
@@ -56,7 +56,7 @@ namespace DBP_Chat
             var rbDark = new RadioButton
             {
                 Name = "rbDark",
-                Text = "´ÙÅ©",
+                Text = "ë‹¤í¬",
                 AutoSize = true,
                 Location = new Point(host.Width - 90, 10),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
@@ -159,15 +159,15 @@ namespace DBP_Chat
                 : (Color.White, Color.Black, Color.FromArgb(245, 245, 245), Color.FromArgb(200, 200, 200));
         }
 
-        // ¸ÞÀÎ ÄÃ·¯ ÆÈ·¹Æ® - ¸ðµç »ö»ó Á¤ÀÇ
+        // ë©”ì¸ ì»¬ëŸ¬ íŒ”ë ˆíŠ¸ - ëª¨ë“  ìƒ‰ìƒ ì •ì˜
         public static class ColorScheme
         {
-            // ¹è°æ»ö
+            // ë°°ê²½ìƒ‰
             public static Color Ivory => IsDarkMode ? ColorTranslator.FromHtml("#1E1E1E") : ColorTranslator.FromHtml("#F1F3E0");
             public static Color LightOlive => IsDarkMode ? ColorTranslator.FromHtml("#2D2D2D") : ColorTranslator.FromHtml("#D2DCB6");
             public static Color White => IsDarkMode ? ColorTranslator.FromHtml("#2D2D2D") : Color.White;
             
-            // °­Á¶»ö
+            // ê°•ì¡°ìƒ‰
             public static Color SageGreen => IsDarkMode ? ColorTranslator.FromHtml("#E0E0E0") : ColorTranslator.FromHtml("#A1BC98");
             public static Color DarkOlive => IsDarkMode ? ColorTranslator.FromHtml("#B0B0B0") : ColorTranslator.FromHtml("#778873");
         }

@@ -1,4 +1,4 @@
-﻿namespace 남예솔
+namespace 남예솔
 {
     partial class chatlist
     {

@@ -1,4 +1,4 @@
-﻿using DBP_Chat;
+using DBP_Chat;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -8,12 +8,9 @@ namespace DBP_WinformChat
 {
     internal class DeptUIHelper
     {
-
-
         public static void Apply(Form form)
         {
             form.BackColor = Color.White;
-            // ��Ʈ�� �����̳� ��ġ�� ������ �ֹǷ� �������� ����
 
             foreach (Control c in form.Controls)
                 StyleControl(c);
@@ -21,20 +18,19 @@ namespace DBP_WinformChat
 
         private static void StyleControl(Control ctrl)
         {
-            // ========== ��� ��� �г� ==========
+            // ========== 상단 헤더 패널 ==========
             if (ctrl is Panel pnl && pnl.Name == "headerPanel")
             {
                 pnl.BackColor = Color.FromArgb(119, 136, 115);
                 return;
             }
 
-            // ========== ��� ����� �� ==========
+            // ========== 헤더 라벨의 글 ==========
             if (ctrl is Label lbl && lbl.Name == "headerLabel")
             {
                 lbl.ForeColor = Color.White;
                 lbl.BackColor = Color.Transparent;
             }
-
 
             // ===================== LABEL =====================
             if (ctrl is Label lbl2)
@@ -82,11 +78,11 @@ namespace DBP_WinformChat
             // ===================== COMBOBOX =====================
             if (ctrl is ComboBox cb)
             {
-                cb.BackColor = Color.White;                 // ��� ���
-                cb.ForeColor = Color.Black;                 // ������ �ؽ�Ʈ
+                cb.BackColor = Color.White;
+                cb.ForeColor = Color.Black;
                 cb.FlatStyle = FlatStyle.Standard;
-                cb.DrawMode = DrawMode.Normal;              // ����Ʈ ��忡���� �⺻ �����
-                cb.DrawItem -= null;                        // �̺�Ʈ �ڵ鷯 ���� (�ִٸ�)
+                cb.DrawMode = DrawMode.Normal;
+                cb.DrawItem -= null;
             }
 
             // ===================== BUTTON =====================
@@ -103,17 +99,16 @@ namespace DBP_WinformChat
 
                 btn.MouseDown += (s, e) =>
                 {
-                    btn.BackColor = ClickColor;  //������ �� �÷�
+                    btn.BackColor = ClickColor;
                 };
 
                 btn.MouseUp += (s, e) =>
                 {
-                    btn.BackColor = Color.FromArgb(161, 188, 152);       //Ŭ������ �� ���� ���� �� ����
+                    btn.BackColor = Color.FromArgb(161, 188, 152);
                 };
-
             }
 
-            // ===================== ��� ���� =====================
+            // ===================== 하위 재귀 =====================
             foreach (Control child in ctrl.Controls)
                 StyleControl(child);
         }

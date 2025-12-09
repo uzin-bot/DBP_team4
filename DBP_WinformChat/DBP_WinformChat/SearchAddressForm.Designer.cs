@@ -1,4 +1,4 @@
-﻿using Org.BouncyCastle.Asn1.Crmf;
+using Org.BouncyCastle.Asn1.Crmf;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 

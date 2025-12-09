@@ -1,4 +1,4 @@
-﻿using DBP_Chat;
+using DBP_Chat;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -151,8 +151,8 @@ namespace leehaeun.UIHelpers
             }
             else if (label.Name == "StatusMessageLabel")
             {
-                label.Font = new Font("맑은 고딕", 10F);  // ���Ÿ�ü 관리
-                label.ForeColor = ThemeManager.ColorScheme.DarkOlive;  // 맑은 고딕��� 관리
+                label.Font = new Font("맑은 고딕", 10F);  // 헤더Ÿ�ü 관리
+                label.ForeColor = ThemeManager.ColorScheme.DarkOlive;  // 맑은 고딕헤더 관리
             }
         }
 

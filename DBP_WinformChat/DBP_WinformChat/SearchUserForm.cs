@@ -1,4 +1,4 @@
-﻿using DBP_WinformChat;
+using DBP_WinformChat;
 using leehaeun.UIHelpers;
 using MySqlConnector;
 using System.Data;
