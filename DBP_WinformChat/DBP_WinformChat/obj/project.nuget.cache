@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "5LQFPcXKezs=",
+  "dgSpecHash": "ugGAlTEOkgM=",
   "success": true,
-  "projectFilePath": "C:\\Users\\yoleggk\\Source\\Repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
+  "projectFilePath": "C:\\Users\\yoleggk\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\yoleggk\\.nuget\\packages\\bouncycastle.cryptography\\2.6.2\\bouncycastle.cryptography.2.6.2.nupkg.sha512",
     "C:\\Users\\yoleggk\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.2\\microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
