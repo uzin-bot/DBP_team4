@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\yoleggk\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj": {}
+    "C:\\Users\\yoleg\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj": {}
   },
   "projects": {
-    "C:\\Users\\yoleggk\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj": {
+    "C:\\Users\\yoleg\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\yoleggk\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
+        "projectUniqueName": "C:\\Users\\yoleg\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
         "projectName": "DBP_WinformChat",
-        "projectPath": "C:\\Users\\yoleggk\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
-        "packagesPath": "C:\\Users\\yoleggk\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\yoleggk\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\obj\\",
+        "projectPath": "C:\\Users\\yoleg\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\DBP_WinformChat.csproj",
+        "packagesPath": "C:\\Users\\yoleg\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\yoleg\\source\\repos\\DBP_team4\\DBP_WinformChat\\DBP_WinformChat\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\yoleggk\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\yoleg\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [

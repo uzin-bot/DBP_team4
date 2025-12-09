@@ -135,11 +135,24 @@ namespace leehaeun.UIHelpers
         private static void StyleAllControls(Form form)
         {
             var textBoxes = new System.Collections.Generic.List<TextBox>();
+            
+            // Form의 모든 컨트롤과 그 자식 컨트롤을 검색
             foreach (Control control in form.Controls)
             {
                 if (control is TextBox textBox)
                 {
                     textBoxes.Add(textBox);
+                }
+                // Panel 안에 있는 TextBox도 찾기 (wrapper Panel)
+                else if (control is Panel panel && panel.Tag != null)
+                {
+                    foreach (Control child in panel.Controls)
+                    {
+                        if (child is TextBox tb)
+                        {
+                            textBoxes.Add(tb);
+                        }
+                    }
                 }
             }
 
@@ -175,9 +188,32 @@ namespace leehaeun.UIHelpers
             if (existingWrapper != null && existingWrapper.Tag?.ToString() == textBox.Name)
             {
                 // 이미 wrapper가 있으면 색상만 업데이트
-                existingWrapper.BackColor = ThemeManager.ColorScheme.White;
-                textBox.BackColor = ThemeManager.ColorScheme.White;
-                existingWrapper.Invalidate();
+                Color currentWhite = ThemeManager.ColorScheme.White;
+                Color currentSageGreen = ThemeManager.ColorScheme.SageGreen;
+                Color currentDarkOlive = ThemeManager.ColorScheme.DarkOlive;
+                
+                existingWrapper.BackColor = currentWhite;
+                
+                // wrapper 안의 모든 TextBox 색상 업데이트
+                foreach (Control ctrl in existingWrapper.Controls)
+                {
+                    if (ctrl is TextBox tb)
+                    {
+                        tb.BackColor = currentWhite;
+                        // PlaceHolder 텍스트가 아닌 경우 텍스트 색상도 업데이트
+                        string currentPlaceHolder = tb.Name == "IdBox" ? "아이디" : (tb.Name == "PwBox" ? "비밀번호" : "");
+                        if (!string.IsNullOrEmpty(currentPlaceHolder) && tb.Text == currentPlaceHolder)
+                        {
+                            tb.ForeColor = currentSageGreen;
+                        }
+                        else
+                        {
+                            tb.ForeColor = currentDarkOlive;
+                        }
+                    }
+                }
+                
+                existingWrapper.Refresh(); // Invalidate 대신 Refresh 사용
                 return;
             }
 
