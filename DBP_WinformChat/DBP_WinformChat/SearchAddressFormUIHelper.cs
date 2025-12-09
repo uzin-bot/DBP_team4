@@ -18,7 +18,7 @@ namespace leehaeun.UIHelpers
         public static void ApplyStyles(SearchAddressForm form)
         {
             form.BackColor = ThemeManager.ColorScheme.Ivory;
-            form.Size = new Size(600, 470);
+            form.Size = new Size(600, 540);
             form.StartPosition = FormStartPosition.CenterParent;
             form.FormBorderStyle = FormBorderStyle.None;
 
@@ -126,8 +126,38 @@ namespace leehaeun.UIHelpers
         {
             textBox.BorderStyle = BorderStyle.None;
             textBox.Font = new Font("맑은 고딕", 10F);
-            textBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
             textBox.BackColor = ThemeManager.ColorScheme.White;
+
+            // Placeholder 설정
+            string placeHolder = "주소 검색";
+
+            if (string.IsNullOrWhiteSpace(textBox.Text) || textBox.Text == placeHolder)
+            {
+                textBox.Text = placeHolder;
+                textBox.ForeColor = ThemeManager.ColorScheme.SageGreen;
+            }
+            else
+            {
+                textBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
+            }
+
+            textBox.Enter += (s, e) =>
+            {
+                if (textBox.Text == placeHolder)
+                {
+                    textBox.Text = "";
+                    textBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
+                }
+            };
+
+            textBox.Leave += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(textBox.Text))
+                {
+                    textBox.Text = placeHolder;
+                    textBox.ForeColor = ThemeManager.ColorScheme.SageGreen;
+                }
+            };
 
             int wrapperWidth = 440;
             int wrapperHeight = 38;
@@ -175,28 +205,6 @@ namespace leehaeun.UIHelpers
             {
                 textBox.Width = wrapper.Width - 20;
             };
-
-            // Placeholder ȿ��
-            if (textBox.Text == "�ּ� �Է�")
-            {
-                textBox.ForeColor = Color.Gray;
-                textBox.GotFocus += (s, e) =>
-                {
-                    if (textBox.Text == "�ּ� �Է�")
-                    {
-                        textBox.Text = "";
-                        textBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
-                    }
-                };
-                textBox.LostFocus += (s, e) =>
-                {
-                    if (string.IsNullOrWhiteSpace(textBox.Text))
-                    {
-                        textBox.Text = "�ּ� �Է�";
-                        textBox.ForeColor = Color.Gray;
-                    }
-                };
-            }
         }
 
         /// <summary>
@@ -243,7 +251,7 @@ namespace leehaeun.UIHelpers
             listBox.DrawMode = DrawMode.OwnerDrawFixed;
 
             int wrapperWidth = 540;
-            int wrapperHeight = 212;
+            int wrapperHeight = 280;
 
             Panel wrapper = new Panel
             {
@@ -264,6 +272,17 @@ namespace leehaeun.UIHelpers
             parent.Controls.Add(wrapper);
             parent.Controls.SetChildIndex(wrapper, tabIndex);
 
+            // 스크롤바를 가리는 패널 추가 (다크모드에서도 배경색과 동일하게)
+            Panel scrollCover = new Panel
+            {
+                Location = new Point(wrapperWidth - 21, 1),
+                Size = new Size(18, wrapperHeight - 2),
+                BackColor = ThemeManager.ColorScheme.White,
+                Name = "ScrollCover"
+            };
+            wrapper.Controls.Add(scrollCover);
+            scrollCover.BringToFront();
+
             GraphicsPath path = GetRoundedRectangle(new Rectangle(0, 0, wrapperWidth, wrapperHeight), 8);
             wrapper.Region = new Region(path);
 
@@ -274,18 +293,27 @@ namespace leehaeun.UIHelpers
                 GraphicsPath currentPath = GetRoundedRectangle(new Rectangle(0, 0, wrapper.Width, wrapper.Height), 8);
                 wrapper.Region = new Region(currentPath);
 
+                // 다크모드에 따라 테두리 색상 변경
+                Color borderColor = ThemeManager.IsDarkMode ? ThemeManager.ColorScheme.White : ThemeManager.ColorScheme.SageGreen;
+
                 using (GraphicsPath borderPath = GetRoundedRectangle(new Rectangle(0, 0, wrapper.Width - 1, wrapper.Height - 1), 8))
                 {
-                    using (Pen pen = new Pen(ThemeManager.ColorScheme.SageGreen, 0.8f))
+                    using (Pen pen = new Pen(borderColor, 0.8f))
                     {
                         e.Graphics.DrawPath(pen, borderPath);
                     }
                 }
+
+                // ScrollCover 배경색 업데이트
+                scrollCover.BackColor = ThemeManager.ColorScheme.White;
             };
 
             wrapper.SizeChanged += (s, e) =>
             {
                 listBox.Size = new Size(wrapper.Width - 8, wrapper.Height - 8);
+                // 스크롤바 커버 위치도 업데이트
+                scrollCover.Location = new Point(wrapper.Width - 21, 1);
+                scrollCover.Size = new Size(18, wrapper.Height - 2);
             };
 
             // ListBox 프로필 �׸���
@@ -297,7 +325,8 @@ namespace leehaeun.UIHelpers
 
                 // ���
                 bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-                using (SolidBrush bgBrush = new SolidBrush(isSelected ? ThemeManager.ColorScheme.LightOlive : ThemeManager.ColorScheme.White))
+                Color selectionColor = ThemeManager.IsDarkMode ? Color.DimGray : ThemeManager.ColorScheme.LightOlive;
+                using (SolidBrush bgBrush = new SolidBrush(isSelected ? selectionColor : ThemeManager.ColorScheme.White))
                 {
                     e.Graphics.FillRectangle(bgBrush, e.Bounds);
                 }
@@ -382,6 +411,7 @@ namespace leehaeun.UIHelpers
             int topMargin = 60;
             int spacing = 15;
             int buttonHeight = 40;
+            int listBoxHeight = 280;
 
             int availableWidth = form.Width - leftMargin - rightMargin;
 
@@ -397,7 +427,7 @@ namespace leehaeun.UIHelpers
                     else if (wrapper.Tag.ToString() == "ResultBox")
                     {
                         wrapper.Location = new Point(leftMargin, topMargin + buttonHeight + spacing);
-                        wrapper.Size = new Size(availableWidth, 212);
+                        wrapper.Size = new Size(availableWidth, listBoxHeight);
                     }
                 }
                 else if (control is Button btn && btn.Name == "SearchButton")
@@ -407,7 +437,7 @@ namespace leehaeun.UIHelpers
                 }
                 else if (control is Button btn2 && btn2.Name == "SelectButton")
                 {
-                    btn2.Location = new Point(leftMargin, topMargin + buttonHeight + spacing + 212 + spacing);
+                    btn2.Location = new Point(leftMargin, topMargin + buttonHeight + spacing + listBoxHeight + spacing);
                     btn2.Width = availableWidth;
                     btn2.Height = buttonHeight;
                 }
@@ -415,7 +445,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// �ձ� �簢�� ��� 관리
+        /// �ђ� �簢�� ��� 관리
         /// </summary>
         private static GraphicsPath GetRoundedRectangle(Rectangle bounds, int radius)
         {

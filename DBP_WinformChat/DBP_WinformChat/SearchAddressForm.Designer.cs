@@ -43,7 +43,6 @@ namespace leehaeun
             AddressBox.Name = "AddressBox";
             AddressBox.Size = new Size(515, 23);
             AddressBox.TabIndex = 0;
-            AddressBox.Text = "주소 입력";
             // 
             // ResultBox
             // 
@@ -64,7 +63,7 @@ namespace leehaeun
             SelectButton.UseVisualStyleBackColor = true;
             SelectButton.Click += SelectButton_Click;
             // 
-            // SearchAddress
+            // SearchAddressForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -72,7 +71,7 @@ namespace leehaeun
             Controls.Add(SelectButton);
             Controls.Add(ResultBox);
             Controls.Add(AddressBox);
-            Name = "SearchAddress";
+            Name = "SearchAddressForm";
             Text = "SearchAddress";
             ResumeLayout(false);
             PerformLayout();
