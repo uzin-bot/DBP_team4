@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -13,7 +13,7 @@ namespace leehaeun.UIHelpers
         private static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
 
         /// <summary>
-        /// »ç¿ëÀÚ °Ë»ö Æû ½ºÅ¸ÀÏ Àû¿ë
+        /// ê´€ë¦¬ï¿½ ï¿½Ë»ï¿½ ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½ ê´€ë¦¬
         /// </summary>
         public static void ApplyStyles(SearchUserForm form)
         {
@@ -53,8 +53,8 @@ namespace leehaeun.UIHelpers
             Button closeButton = new Button
             {
                 Name = "closeButton",
-                Text = "?",
-                Font = new Font("¸¼Àº °íµñ", 11F, FontStyle.Bold),
+                Text = "Ã—",
+                Font = new Font("ë§‘ì€ ê³ ë”•", 11F, FontStyle.Bold),
                 Size = new Size(40, 30),
                 Location = new Point(form.Width - 45, 5),
                 FlatStyle = FlatStyle.Flat,
@@ -154,7 +154,7 @@ namespace leehaeun.UIHelpers
                 }
             };
 
-            // ½ºÅ©·Ñ¹Ù °¡¸®±â¿ë Èò»ö ÆĞ³Î
+            // ï¿½ï¿½Å©ï¿½Ñ¹ï¿½ ï¿½ï¿½ï¿½ë§‘ì€ ê³ ë”• ï¿½Ğ³ï¿½
             Panel scrollCover = new Panel
             {
                 BackColor = ThemeManager.ColorScheme.White,
@@ -166,7 +166,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// »ç¿ëÀÚ ¾ÆÀÌÅÛ Ãß°¡
+        /// ï¿½ë§‘ì€ ê³ ë”•ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
         /// </summary>
         public static Panel CreateUserItem(int userId, string loginId, string name, string nickname, string dept, bool isChecked = false)
         {
@@ -179,7 +179,7 @@ namespace leehaeun.UIHelpers
                 Tag = loginId
             };
 
-            // Ã¼Å©¹Ú½º (PictureBox·Î Ä¿½ºÅÒ)
+            // Ã¼Å©ï¿½Ú½ï¿½ (PictureBoxï¿½ï¿½ Ä¿ê´€ë¦¬)
             PictureBox checkBox = new PictureBox
             {
                 Location = new Point(12, 15),
@@ -189,7 +189,7 @@ namespace leehaeun.UIHelpers
                 Cursor = Cursors.Hand
             };
 
-            // Ã¼Å©¹Ú½º ±×¸®±â
+            // Ã¼Å©ï¿½Ú½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½
             checkBox.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -239,7 +239,7 @@ namespace leehaeun.UIHelpers
                 }
             };
 
-            // Ã¼Å©¹Ú½º Å¬¸¯ ÀÌº¥Æ®
+            // Ã¼Å©ï¿½Ú½ï¿½ Å¬ï¿½ï¿½ ï¿½Ìºï¿½Æ®
             checkBox.Click += (s, e) =>
             {
                 if (checkBox.Tag is object tagObj)
@@ -259,46 +259,46 @@ namespace leehaeun.UIHelpers
                 }
             };
 
-            // UserId ¶óº§
+            // UserId ï¿½ï¿½
             Label userIdLabel = new Label
             {
                 Text = loginId.ToString(),
                 Location = new Point(40, 15),
                 Size = new Size(60, 20),
-                Font = new Font("¸¼Àº °íµñ", 11F),
+                Font = new Font("ë§‘ì€ ê³ ë”•", 11F),
                 ForeColor = ThemeManager.ColorScheme.DarkOlive,
                 BackColor = Color.Transparent
             };
 
-            // Name ¶óº§
+            // Name ï¿½ï¿½
             Label nameLabel = new Label
             {
                 Text = name,
                 Location = new Point(110, 15),
                 Size = new Size(80, 20),
-                Font = new Font("¸¼Àº °íµñ", 11F),
+                Font = new Font("ë§‘ì€ ê³ ë”•", 11F),
                 ForeColor = ThemeManager.ColorScheme.DarkOlive,
                 BackColor = Color.Transparent
             };
 
-            // Nickname ¶óº§
+            // Nickname ï¿½ï¿½
             Label nicknameLabel = new Label
             {
                 Text = nickname,
                 Location = new Point(200, 15),
                 Size = new Size(130, 20),
-                Font = new Font("¸¼Àº °íµñ", 11F),
+                Font = new Font("ë§‘ì€ ê³ ë”•", 11F),
                 ForeColor = ThemeManager.ColorScheme.DarkOlive,
                 BackColor = Color.Transparent
             };
 
-            // Dept ¶óº§
+            // Dept ï¿½ï¿½
             Label deptLabel = new Label
             {
                 Text = dept,
                 Location = new Point(340, 15),
                 Size = new Size(55, 20),
-                Font = new Font("¸¼Àº °íµñ", 11F),
+                Font = new Font("ë§‘ì€ ê³ ë”•", 11F),
                 ForeColor = ThemeManager.ColorScheme.DarkOlive,
                 BackColor = Color.Transparent
             };
@@ -309,7 +309,7 @@ namespace leehaeun.UIHelpers
             itemPanel.Controls.Add(nicknameLabel);
             itemPanel.Controls.Add(deptLabel);
 
-            // Å¬¸¯ ½Ã Ã¼Å©¹Ú½º Åä±Û
+            // Å¬ï¿½ï¿½ ï¿½ï¿½ Ã¼Å©ï¿½Ú½ï¿½ ï¿½ï¿½ï¿½
             Action toggleCheck = () =>
             {
                 if (checkBox.Tag is object tagObj)
@@ -339,7 +339,7 @@ namespace leehaeun.UIHelpers
         }
 
         /// <summary>
-        /// »ç¿ëÀÚ ¸ñ·Ï ·Îµå
+        /// ï¿½ë§‘ì€ ê³ ë”• ï¿½Îµï¿½
         /// </summary>
         public static void LoadUsers(SearchUserForm form, System.Collections.Generic.List<(int userId, string loginId, string name, string nickname, string dept)> users)
         {
@@ -380,7 +380,7 @@ namespace leehaeun.UIHelpers
 
         private static void StyleButton(Button button)
         {
-            button.Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold);
+            button.Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold);
             button.ForeColor = ThemeManager.ColorScheme.White;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;

@@ -1,4 +1,4 @@
-using DBP_Chat;
+ï»¿using DBP_Chat;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -13,7 +13,7 @@ namespace leehaeun.UIHelpers
         private static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
 
         /// <summary>
-        /// »ç¿ëÀÚ Á¤º¸ Æû ½ºÅ¸ÀÏ Àû¿ë
+        /// ï¿½ë§‘ì€ ê³ ë”•ï¿½ ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½ ê´€ë¦¬
         /// </summary>
         public static void ApplyStyles(UserInfoForm form)
         {
@@ -21,7 +21,7 @@ namespace leehaeun.UIHelpers
             form.FormBorderStyle = FormBorderStyle.None;
 
             form.Width = 350;
-            form.Height = 250;  // 200 ¡æ 250
+            form.Height = 250;  // 200 ï¿½ï¿½ 250
             form.MinimumSize = new Size(350, 250);
             form.MaximumSize = new Size(350, 250);
 
@@ -53,8 +53,8 @@ namespace leehaeun.UIHelpers
             Button closeButton = new Button
             {
                 Name = "closeButton",
-                Text = "?",
-                Font = new Font("¸¼Àº °íµñ", 11F, FontStyle.Bold),
+                Text = "Ã—",
+                Font = new Font("ë§‘ì€ ê³ ë”•", 11F, FontStyle.Bold),
                 Size = new Size(40, 30),
                 Location = new Point(form.Width - 45, 5),
                 FlatStyle = FlatStyle.Flat,
@@ -116,7 +116,7 @@ namespace leehaeun.UIHelpers
         {
             pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
 
-            // µÕ±Ù »ç°¢Çü Å×µÎ¸®
+            // ï¿½Õ±ï¿½ ï¿½ç°¢ï¿½ï¿½ ï¿½×µÎ¸ï¿½
             pictureBox.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -143,16 +143,16 @@ namespace leehaeun.UIHelpers
 
             if (label.Name == "NicknameLabel")
             {
-                label.Font = new Font("¸¼Àº °íµñ", 14F, FontStyle.Bold);
+                label.Font = new Font("ë§‘ì€ ê³ ë”•", 14F, FontStyle.Bold);
             }
             else if (label.Name == "DeptLabel")
             {
-                label.Font = new Font("¸¼Àº °íµñ", 10F);
+                label.Font = new Font("ë§‘ì€ ê³ ë”•", 10F);
             }
             else if (label.Name == "StatusMessageLabel")
             {
-                label.Font = new Font("¸¼Àº °íµñ", 10F);  // ÀÌÅÅ¸¯Ã¼ Á¦°Å
-                label.ForeColor = ThemeManager.ColorScheme.DarkOlive;  // ÁøÇÑ »öÀ¸·Î º¯°æ
+                label.Font = new Font("ë§‘ì€ ê³ ë”•", 10F);  // ï¿½ï¿½ï¿½Å¸ï¿½Ã¼ ê´€ë¦¬
+                label.ForeColor = ThemeManager.ColorScheme.DarkOlive;  // ë§‘ì€ ê³ ë”•ï¿½ï¿½ï¿½ ê´€ë¦¬
             }
         }
 
@@ -183,7 +183,7 @@ namespace leehaeun.UIHelpers
                     else if (label.Name == "StatusMessageLabel")
                     {
                         label.Location = new Point(margin, topMargin + 100);
-                        label.MaximumSize = new Size(290, 50);  // 2ÁÙ µé¾î°¥ ³ôÀÌ
+                        label.MaximumSize = new Size(290, 50);  // 2ï¿½ï¿½ ï¿½ï¿½î°¥ ê´€ë¦¬
                         label.AutoSize = true;
                     }
                 }

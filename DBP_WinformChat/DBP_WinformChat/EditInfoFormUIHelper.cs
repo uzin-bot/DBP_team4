@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -50,8 +50,8 @@ namespace leehaeun.UIHelpers
             Button closeButton = new Button
             {
                 Name = "closeButton",
-                Text = "?",
-                Font = new Font("¸¼Àº °íµñ", 11F, FontStyle.Bold),
+                Text = "Ã—",
+                Font = new Font("ë§‘ì€ ê³ ë”•", 11F, FontStyle.Bold),
                 Size = new Size(50, 40),
                 Location = new Point(form.Width - 55, 5),
                 FlatStyle = FlatStyle.Flat,
@@ -169,7 +169,7 @@ namespace leehaeun.UIHelpers
                 }
             };
 
-            string[] tabNames = { "ÇÁ·ÎÇÊ", "¸ÖÆ¼ÇÁ·ÎÇÊ", "°èÁ¤ Á¤º¸" };
+            string[] tabNames = { "í”„ë¡œí•„", "ï¿½ï¿½Æ¼í”„ë¡œí•„", "ë§‘ì€ ê³ ë”•ï¿½" };
             Panel[] pages = new Panel[3];
 
             for (int i = 0; i < 3; i++)
@@ -226,7 +226,7 @@ namespace leehaeun.UIHelpers
                 Label tabLabel = new Label
                 {
                     Text = tabNames[i],
-                    Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold),
+                    Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold),
                     ForeColor = ThemeManager.ColorScheme.DarkOlive,
                     TextAlign = ContentAlignment.MiddleCenter,
                     Dock = DockStyle.Fill,
@@ -481,12 +481,12 @@ namespace leehaeun.UIHelpers
                 return;
 
             textBox.BorderStyle = BorderStyle.None;
-            textBox.Font = new Font("¸¼Àº °íµñ", 10F);
+            textBox.Font = new Font("ë§‘ì€ ê³ ë”•", 10F);
             textBox.ForeColor = ThemeManager.ColorScheme.DarkOlive;
 
             if (textBox.Name == "PwBox")
             {
-                textBox.PasswordChar = '¡Ü';
+                textBox.PasswordChar = 'â—';
             }
 
             bool isReadOnly = textBox.ReadOnly;
@@ -567,7 +567,7 @@ namespace leehaeun.UIHelpers
         {
             if (button.Name == "EditMButton" || button.Name == "AddMulProfileButton" || button.Name == "EditButton")
             {
-                button.Font = new Font("¸¼Àº °íµñ", 9F, FontStyle.Bold);
+                button.Font = new Font("ë§‘ì€ ê³ ë”•", 9F, FontStyle.Bold);
                 button.ForeColor = ThemeManager.ColorScheme.DarkOlive;
                 button.FlatStyle = FlatStyle.Flat;
                 button.FlatAppearance.BorderSize = 0;
@@ -603,7 +603,7 @@ namespace leehaeun.UIHelpers
             }
             else
             {
-                button.Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold);
+                button.Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold);
                 button.ForeColor = ThemeManager.ColorScheme.White;
                 button.FlatStyle = FlatStyle.Flat;
                 button.FlatAppearance.BorderSize = 0;
@@ -642,7 +642,7 @@ namespace leehaeun.UIHelpers
 
         private static void StyleLabel(Label label)
         {
-            label.Font = new Font("¸¼Àº °íµñ", 9F, FontStyle.Bold);
+            label.Font = new Font("ë§‘ì€ ê³ ë”•", 9F, FontStyle.Bold);
             label.ForeColor = ThemeManager.ColorScheme.DarkOlive;
             label.BackColor = Color.Transparent;
         }
@@ -977,7 +977,7 @@ namespace leehaeun.UIHelpers
                 if (control.Name == "label7")
                 {
                     control.Location = new Point(centerX, startY);
-                    control.Font = new Font("¸¼Àº °íµñ", 12F, FontStyle.Bold);
+                    control.Font = new Font("ë§‘ì€ ê³ ë”•", 12F, FontStyle.Bold);
                 }
                 else if (control.Name == "AddMulProfileButton")
                 {
@@ -992,7 +992,7 @@ namespace leehaeun.UIHelpers
                 else if (control.Name == "NicknameLabel")
                 {
                     control.Location = new Point(centerX + 60, startY + 55);
-                    control.Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold);
+                    control.Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold);
                 }
                 else if (control.Name == "EditButton")
                 {
@@ -1162,7 +1162,7 @@ namespace leehaeun.UIHelpers
                         if (parentName == "ProfileFLP")
                         {
                             lbl.Location = new Point(60, 22);
-                            lbl.Font = new Font("¸¼Àº °íµñ", 10F, FontStyle.Bold);
+                            lbl.Font = new Font("ë§‘ì€ ê³ ë”•", 10F, FontStyle.Bold);
                             lbl.ForeColor = ThemeManager.ColorScheme.DarkOlive;
                             lbl.BackColor = Color.Transparent;
                             lbl.AutoSize = true;
@@ -1170,7 +1170,7 @@ namespace leehaeun.UIHelpers
                         else if (parentName == "MemberFLP")
                         {
                             lbl.Location = new Point(55, 17);
-                            lbl.Font = new Font("¸¼Àº °íµñ", 8.5F, FontStyle.Bold);
+                            lbl.Font = new Font("ë§‘ì€ ê³ ë”•", 8.5F, FontStyle.Bold);
                             lbl.ForeColor = ThemeManager.ColorScheme.DarkOlive;
                             lbl.BackColor = Color.Transparent;
                             lbl.AutoSize = false;
@@ -1180,7 +1180,7 @@ namespace leehaeun.UIHelpers
                     }
                     else if (child is Button btn)
                     {
-                        if (btn.Text == "°ü¸®")
+                        if (btn.Text == "ê´€ë¦¬")
                         {
                             if (parentName == "ProfileFLP")
                             {
@@ -1189,7 +1189,7 @@ namespace leehaeun.UIHelpers
                                 btn.Height = 30;
                             }
                         }
-                        else if (btn.Text == "»èÁ¦")
+                        else if (btn.Text == "ê´€ë¦¬")
                         {
                             if (parentName == "ProfileFLP")
                             {
@@ -1205,7 +1205,7 @@ namespace leehaeun.UIHelpers
                             }
                         }
 
-                        btn.Font = new Font("¸¼Àº °íµñ", 9F, FontStyle.Bold);
+                        btn.Font = new Font("ë§‘ì€ ê³ ë”•", 9F, FontStyle.Bold);
                         btn.ForeColor = ThemeManager.ColorScheme.DarkOlive;
                         btn.FlatStyle = FlatStyle.Flat;
                         btn.FlatAppearance.BorderSize = 0;

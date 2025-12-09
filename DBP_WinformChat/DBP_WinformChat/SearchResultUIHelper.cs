@@ -1,4 +1,4 @@
-using DBP_Chat;
+ï»¿using DBP_Chat;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -17,12 +17,12 @@ namespace DBP_WinformChat
                 StyleControl(c, darkMode);
             }
 
-            // ¸ðµç ListView Ç×¸ñ/Çì´õ »ö Àç¼³Á¤ (´ÙÅ©¸ðµå ÇØÁ¦ ½Ã °ËÁ¤ ¹è°æ ÀÜÁ¸ ¹æÁö)
+            // ï¿½ï¿½ï¿½ ListView ï¿½×¸ï¿½/ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ç¼³ï¿½ï¿½ (ï¿½ï¿½Å©ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
             foreach (var lv in form.Controls)
             {
                 if (lv is ListView list)
                 {
-                    list.OwnerDraw = false; // Ä¿½ºÅÒ ±×¸®±â ÇØÁ¦
+                    list.OwnerDraw = false; // Ä¿ï¿½ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                     foreach (ListViewItem it in list.Items)
                     {
                         it.BackColor = darkMode ? Color.FromArgb(40, 40, 40) : Color.White;
@@ -69,7 +69,7 @@ namespace DBP_WinformChat
 
             if (ctrl is ListView lv)
             {
-                lv.OwnerDraw = false; // ´ÙÅ©¸ðµå ÇØÁ¦ ½Ã ½Ã½ºÅÛ ·»´õ·¯ »ç¿ë
+                lv.OwnerDraw = false; // ï¿½ï¿½Å©ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
                 lv.BackColor = darkMode ? Color.FromArgb(40, 40, 40) : Color.White;
                 lv.ForeColor = darkMode ? Color.White : Color.Black;
                 lv.BorderStyle = BorderStyle.FixedSingle;
@@ -84,13 +84,13 @@ namespace DBP_WinformChat
                 foreach (ColumnHeader ch in lv.Columns)
                 {
                     var text = (ch.Text ?? string.Empty).Trim();
-                    if (text.Equals("´Ð³×ÀÓ") || text.Equals("Nickname", System.StringComparison.OrdinalIgnoreCase))
+                    if (text.Equals("ï¿½Ð³ï¿½ï¿½ï¿½") || text.Equals("Nickname", System.StringComparison.OrdinalIgnoreCase))
                         ch.Width = Math.Max(ch.Width, 160);
-                    else if (text.Equals("ÆÀ") || text.Equals("Team", System.StringComparison.OrdinalIgnoreCase))
+                    else if (text.Equals("ï¿½ï¿½") || text.Equals("Team", System.StringComparison.OrdinalIgnoreCase))
                         ch.Width = Math.Max(ch.Width, 140);
-                    else if (text.Equals("ºÎ¼­") || text.Equals("Dept", System.StringComparison.OrdinalIgnoreCase) || text.Equals("Department", System.StringComparison.OrdinalIgnoreCase))
+                    else if (text.Equals("ï¿½Î¼ï¿½") || text.Equals("Dept", System.StringComparison.OrdinalIgnoreCase) || text.Equals("Department", System.StringComparison.OrdinalIgnoreCase))
                         ch.Width = Math.Max(ch.Width, 200);
-                    else if (text.Equals("ÀÌ¸§") || text.Equals("Name", System.StringComparison.OrdinalIgnoreCase))
+                    else if (text.Equals("ï¿½Ì¸ï¿½") || text.Equals("Name", System.StringComparison.OrdinalIgnoreCase))
                         ch.Width = Math.Max(ch.Width, 150);
                     else if (text.Equals("ID", System.StringComparison.OrdinalIgnoreCase))
                         ch.Width = Math.Max(ch.Width, 130);
